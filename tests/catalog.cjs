@@ -129,6 +129,20 @@ async function run() {
   assert.equal(malformed.rows.length,0);
   assert.match(malformed.error,/Invalid/);
   console.log('PASS catalog rejects malformed product identifiers');
+
+  // Whitespace-only IDs are truthy but cannot safely identify a cart item.
+  for (const id of ['', ' ', '\\t\\n']) {
+    const blankWindow={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+    vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+      window:blankWindow,AbortController,setTimeout,clearTimeout,
+      fetch:async()=>({ok:true,json:async()=>[{id,title_ar:'فستان',title_en:'Dress',price_usd:10,stock:1}]})
+    });
+    const blank=await blankWindow.MSB_CATALOG.products();
+    assert.equal(blank.rows.length,0,'blank identifier must not render');
+    assert.match(blank.error,/Invalid or repeated product/);
+  }
+  console.log('PASS catalog rejects empty and whitespace-only product identifiers');
+
   // Reject missing or blank bilingual titles before the storefront renders.
   for(const [ar,en] of [[null,'Dress'],['','Dress'],['   ','Dress'],['فستان',null],['فستان',''],['فستان','   ']]) {
     const titleWindow={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
