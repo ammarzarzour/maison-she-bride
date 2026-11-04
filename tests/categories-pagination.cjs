@@ -27,11 +27,14 @@ async function scenario(count, mutate) {
  }
  for(const [name,mutate,expected] of [
   ['duplicate', (rows,offset)=>offset===100?[{...rows[0],id:'cat-0'},...rows.slice(1)]:rows,/repeated category/],
+  ['duplicate slug across pages', (rows,offset)=>offset===100?[{...rows[0],slug:'slug-0'},...rows.slice(1)]:rows,/repeated category/],
+  ['duplicate slug within page', rows=>rows.map((r,i)=>i===1?{...r,slug:'slug-0'}:r),/repeated category/],
+  ['blank id', rows=>rows.map((r,i)=>i===0?{...r,id:'  '}:r),/Invalid or repeated/],
   ['blank slug',rows=>rows.map((r,i)=>i===0?{...r,slug:' '}:r),/Invalid or repeated/],
   ['missing id',rows=>rows.map((r,i)=>i===0?{slug:r.slug}:r),/Invalid or repeated/],
   ['oversized',rows=>rows.concat({id:'extra',slug:'extra'}),/exceeds requested limit/]
  ]){
-  const {result}=await scenario(name==='duplicate'?101:2,mutate);
+  const {result}=await scenario(name==='duplicate'||name==='duplicate slug across pages'?101:2,mutate);
   assert.equal(result.rows.length,0,name);
   assert.match(result.error,expected,name);
  }
