@@ -25,6 +25,8 @@ jobs:
         run: node tests/catalog.cjs
       - name: Verify category pagination boundaries
         run: node tests/categories-pagination.cjs
+      - name: Verify live bilingual category filters
+        run: node tests/live-categories.cjs
       - name: Verify catalog refresh failures and retries
         run: node tests/catalog-refresh.cjs
       - name: Verify safe storefront markup rendering
