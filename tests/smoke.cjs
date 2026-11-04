@@ -25,3 +25,9 @@ assert.match(storefront, /escapeHTML\(p\[l\]\)/, 'product titles must be escaped
 assert.match(storefront, /escapeHTML\(p\[lang\(\)\]\)/, 'cart product titles must be escaped');
 assert.match(storefront, /const safeImage=/, 'product image URLs must be validated');
 console.log('PASS storefront content escaping');
+
+assert.match(storefront, /function reconcileCart\(\)/, 'cart must reconcile against catalog');
+assert.match(storefront, /stock:Number\(p\.stock\)/, 'live stock must be read');
+assert.match(storefront, /Math\.min\(maxQty\(p\)/, 'cart must enforce stock limit');
+assert.ok(!storefront.includes("cart={};localStorage.removeItem('msb_cart')"), 'catalog reload must not clear the cart');
+console.log('PASS persistent cart and stock limits');
