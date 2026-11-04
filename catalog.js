@@ -25,6 +25,25 @@ async function get(table,query){
  }catch(e){return {configured:true,rows:[],error:e.message||'Catalog unavailable'};}
  finally{clearTimeout(timer);}
 }
+async function pagedCategories(){
+ const query='select=id,slug,name_ar,name_en&order=id.asc';
+ const all=[];const seen=new Set();
+ for(let page=0;page<maxPages;page++){
+  const result=await get('categories',query+'&limit='+pageSize+'&offset='+(page*pageSize));
+  if(result.error||!result.configured)return {...result,rows:[]};
+  if(result.rows.length>pageSize)return {configured:true,rows:[],error:'Category page exceeds requested limit'};
+  for(const row of result.rows){
+   if(!row||typeof row.id!=='string'||!row.id||seen.has(row.id)||typeof row.slug!=='string'||!row.slug.trim())return {configured:true,rows:[],error:'Invalid or repeated category in catalog pagination'};
+   seen.add(row.id);all.push(row);
+  }
+  if(result.rows.length<pageSize)return {configured:true,rows:all,error:null};
+ }
+ const probe=await get('categories',query+'&limit=1&offset='+(maxPages*pageSize));
+ if(probe.error||!probe.configured)return {...probe,rows:[]};
+ if(probe.rows.length>1)return {configured:true,rows:[],error:'Category overflow probe exceeds requested limit'};
+ if(probe.rows.length)return {configured:true,rows:[],error:'Categories exceed the supported page limit'};
+ return {configured:true,rows:all,error:null};
+}
 async function pagedProducts(){
  const query='select=id,store_id,category_id,title_ar,title_en,description_ar,description_en,price_usd,stock,product_images(image_url,position)&status=eq.published&stock=gt.0&order=created_at.desc,id.desc';
  const all=[];
@@ -51,7 +70,7 @@ async function pagedProducts(){
 }
 window.MSB_CATALOG={
  configured:valid,
- categories:()=>get('categories','select=id,slug,name_ar,name_en&order=name_en.asc'),
+ categories:pagedCategories,
  products:pagedProducts
 };
 })();
