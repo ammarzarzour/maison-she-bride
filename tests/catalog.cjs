@@ -27,6 +27,38 @@ async function run() {
   assert.equal(requests[0].opts.headers.apikey,window.MSB_SUPABASE.publishableKey);
   console.log('PASS catalog published/in-stock product requests');
 
+
+  // Two pages: 100 results followed by a final partial page.
+  const pages=[];
+  const pagedWindow={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+  const pagedSandbox={window:pagedWindow,AbortController,setTimeout,clearTimeout,
+    fetch:async url=>{
+      pages.push(url);
+      const offset=Number(new URL(url).searchParams.get('offset'));
+      const count=offset===0?100:3;
+      return {ok:true,json:async()=>Array.from({length:count},(_,i)=>({id:'p-'+(offset+i)}))};
+    }};
+  vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),pagedSandbox);
+  const many=await pagedWindow.MSB_CATALOG.products();
+  assert.equal(many.error,null);
+  assert.equal(many.rows.length,103);
+  assert.equal(pages.length,2);
+  assert.equal(many.rows[102].id,'p-102');
+  console.log('PASS catalog paginates more than 100 published products');
+
+  // A failed subsequent page must not masquerade as a complete catalog.
+  const failedWindow={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+  vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+    window:failedWindow,AbortController,setTimeout,clearTimeout,
+    fetch:async url=>Number(new URL(url).searchParams.get('offset'))===0
+      ?{ok:true,json:async()=>Array.from({length:100},(_,i)=>({id:String(i)}))}
+      :{ok:false,status:503}
+  });
+  const failed=await failedWindow.MSB_CATALOG.products();
+  assert.equal(failed.rows.length,0);
+  assert.ok(failed.error);
+  console.log('PASS catalog refuses partial results on pagination errors');
+
   const bad = {MSB_SUPABASE:{url:'http://example.supabase.co',publishableKey:'service_role_secret'}};
   vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{window:bad,AbortController,setTimeout,clearTimeout,fetch:()=>{throw Error('must not fetch')}});
   assert.equal(bad.MSB_CATALOG.configured,false);
