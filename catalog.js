@@ -27,14 +27,14 @@ async function get(table,query){
 }
 async function pagedCategories(){
  const query='select=id,slug,name_ar,name_en&order=id.asc';
- const all=[];const seen=new Set();
+ const all=[];const seen=new Set();const slugs=new Set();
  for(let page=0;page<maxPages;page++){
   const result=await get('categories',query+'&limit='+pageSize+'&offset='+(page*pageSize));
   if(result.error||!result.configured)return {...result,rows:[]};
   if(result.rows.length>pageSize)return {configured:true,rows:[],error:'Category page exceeds requested limit'};
   for(const row of result.rows){
-   if(!row||typeof row.id!=='string'||!row.id||seen.has(row.id)||typeof row.slug!=='string'||!row.slug.trim())return {configured:true,rows:[],error:'Invalid or repeated category in catalog pagination'};
-   seen.add(row.id);all.push(row);
+   if(!row||typeof row.id!=='string'||!row.id.trim()||seen.has(row.id)||typeof row.slug!=='string'||!row.slug.trim()||slugs.has(row.slug))return {configured:true,rows:[],error:'Invalid or repeated category in catalog pagination'};
+   seen.add(row.id);slugs.add(row.slug);all.push(row);
   }
   if(result.rows.length<pageSize)return {configured:true,rows:all,error:null};
  }
