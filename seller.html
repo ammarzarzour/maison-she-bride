@@ -1,11 +1,132 @@
-<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maison She Bride | بوابة التاجر</title><style>body{font-family:system-ui,Tahoma;background:#f5f7f4;color:#173a2d;margin:0}main{max-width:460px;margin:6vh auto;background:white;padding:25px;border-radius:16px;box-shadow:0 4px 22px #0001}h1{font-size:24px}input,button{display:block;width:100%;box-sizing:border-box;padding:13px;margin:12px 0;border-radius:9px;border:1px solid #cad5cf;font:inherit}button{background:#145b46;color:white;border:0}p{line-height:1.7}#msg{white-space:pre-wrap}a{color:#145b46}</style><main><h1>Maison She Bride</h1><h2>بوابة التجار</h2><p>سجّل حسابك ثم قدّم طلب اعتماد متجرك. لن تُنشر منتجاتك قبل موافقة الإدارة.</p><div id="auth"><input id="email" type="email" autocomplete="email" placeholder="البريد الإلكتروني"><input id="password" type="password" autocomplete="current-password" placeholder="كلمة المرور (6 أحرف على الأقل)"><button id="signup">إنشاء حساب</button><button id="login">تسجيل الدخول</button></div><div id="seller" hidden><p id="welcome"></p><input id="store" maxlength="100" placeholder="اسم متجرك"><button id="apply">إرسال طلب اعتماد متجر</button><button id="logout">تسجيل الخروج</button></div><p id="msg" role="status"></p><a href="./">العودة إلى المتجر</a></main><script>
-const base='https://cymwmswpseevemxtugdb.supabase.co',key='sb_publishable_OevT9B8LeDvgIzOWtktYTA__LpPRQBE';
-const el=id=>document.getElementById(id);let access='',uid='';
-function message(s){el('msg').textContent=s}
-async function call(path,method,body,token){let r=await fetch(base+path,{method,headers:{apikey:key,'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body?JSON.stringify(body):undefined});let data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.msg||data.error_description||data.message||'تعذر تنفيذ الطلب');return data}
-function showUser(user,token){uid=user.id;access=token;el('auth').hidden=true;el('seller').hidden=false;el('welcome').textContent='مرحباً '+(user.email||'');}
-async function authenticate(kind){message('جارٍ المعالجة...');try{let email=el('email').value.trim(),password=el('password').value;if(!email||password.length<6)throw new Error('أدخل بريداً صحيحاً وكلمة مرور من 6 أحرف على الأقل');let data=await call('/auth/v1/'+(kind==='signup'?'signup':'token?grant_type=password'),'POST',{email,password});if(data.access_token&&data.user){showUser(data.user,data.access_token);message('تم تسجيل الدخول. يمكنك طلب اعتماد متجرك.')}else message('تم إنشاء الحساب. تحقق من بريدك الإلكتروني لتأكيده، ثم سجّل الدخول.')}catch(e){message(e.message)}}
-el('signup').onclick=()=>authenticate('signup');el('login').onclick=()=>authenticate('login');
-el('apply').onclick=async()=>{message('جارٍ إرسال الطلب...');try{const name=el('store').value.trim();if(name.length<2)throw new Error('أدخل اسم متجر من حرفين على الأقل');await call('/rest/v1/stores','POST',{name,owner_id:uid,status:'pending'},access);message('تم إرسال طلب المتجر، وهو بانتظار موافقة الإدارة.')}catch(e){message(e.message)}};
-el('logout').onclick=()=>{access='';uid='';el('auth').hidden=false;el('seller').hidden=true;el('password').value='';message('تم تسجيل الخروج من هذه الصفحة.')};
-</script></html>
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maison She Bride | لوحة التاجر</title>
+<style>
+:root{--green:#145b46;--gold:#c6a15b;--ink:#24352d;--line:#e3e9e5}*{box-sizing:border-box}
+body{margin:0;background:#f4f6f3;color:var(--ink);font-family:system-ui,Tahoma,Arial}
+header{background:var(--green);color:#fff;padding:18px 20px}header h1{margin:0;font-size:22px}header p{margin:5px 0 0;opacity:.9}
+main{max-width:900px;margin:22px auto;padding:0 14px}.panel{background:white;border:1px solid var(--line);border-radius:15px;padding:20px;margin-bottom:16px;box-shadow:0 3px 14px #152c1b0a}
+h2{font-size:19px;margin:0 0 14px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+label{display:block;font-size:14px;margin:10px 0}input,textarea,select{display:block;width:100%;padding:12px;border:1px solid #cbd7ce;border-radius:9px;font:inherit;margin-top:6px;background:#fff}
+button{border:0;border-radius:9px;background:var(--green);color:#fff;padding:12px 17px;font:inherit;cursor:pointer;margin:5px 0}button.secondary{background:#e9efeb;color:var(--green)}button:disabled{opacity:.55;cursor:wait}
+#msg{white-space:pre-wrap;line-height:1.7;margin-top:10px}.muted{color:#66766d;font-size:13px;line-height:1.7}.badge{display:inline-block;padding:4px 9px;border-radius:20px;background:#f6efdF;color:#745a24;font-size:12px}
+.product{border:1px solid var(--line);border-radius:10px;padding:12px;margin:9px 0}.product strong{display:block}.empty{padding:18px;text-align:center;color:#66766d;background:#f8faf8;border-radius:10px}
+.hidden{display:none!important}a{color:var(--green)}@media(max-width:500px){.panel{padding:15px}}
+</style></head>
+<body>
+<header><h1>Maison She Bride</h1><p>بوابة التاجر وإدارة المنتجات</p></header>
+<main>
+<section class="panel" id="authPanel">
+<h2>تسجيل الدخول للتاجر</h2><p class="muted">سجّل الدخول أو أنشئ حساباً. يجب تأكيد البريد الإلكتروني إذا طلب النظام ذلك.</p>
+<label>البريد الإلكتروني<input id="email" type="email" autocomplete="email" required></label>
+<label>كلمة المرور<input id="password" type="password" autocomplete="current-password" minlength="6" required></label>
+<button id="signup">إنشاء حساب</button><button class="secondary" id="login">تسجيل الدخول</button>
+</section>
+<section class="panel hidden" id="accountPanel">
+<h2 id="welcome">حساب التاجر</h2><p id="storeStatus"></p>
+<div id="applicationBox" class="hidden">
+<label>اسم المتجر<input id="storeName" maxlength="100" placeholder="اسم المتجر"></label>
+<button id="apply">إرسال طلب اعتماد المتجر</button>
+</div>
+<div id="approvedBox" class="hidden">
+<h2>إضافة منتج جديد</h2>
+<p class="muted">المنتج يُحفظ كمسودة ولا يظهر للزوار حتى تراجعه الإدارة وتنشره. الصورة اختيارية ويمكن إضافتها بصيغة JPG أو PNG أو WebP أو AVIF حتى 5 ميغابايت.</p>
+<form id="productForm">
+<div class="grid">
+<label>اسم المنتج بالعربية<input id="titleAr" required maxlength="160"></label>
+<label>اسم المنتج بالإنجليزية<input id="titleEn" required maxlength="160"></label>
+<label>القسم<select id="category" required></select></label>
+<label>السعر بالدولار الأمريكي<input id="price" type="number" min="0.01" step="0.01" required></label>
+<label>الكمية المتوفرة<input id="stock" type="number" min="0" step="1" value="0" required></label>
+<label>صورة المنتج<input id="photo" type="file" accept="image/jpeg,image/png,image/webp,image/avif"></label>
+</div>
+<label>الوصف بالعربية<textarea id="descAr" rows="3" maxlength="3000"></textarea></label>
+<label>الوصف بالإنجليزية<textarea id="descEn" rows="3" maxlength="3000"></textarea></label>
+<button id="saveProduct" type="submit">حفظ المنتج كمسودة</button>
+</form>
+</div>
+<h2>منتجات متجري</h2><div id="products"><div class="empty">جارٍ تحميل البيانات...</div></div>
+<button class="secondary" id="logout">تسجيل الخروج</button>
+</section>
+<p class="muted"><a href="./">العودة إلى المتجر</a> · لا تُدخل بيانات دفع أو بيانات عملاء هنا.</p>
+<p id="msg" role="status"></p>
+</main>
+<script>
+'use strict';
+const BASE='https://cymwmswpseevemxtugdb.supabase.co';
+const KEY='sb_publishable_OevT9B8LeDvgIzOWtktYTA__LpPRQBE';
+const $=id=>document.getElementById(id);
+let token='',user=null,store=null,categories=[];
+function message(s){$('msg').textContent=s}
+async function request(path,method='GET',body=null,auth=true,extra={}){
+ const headers={apikey:KEY,...(auth&&token?{Authorization:'Bearer '+token}:{}) ,...extra};
+ if(body!==null&&!(body instanceof FormData))headers['Content-Type']='application/json';
+ const res=await fetch(BASE+path,{method,headers,body:body===null?undefined:body instanceof FormData?body:JSON.stringify(body)});
+ const raw=await res.text();let data;try{data=raw?JSON.parse(raw):null}catch{data=raw}
+ if(!res.ok)throw new Error(data?.message||data?.msg||data?.error_description||'تعذر تنفيذ العملية ('+res.status+')');
+ return data;
+}
+function showAccount(){ $('authPanel').classList.add('hidden');$('accountPanel').classList.remove('hidden');$('welcome').textContent='مرحباً '+(user.email||'بك'); }
+async function authenticate(kind){
+ message('جارٍ الاتصال...');
+ try{
+ const email=$('email').value.trim(),password=$('password').value;
+ if(!email||password.length<6)throw new Error('أدخل بريداً صحيحاً وكلمة مرور من 6 أحرف على الأقل.');
+ const data=await request('/auth/v1/'+(kind==='signup'?'signup':'token?grant_type=password'),'POST',{email,password},false);
+ if(!data.access_token){message('تم إنشاء الحساب. تحقق من بريدك الإلكتروني ثم سجّل الدخول.');return}
+ token=data.access_token;user=data.user;showAccount();await loadSeller();
+ }catch(e){message(e.message)}
+}
+$('signup').onclick=()=>authenticate('signup');$('login').onclick=()=>authenticate('login');
+async function loadSeller(){
+ try{
+ const rows=await request('/rest/v1/stores?select=id,name,status&owner_id=eq.'+encodeURIComponent(user.id)+'&limit=1');
+ store=rows?.[0]||null;
+ if(!store){$('applicationBox').classList.remove('hidden');$('approvedBox').classList.add('hidden');$('storeStatus').textContent='لا يوجد متجر مسجل لهذا الحساب. أرسل طلب اعتماد للبدء.';$('products').innerHTML='<div class="empty">لا توجد منتجات بعد.</div>';return}
+ $('storeStatus').innerHTML='المتجر: <b></b> <span class="badge"></span>';$('storeStatus').querySelector('b').textContent=store.name;$('storeStatus').querySelector('.badge').textContent=store.status==='approved'?'معتمد':store.status==='pending'?'بانتظار المراجعة':'موقوف';
+ $('applicationBox').classList.add('hidden');
+ if(store.status!=='approved'){$('approvedBox').classList.add('hidden');$('products').innerHTML='<div class="empty">ستظهر أدوات إضافة المنتجات بعد اعتماد المتجر من الإدارة.</div>';return}
+ $('approvedBox').classList.remove('hidden');await loadCategories();await loadProducts();
+ }catch(e){message('تعذر تحميل بيانات المتجر: '+e.message)}
+}
+$('apply').onclick=async()=>{
+ try{const name=$('storeName').value.trim();if(name.length<2)throw new Error('اكتب اسم المتجر (حرفان على الأقل).');
+ await request('/rest/v1/stores','POST',{name,owner_id:user.id,status:'pending'},true,{'Prefer':'return=minimal'});
+ message('تم إرسال طلب اعتماد المتجر. ستتمكن من إضافة المنتجات بعد موافقة الإدارة.');await loadSeller();
+ }catch(e){message(e.message)}
+};
+async function loadCategories(){
+ categories=await request('/rest/v1/categories?select=id,name_ar,name_en&order=name_ar.asc');
+ $('category').replaceChildren();for(const c of categories){const o=document.createElement('option');o.value=c.id;o.textContent=c.name_ar+' / '+c.name_en;$('category').append(o)}
+}
+async function loadProducts(){
+ const rows=await request('/rest/v1/products?select=id,title_ar,title_en,price_usd,stock,status,created_at&store_id=eq.'+store.id+'&order=created_at.desc');
+ $('products').replaceChildren();
+ if(!rows.length){$('products').innerHTML='<div class="empty">لم تضف منتجات إلى متجرك بعد.</div>';return}
+ for(const p of rows){const box=document.createElement('div');box.className='product';const title=document.createElement('strong');title.textContent=p.title_ar+' · '+p.title_en;const detail=document.createElement('span');detail.className='muted';detail.textContent=Number(p.price_usd).toFixed(2)+' USD · المخزون: '+p.stock+' · الحالة: '+(p.status==='draft'?'مسودة':p.status==='published'?'منشور':'مؤرشف');box.append(title,detail);$('products').append(box)}
+}
+$('productForm').onsubmit=async e=>{
+ e.preventDefault();const btn=$('saveProduct');btn.disabled=true;message('جارٍ حفظ المنتج...');
+ try{
+ const price=Number($('price').value),stock=Number($('stock').value),file=$('photo').files[0];
+ if(!(price>0)||!Number.isInteger(stock)||stock<0)throw new Error('تحقق من السعر والكمية.');
+ if(file&&(file.size>5*1024*1024||!['image/jpeg','image/png','image/webp','image/avif'].includes(file.type)))throw new Error('الصورة يجب أن تكون JPG أو PNG أو WebP أو AVIF وبحجم لا يتجاوز 5 ميغابايت.');
+ const payload={store_id:store.id,category_id:$('category').value,title_ar:$('titleAr').value.trim(),title_en:$('titleEn').value.trim(),description_ar:$('descAr').value.trim(),description_en:$('descEn').value.trim(),price_usd:price,stock,status:'draft'};
+ const created=await request('/rest/v1/products?select=id','POST',payload,true,{'Prefer':'return=representation'});
+ const product=created?.[0];if(!product?.id)throw new Error('تم إرسال المنتج لكن لم يصل معرّفه. حدّث قائمة المنتجات للتحقق.');
+ if(file){
+ const ext=file.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+ const path=store.id+'/'+product.id+'/'+crypto.randomUUID()+'.'+ext;
+ const uploaded=await fetch(BASE+'/storage/v1/object/product-images/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+token,'Content-Type':file.type,'x-upsert':'false'},body:file});
+ if(!uploaded.ok){const err=await uploaded.json().catch(()=>({}));throw new Error('حُفظ المنتج كمسودة لكن فشل رفع الصورة: '+(err.message||uploaded.status))}
+ const imageUrl=BASE+'/storage/v1/object/public/product-images/'+path;
+ await request('/rest/v1/product_images','POST',{product_id:product.id,image_url:imageUrl,position:0},true,{'Prefer':'return=minimal'});
+ }
+ e.target.reset();message('تم حفظ المنتج كمسودة. لن يظهر للزوار قبل مراجعة الإدارة ونشره.');await loadProducts();
+ }catch(err){message(err.message)}
+ finally{btn.disabled=false}
+};
+$('logout').onclick=()=>{token='';user=null;store=null;$('accountPanel').classList.add('hidden');$('authPanel').classList.remove('hidden');$('password').value='';message('تم تسجيل الخروج من هذه الصفحة.')};
+</script></body></html>
