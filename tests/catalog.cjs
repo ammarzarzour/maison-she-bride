@@ -9,7 +9,7 @@ async function run() {
     window, AbortController, setTimeout, clearTimeout,
     fetch: async (url, opts) => {
       requests.push({url, opts});
-      if (url.includes('/products?')) return {ok:true,json:async()=>[{id:'product-1',title_ar:'فستان',price_usd:10,stock:1}]};
+      if (url.includes('/products?')) return {ok:true,json:async()=>[{id:'product-1',title_ar:'فستان',title_ar:'فستان',title_en:'Dress',price_usd:10,stock:1}]};
       if (url.includes('/categories?')) return {ok:true,json:async()=>[{id:'category-1',slug:'bridal'}]};
       return {ok:false,status:404};
     }
@@ -36,7 +36,7 @@ async function run() {
       pages.push(url);
       const offset=Number(new URL(url).searchParams.get('offset'));
       const count=offset===0?100:3;
-      return {ok:true,json:async()=>Array.from({length:count},(_,i)=>({id:'p-'+(offset+i),price_usd:10,stock:1}))};
+      return {ok:true,json:async()=>Array.from({length:count},(_,i)=>({id:'p-'+(offset+i),title_ar:'فستان',title_en:'Dress',price_usd:10,stock:1}))};
     }};
   vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),pagedSandbox);
   const many=await pagedWindow.MSB_CATALOG.products();
@@ -50,7 +50,7 @@ async function run() {
   const oversizedWindow={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
   vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
     window:oversizedWindow,AbortController,setTimeout,clearTimeout,
-    fetch:async()=>({ok:true,json:async()=>Array.from({length:101},(_,i)=>({id:'oversized-'+i,price_usd:10,stock:1}))})
+    fetch:async()=>({ok:true,json:async()=>Array.from({length:101},(_,i)=>({id:'oversized-'+i,title_ar:'فستان',title_en:'Dress',price_usd:10,stock:1}))})
   });
   const oversized=await oversizedWindow.MSB_CATALOG.products();
   assert.equal(oversized.rows.length,0);
@@ -62,7 +62,7 @@ async function run() {
   vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
     window:failedWindow,AbortController,setTimeout,clearTimeout,
     fetch:async url=>Number(new URL(url).searchParams.get('offset'))===0
-      ?{ok:true,json:async()=>Array.from({length:100},(_,i)=>({id:String(i),price_usd:10,stock:1}))}
+      ?{ok:true,json:async()=>Array.from({length:100},(_,i)=>({id:String(i),title_ar:'فستان',title_en:'Dress',price_usd:10,stock:1}))}
       :{ok:false,status:503}
   });
   const failed=await failedWindow.MSB_CATALOG.products();
@@ -79,7 +79,7 @@ async function run() {
       fetch:async url=>{
         const u=new URL(url),offset=Number(u.searchParams.get('offset')),limit=Number(u.searchParams.get('limit'));
         boundaryRequests.push({offset,limit});
-        return {ok:true,json:async()=>Array.from({length:Math.max(0,Math.min(limit,count-offset))},(_,i)=>({id:String(offset+i),price_usd:10,stock:1}))};
+        return {ok:true,json:async()=>Array.from({length:Math.max(0,Math.min(limit,count-offset))},(_,i)=>({id:String(offset+i),title_ar:'فستان',title_en:'Dress',price_usd:10,stock:1}))};
       }
     });
     const boundary=await boundaryWindow.MSB_CATALOG.products();
@@ -95,7 +95,7 @@ async function run() {
     fetch:async url=>{
       const offset=Number(new URL(url).searchParams.get('offset'));
       const count=offset===1000?2:100;
-      return {ok:true,json:async()=>Array.from({length:count},(_,i)=>({id:'probe-'+(offset+i),price_usd:10,stock:1}))};
+      return {ok:true,json:async()=>Array.from({length:count},(_,i)=>({id:'probe-'+(offset+i),title_ar:'فستان',title_en:'Dress',price_usd:10,stock:1}))};
     }
   });
   const oversizedProbe=await probeWindow.MSB_CATALOG.products();
@@ -112,7 +112,7 @@ async function run() {
     fetch:async url=>{
       const offset=Number(new URL(url).searchParams.get('offset'));
       const ids=offset===0?Array.from({length:100},(_,i)=>'p-'+i):['p-99','p-100'];
-      return {ok:true,json:async()=>ids.map(id=>({id,price_usd:10,stock:1}))};
+      return {ok:true,json:async()=>ids.map(id=>({id,title_ar:'فستان',title_en:'Dress',price_usd:10,stock:1}))};
     }
   });
   const overlap=await overlapWindow.MSB_CATALOG.products();
@@ -123,19 +123,31 @@ async function run() {
   const malformedWindow={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
   vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
     window:malformedWindow,AbortController,setTimeout,clearTimeout,
-    fetch:async()=>({ok:true,json:async()=>[{title_ar:'missing id',price_usd:10,stock:1}]})
+    fetch:async()=>({ok:true,json:async()=>[{title_ar:'missing id',title_ar:'فستان',title_en:'Dress',price_usd:10,stock:1}]})
   });
   const malformed=await malformedWindow.MSB_CATALOG.products();
   assert.equal(malformed.rows.length,0);
   assert.match(malformed.error,/Invalid/);
   console.log('PASS catalog rejects malformed product identifiers');
+  // Reject missing or blank bilingual titles before the storefront renders.
+  for(const [ar,en] of [[null,'Dress'],['','Dress'],['   ','Dress'],['فستان',null],['فستان',''],['فستان','   ']]) {
+    const titleWindow={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+    vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+      window:titleWindow,AbortController,setTimeout,clearTimeout,
+      fetch:async()=>({ok:true,json:async()=>[{id:'bad-title',title_ar:ar,title_en:en,price_usd:10,stock:1}]})
+    });
+    const titleResult=await titleWindow.MSB_CATALOG.products();
+    assert.equal(titleResult.rows.length,0);
+    assert.match(titleResult.error,/bilingual product title/);
+  }
+  console.log('PASS catalog rejects blank or missing Arabic and English titles');
 
   // Live catalog must not silently render NaN prices or invalid stock values.
   for (const [price,stock] of [['not-a-price',1],[10,-2],[10,1.5]]) {
     const invalidWindow={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
     vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
       window:invalidWindow,AbortController,setTimeout,clearTimeout,
-      fetch:async()=>({ok:true,json:async()=>[{id:'bad',price_usd:price,stock}]})
+      fetch:async()=>({ok:true,json:async()=>[{id:'bad',title_ar:'فستان',title_en:'Dress',price_usd:price,stock}]})
     });
     const invalid=await invalidWindow.MSB_CATALOG.products();
     assert.equal(invalid.rows.length,0);
@@ -145,7 +157,7 @@ async function run() {
     const w={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
     vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
       window:w,AbortController,setTimeout,clearTimeout,
-      fetch:async()=>({ok:true,json:async()=>[{id:'bad-price',price_usd:price,stock:1}]})
+      fetch:async()=>({ok:true,json:async()=>[{id:'bad-price',title_ar:'فستان',title_en:'Dress',price_usd:price,stock:1}]})
     });
     const result=await w.MSB_CATALOG.products();
     assert.equal(result.rows.length,0);
@@ -157,7 +169,7 @@ async function run() {
     const w={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
     vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
       window:w,AbortController,setTimeout,clearTimeout,
-      fetch:async()=>({ok:true,json:async()=>[{id:'bad-stock',price_usd:10,stock}]})
+      fetch:async()=>({ok:true,json:async()=>[{id:'bad-stock',title_ar:'فستان',title_en:'Dress',price_usd:10,stock}]})
     });
     const result=await w.MSB_CATALOG.products();
     assert.equal(result.rows.length,0);
