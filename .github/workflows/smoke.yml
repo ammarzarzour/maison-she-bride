@@ -17,5 +17,7 @@ jobs:
         run: node tests/smoke.cjs
       - name: Test storefront wishlist, sorting and localization
         run: node tests/storefront.cjs
+      - name: Test Sanad local demo requests
+        run: node tests/sanad.cjs
       - name: Verify public catalog adapter
         run: node tests/catalog.cjs
