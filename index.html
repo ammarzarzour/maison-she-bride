@@ -52,6 +52,9 @@ async function refreshCatalog(){
  try{
   const [result,categoryResult]=await Promise.all([api.products(),api.categories()]);
   if(result.error||categoryResult.error||!result.configured||!categoryResult.configured||!Array.isArray(result.rows)||!Array.isArray(categoryResult.rows)){catalogLoadFailed();return;}
+  // Never mislabel orphaned products as the 'all' category.
+  const categoryIds=new Set(categoryResult.rows.map(c=>c.id));
+  if(result.rows.some(p=>!categoryIds.has(p.category_id))){catalogLoadFailed();return;}
   const slugs=new Map(categoryResult.rows.map(c=>[c.id,c.slug]));
   categoryNames=new Map(categoryResult.rows.map(c=>[c.slug,{ar:c.name_ar,en:c.name_en}]));
   categories=['all',...categoryResult.rows.map(c=>c.slug)];
