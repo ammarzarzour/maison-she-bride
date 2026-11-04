@@ -19,5 +19,7 @@ jobs:
         run: node tests/storefront.cjs
       - name: Test Sanad local demo requests
         run: node tests/sanad.cjs
+      - name: Test Sanad browser-only dashboard
+        run: node tests/sanad-admin.cjs
       - name: Verify public catalog adapter
         run: node tests/catalog.cjs
