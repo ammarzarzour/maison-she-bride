@@ -213,6 +213,20 @@ async function run() {
 
   console.log('PASS catalog rejects invalid live prices and stock');
 
+  // A legacy Supabase JWT may be used in the browser only if its role is anon.
+  // Never permit a service_role JWT to be embedded in a public storefront.
+  for (const [role, expected] of [['anon',true],['service_role',false],['authenticated',false]]) {
+    const encode=value=>Buffer.from(JSON.stringify(value)).toString('base64url');
+    const jwt=[encode({alg:'HS256',typ:'JWT'}),encode({role}), 'signature'].join('.');
+    const legacy={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:jwt}};
+    vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+      window:legacy,atob:value=>Buffer.from(value,'base64').toString('utf8'),
+      AbortController,setTimeout,clearTimeout,fetch:()=>{throw Error('unexpected fetch')}
+    });
+    assert.equal(legacy.MSB_CATALOG.configured,expected,'JWT role '+role);
+  }
+  console.log('PASS legacy JWT configuration permits anon only');
+
   const bad = {MSB_SUPABASE:{url:'http://example.supabase.co',publishableKey:'service_role_secret'}};
   vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{window:bad,AbortController,setTimeout,clearTimeout,fetch:()=>{throw Error('must not fetch')}});
   assert.equal(bad.MSB_CATALOG.configured,false);
