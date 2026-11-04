@@ -24,6 +24,7 @@ async function run(){
  assert.match(node('products').innerHTML,/Evening Dresses/);
  vm.runInContext("filter='evening';render()",ctx);
  assert.match(node('products').innerHTML,/Dress/);
+ window.MSB_CATALOG.products=async()=>({configured:true,rows:[],error:null});
  window.MSB_CATALOG.categories=async()=>({configured:true,rows:[],error:null});
  await vm.runInContext('refreshCatalog()',ctx);
  assert.ok(!node('categories').innerHTML.includes('data-cat="evening"'),'stale categories must be removed');
