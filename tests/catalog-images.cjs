@@ -31,7 +31,13 @@ async function run(images, expectedError) {
   [{image_url:'https://user:pass@example.com/a.jpg',position:0}],
   [{image_url:'https://',position:0}],
   [{image_url:'https://example.com/a.jpg',position:-1}],
-  [{image_url:'https://example.com/a.jpg',position:'oops'}]
+  [{image_url:'https://example.com/a.jpg',position:'oops'}],
+  [{image_url:'https://example.com/a.jpg',position:''}],
+  [{image_url:'https://example.com/a.jpg',position:'   '}],
+  [{image_url:'https://example.com/a.jpg',position:false}],
+  [{image_url:'https://example.com/a.jpg',position:[]}],
+  [{image_url:'https://example.com/a.jpg',position:[1]}],
+  [{image_url:'https://example.com/a.jpg',position:{}}]
  ])await run(invalid,true);
  console.log('PASS HTTPS image URL validation and malformed image metadata cases');
 })().catch(err=>{console.error(err);process.exitCode=1});
