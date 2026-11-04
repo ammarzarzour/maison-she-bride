@@ -62,7 +62,7 @@ async function pagedProducts(){
    if(row.product_images!==null&&row.product_images!==undefined){
     if(!Array.isArray(row.product_images))return {configured:true,rows:[],error:'Invalid product images'};
     for(const img of row.product_images){
-     if(!img||typeof img.image_url!=='string'||!/^https:\/\//i.test(img.image_url)||!Number.isSafeInteger(Number(img.position??0))||Number(img.position??0)<0)return {configured:true,rows:[],error:'Invalid product image URL or position'};
+     if(!img||typeof img.image_url!=='string'||!/^https:\/\//i.test(img.image_url)||!(['number','string'].includes(typeof (img.position??0)))||String(img.position??0).trim()===''||!Number.isSafeInteger(Number(img.position??0))||Number(img.position??0)<0)return {configured:true,rows:[],error:'Invalid product image URL or position'};
      try{const parsed=new URL(img.image_url);if(parsed.protocol!=='https:'||!parsed.hostname||parsed.username||parsed.password)return {configured:true,rows:[],error:'Invalid product image URL'};}
      catch{return {configured:true,rows:[],error:'Invalid product image URL'};}
     }
