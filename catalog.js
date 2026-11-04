@@ -54,6 +54,8 @@ async function pagedProducts(){
   if(result.rows.length>pageSize)return {configured:true,rows:[],error:'Catalog page exceeds requested limit'};
   for(const row of result.rows){
    if(!row||typeof row.id!=='string'||!row.id||seen.has(row.id))return {configured:true,rows:[],error:'Invalid or repeated product in catalog pagination'};
+   // Both languages must have usable product names; never render undefined or empty cards.
+   if(typeof row.title_ar!=='string'||!row.title_ar.trim()||typeof row.title_en!=='string'||!row.title_en.trim())return {configured:true,rows:[],error:'Invalid bilingual product title in catalog'};
    // Reject malformed live prices/stock instead of showing NaN or misleading amounts.
    if((row.price_usd===null||row.price_usd===undefined||typeof row.price_usd==='boolean'||String(row.price_usd).trim()===''||!Number.isFinite(Number(row.price_usd)))||Number(row.price_usd)<0||(row.stock===null||row.stock===undefined||typeof row.stock==='boolean'||String(row.stock).trim()===''||!Number.isSafeInteger(Number(row.stock)))||Number(row.stock)<1)return {configured:true,rows:[],error:'Invalid price or stock in catalog'};
    seen.add(row.id);
