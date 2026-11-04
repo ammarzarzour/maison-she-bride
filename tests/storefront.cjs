@@ -6,7 +6,7 @@ const html=fs.readFileSync('index.html','utf8');
 const inline=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(x=>x[1]);
 assert.ok(inline[0]?.includes('function render()'),'storefront script missing');
 
-const storage=new Map();
+const storage=new Map([['msb_cart',JSON.stringify({dress:3,missing:2})]]);
 const nodes=new Map();
 function node(id){
   if(nodes.has(id))return nodes.get(id);
@@ -27,7 +27,9 @@ const localStorage={
 };
 const ctx=vm.createContext({document,navigator:{language:'ar-SY'},localStorage,Intl,URL});
 vm.runInContext(inline[0],ctx,{filename:'index.html#main'});
-vm.runInContext("items=[{id:'dress',cat:'bridal',ar:'فستان',en:'Dress',usd:90,stock:2,icon:'✦'},{id:'bag',cat:'bags',ar:'حقيبة',en:'Bag',usd:20,stock:5,icon:'✦'}];render()",ctx);
+assert.deepEqual(JSON.parse(storage.get('msb_cart')),{dress:3,missing:2},'startup must not erase the cart before catalog loads');
+vm.runInContext("items=[{id:'dress',cat:'bridal',ar:'فستان',en:'Dress',usd:90,stock:2,icon:'✦'},{id:'bag',cat:'bags',ar:'حقيبة',en:'Bag',usd:20,stock:5,icon:'✦'}];catalogReady=true;reconcileCart();render()",ctx);
+assert.deepEqual(JSON.parse(storage.get('msb_cart')),{dress:2},'live catalog should clamp quantities to stock and remove missing items');
 assert.ok(node('products').innerHTML.includes('data-save="dress"'));
 assert.ok(node('products').innerHTML.includes('data-save="bag"'));
 vm.runInContext("favorites.add('dress');saveFavorites();savedOnly=true;render()",ctx);
