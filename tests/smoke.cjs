@@ -18,3 +18,10 @@ for (const status of ['pending','confirmed','shipped','delivered','cancelled']) 
 }
 assert.ok(!admin.includes("['processing'"), 'unsupported processing order status');
 console.log('PASS admin order statuses');
+
+const storefront = fs.readFileSync('index.html', 'utf8');
+assert.match(storefront, /const escapeHTML=/, 'missing HTML escaping');
+assert.match(storefront, /escapeHTML\(p\[l\]\)/, 'product titles must be escaped');
+assert.match(storefront, /escapeHTML\(p\[lang\(\)\]\)/, 'cart product titles must be escaped');
+assert.match(storefront, /const safeImage=/, 'product image URLs must be validated');
+console.log('PASS storefront content escaping');
