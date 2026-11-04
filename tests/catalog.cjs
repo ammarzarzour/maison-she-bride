@@ -10,7 +10,7 @@ async function run() {
     fetch: async (url, opts) => {
       requests.push({url, opts});
       if (url.includes('/products?')) return {ok:true,json:async()=>[{id:'product-1',title_ar:'فستان',title_ar:'فستان',title_en:'Dress',price_usd:10,stock:1}]};
-      if (url.includes('/categories?')) return {ok:true,json:async()=>[{id:'category-1',slug:'bridal'}]};
+      if (url.includes('/categories?')) return {ok:true,json:async()=>[{id:'category-1',slug:'bridal',name_ar:'عرائس',name_en:'Bridal'}]};
       return {ok:false,status:404};
     }
   };
