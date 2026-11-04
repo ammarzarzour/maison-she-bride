@@ -45,6 +45,7 @@ async function pagedProducts(){
  // A full last page may be exactly the limit. Probe one additional row before rejecting.
  const probe=await get('products',query+'&limit=1&offset='+(maxPages*pageSize));
  if(probe.error||!probe.configured)return {...probe,rows:[]};
+ if(probe.rows.length>1)return {configured:true,rows:[],error:'Catalog overflow probe exceeds requested limit'};
  if(probe.rows.length===0)return {configured:true,rows:all,error:null};
  return {configured:true,rows:[],error:'Catalog exceeds the supported page limit'};
 }
