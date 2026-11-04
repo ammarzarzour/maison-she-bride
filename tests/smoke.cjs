@@ -39,7 +39,7 @@ console.log('PASS visible stock and reconciled totals');
 assert.match(storefront, /id="refreshCatalog"/, 'catalog refresh button must exist');
 assert.match(storefront, /async function refreshCatalog\(\)/, 'catalog refresh handler must exist');
 assert.match(storefront, /if\(catalogLoading\)return/, 'avoid overlapping catalog refreshes');
-assert.match(storefront, /if\(result\.error\)/, 'catalog fetch failure must be handled');
+assert.match(storefront, /if\(result\.error\|\|categoryResult\.error/, 'product and category fetch failures must both be handled');
 console.log('PASS catalog retry and refresh UI');
 
 const sanad=fs.readFileSync('sanad-preview.html','utf8');
