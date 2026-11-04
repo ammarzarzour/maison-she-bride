@@ -131,7 +131,7 @@ async function run() {
   console.log('PASS catalog rejects malformed product identifiers');
 
   // Whitespace-only IDs are truthy but cannot safely identify a cart item.
-  for (const id of ['', ' ', '\\t\\n']) {
+  for (const id of ['', ' ', String.fromCharCode(9,10)]) {
     const blankWindow={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
     vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
       window:blankWindow,AbortController,setTimeout,clearTimeout,
