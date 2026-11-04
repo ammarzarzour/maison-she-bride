@@ -31,3 +31,7 @@ assert.match(storefront, /stock:Number\(p\.stock\)/, 'live stock must be read');
 assert.match(storefront, /Math\.min\(maxQty\(p\)/, 'cart must enforce stock limit');
 assert.ok(!storefront.includes("cart={};localStorage.removeItem('msb_cart')"), 'catalog reload must not clear the cart');
 console.log('PASS persistent cart and stock limits');
+
+assert.match(storefront, /tx\.stock\+': '\+maxQty\(p\)/, 'stock availability must be visible');
+assert.match(storefront, /function renderCart\(\)\{let tx=t\(\),sum=0,count=0;reconcileCart\(\)/, 'cart totals must use reconciled quantities');
+console.log('PASS visible stock and reconciled totals');
