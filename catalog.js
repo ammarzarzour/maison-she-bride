@@ -28,10 +28,15 @@ async function get(table,query){
 async function pagedProducts(){
  const query='select=id,store_id,category_id,title_ar,title_en,description_ar,description_en,price_usd,stock,product_images(image_url,position)&status=eq.published&stock=gt.0&order=created_at.desc,id.desc';
  const all=[];
+ const seen=new Set();
  for(let page=0;page<maxPages;page++){
   const result=await get('products',query+'&limit='+pageSize+'&offset='+(page*pageSize));
   if(result.error||!result.configured)return {...result,rows:[]}; // Never display a partial catalog as complete.
-  all.push(...result.rows);
+  for(const row of result.rows){
+   if(!row||typeof row.id!=='string'||!row.id||seen.has(row.id))return {configured:true,rows:[],error:'Invalid or repeated product in catalog pagination'};
+   seen.add(row.id);
+   all.push(row);
+  }
   if(result.rows.length<pageSize)return {configured:true,rows:all,error:null};
  }
  // A full last page may be exactly the limit. Probe one additional row before rejecting.
