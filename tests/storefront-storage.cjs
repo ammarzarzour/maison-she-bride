@@ -68,7 +68,7 @@ assert.deepEqual(dirty.cart(), {dress: 99, missing: 3});
 dirty.loadProducts();
 assert.deepEqual(dirty.cart(), {dress: 2}, 'cart must respect actual stock after live catalog loads');
 assert.deepEqual(JSON.parse(dirty.saved.get('msb_cart')), {dress: 2});
-assert.match(dirty.node('cartTotal').textContent, /60/, 'totals must remain correct');
+assert.equal(dirty.node('cartTotal').textContent, vm.runInContext("t().total+': '+price(60)", dirty.context), 'totals must remain correct');
 
 const polluted = setup({msb_cart: '{"__proto__":999,"constructor":2,"prototype":2,"dress":1}'});
 assert.deepEqual(polluted.cart(), {dress: 1});
