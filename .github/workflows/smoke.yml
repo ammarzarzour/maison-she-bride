@@ -25,3 +25,5 @@ jobs:
         run: node tests/catalog.cjs
       - name: Verify catalog refresh failures and retries
         run: node tests/catalog-refresh.cjs
+      - name: Verify safe storefront markup rendering
+        run: node tests/storefront-safety.cjs
