@@ -34,20 +34,27 @@ $('categories').addEventListener('click',e=>{let b=e.target.closest('[data-cat]'
 <script src="catalog.js?v=5"></script>
 <script>
 let catalogLoading=false;
+function catalogLoadFailed(){
+ catalogReady=false;items=[];render();
+ $('results').textContent=t().loadError;
+ $('noResults').textContent=t().loadError;
+ $('noResults').classList.remove('hidden');
+ $('checkoutNotice').textContent=t().loadError;
+}
 async function refreshCatalog(){
  if(catalogLoading)return;
  const api=window.MSB_CATALOG;
- if(!api||!api.configured){$('results').textContent=t().loadError;return;}
+ if(!api||!api.configured){catalogLoadFailed();return;}
  catalogLoading=true;$('refreshCatalog').disabled=true;$('results').textContent=t().loading;
  try{
   const [result,categoryResult]=await Promise.all([api.products(),api.categories()]);
-  if(result.error){$('results').textContent=t().loadError;return;}
+  if(result.error||categoryResult.error||!result.configured||!categoryResult.configured||!Array.isArray(result.rows)||!Array.isArray(categoryResult.rows)){catalogLoadFailed();return;}
   const slugs=new Map((categoryResult.rows||[]).map(c=>[c.id,c.slug]));
   catalogPage=0;items=result.rows.map(p=>({id:p.id,cat:slugs.get(p.category_id)||'all',ar:p.title_ar,en:p.title_en,usd:Number(p.price_usd),stock:Number(p.stock),icon:'🛍️',image:(Array.isArray(p.product_images)?p.product_images.slice().sort((a,b)=>a.position-b.position)[0]?.image_url:null)}));
   catalogReady=true;reconcileCart();render();
   $('checkoutNotice').textContent=lang()==='ar'?'المنتجات من قاعدة البيانات الحقيقية. الطلبات والدفع غير مفعّلين حالياً.':'Products are from the live database. Checkout and payments are not enabled.';
   $('demoNotice').textContent=lang()==='ar'?'الكتالوج متصل بقاعدة البيانات؛ الشراء غير مفعّل':'Live catalog connected; purchases disabled';
- }catch(e){$('results').textContent=t().loadError;}
+ }catch(e){catalogLoadFailed();}
  finally{catalogLoading=false;$('refreshCatalog').disabled=false;}
 }
 $('refreshCatalog').addEventListener('click',refreshCatalog);
