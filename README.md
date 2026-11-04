@@ -21,6 +21,7 @@
 - `tests/storefront-safety.cjs`: اختبار منع إدراج وسوم HTML أو خصائص غير مقصودة ضمن أسماء الأقسام وأزرار السلة في اللغتين.
 - `tests/categories-pagination.cjs`: اختبار ترقيم صفحات الأقسام حتى حد 1000، ومنع تكرار المعرّفات أو الأسماء التقنية (slug) أو قبول أقسام ناقصة أو استجابات جزئية. يشمل أيضاً اختبار استجابة أكبر من الحد المطلوب.
 - `tests/live-categories.cjs`: اختبار عرض أسماء الأقسام الفعلية من Supabase بالعربية والإنجليزية، والتصفية، وتحديث القائمة عند تغيّر الأقسام.
+- `tests/catalog-images.cjs`: اختبار قبول روابط صور المنتجات HTTPS فقط، ورفض بيانات الصور غير الصحيحة قبل عرض الكتالوج.
 - `tests/catalog-refresh.cjs`: اختبار تحديث الكتالوج عند فشل جلب المنتجات أو الأقسام، وإخفاء البيانات القديمة مؤقتاً مع الحفاظ على السلة، ثم نجاح إعادة المحاولة.
 - `tests/sanad.cjs` و`tests/sanad-admin.cjs`: اختبار تفاعلي لمحاكاة الطلبات الوهمية ولوحة متابعتها، والتحقق من بقاء البيانات محلياً وعدم وجود اتصال شبكي.
 - `.github/workflows/smoke.yml`: تشغيل الاختبارات عند تحديث الفرع الرئيسي أو فتح Pull Request.
@@ -63,6 +64,7 @@ node tests/storefront-safety.cjs
 node tests/sanad.cjs
 node tests/sanad-admin.cjs
 node tests/catalog.cjs
+node tests/catalog-images.cjs
 node tests/categories-pagination.cjs
 node tests/live-categories.cjs
 node tests/catalog-refresh.cjs
