@@ -15,5 +15,7 @@ jobs:
           node-version: '22'
       - name: Validate storefront, seller and admin pages
         run: node tests/smoke.cjs
+      - name: Test storefront wishlist, sorting and localization
+        run: node tests/storefront.cjs
       - name: Verify public catalog adapter
         run: node tests/catalog.cjs
