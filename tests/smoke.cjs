@@ -51,3 +51,7 @@ console.log('PASS Sanad preview safeguards and bilingual UI');
 assert.match(sanad, /id="steps"/, 'Sanad request workflow must be visible');
 assert.match(sanad, /t\.steps\.map/, 'Sanad workflow must translate');
 console.log('PASS Sanad request lifecycle guidance');
+
+assert.match(sanad, /id="serviceSearch"/, 'Sanad must expose service search');
+assert.match(sanad, /filtered=t\.services\.filter/, 'Sanad search must filter services');
+console.log('PASS Sanad bilingual service search');
