@@ -78,6 +78,11 @@ async function run() {
     assert.equal(hasProducts(), false, reason);
     assert.equal(node('noResults').classList.contains('hidden'), false, reason);
     assert.match(node('noResults').textContent, /تعذّر/, reason);
+    vm.runInContext("langSetting='en';render()", context);
+    assert.equal(node('noResults').textContent, 'Could not load products. Please retry', 'error persists in English');
+    assert.equal(node('results').textContent, 'Could not load products. Please retry');
+    vm.runInContext("langSetting='ar';render()", context);
+    assert.match(node('noResults').textContent, /تعذّر/, 'error persists in Arabic');
     assert.equal(JSON.parse(storage.get('msb_cart')).dress, 2, 'cart must survive a temporary catalog failure');
   }
 
