@@ -9,7 +9,7 @@ const key=typeof cfg.publishableKey==='string'?cfg.publishableKey:'';
 // Legacy JWT keys are accepted only when their payload explicitly declares the public anon role.
 function publicKey(value){
  if(value.startsWith('sb_publishable_'))return value.length>'sb_publishable_'.length;
- if(!/^eyJ[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$/.test(value))return false;
+ if(!/^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value))return false;
  try{
   const part=value.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
   const payload=JSON.parse(atob(part.padEnd(Math.ceil(part.length/4)*4,'=')));
