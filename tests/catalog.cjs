@@ -46,6 +46,17 @@ async function run() {
   assert.equal(many.rows[102].id,'p-102');
   console.log('PASS catalog paginates more than 100 published products');
 
+  // A server response exceeding the requested page size is unsafe for offset pagination.
+  const oversizedWindow={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+  vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+    window:oversizedWindow,AbortController,setTimeout,clearTimeout,
+    fetch:async()=>({ok:true,json:async()=>Array.from({length:101},(_,i)=>({id:'oversized-'+i,price_usd:10,stock:1}))})
+  });
+  const oversized=await oversizedWindow.MSB_CATALOG.products();
+  assert.equal(oversized.rows.length,0);
+  assert.match(oversized.error,/exceeds requested limit/);
+  console.log('PASS catalog rejects oversized pagination responses');
+
   // A failed subsequent page must not masquerade as a complete catalog.
   const failedWindow={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
   vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
