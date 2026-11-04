@@ -34,7 +34,7 @@ async function scenario(count, mutate) {
   ['missing id',rows=>rows.map((r,i)=>i===0?{slug:r.slug}:r),/Invalid or repeated/],
   ['oversized',rows=>rows.concat({id:'extra',slug:'extra'}),/exceeds requested limit/]
  ]){
-  const {result}=await scenario(name==='duplicate'||name==='duplicate slug across pages'?101:2,mutate);
+  const {result}=await scenario(name==='duplicate'||name==='duplicate slug across pages'?101:name==='oversized'?100:2,mutate);
   assert.equal(result.rows.length,0,name);
   assert.match(result.error,expected,name);
  }
