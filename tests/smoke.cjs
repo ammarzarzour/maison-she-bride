@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
-const pages = ['index.html', 'seller.html', 'admin.html'];
+const pages = ['index.html', 'seller.html', 'admin.html', 'sanad-preview.html'];
 for (const file of pages) {
   const html = fs.readFileSync(file, 'utf8');
   assert.match(html, /<meta\s+name="viewport"/i, file + ': missing mobile viewport');
@@ -41,3 +41,9 @@ assert.match(storefront, /async function refreshCatalog\(\)/, 'catalog refresh h
 assert.match(storefront, /if\(catalogLoading\)return/, 'avoid overlapping catalog refreshes');
 assert.match(storefront, /if\(result\.error\)/, 'catalog fetch failure must be handled');
 console.log('PASS catalog retry and refresh UI');
+
+const sanad=fs.readFileSync('sanad-preview.html','utf8');
+assert.match(sanad, /No real sign-in, submissions/, 'Sanad preview must disclose limitations');
+assert.match(sanad, /localStorage\.setItem\('sanad_lang'/, 'Sanad must remember language preference');
+assert.match(sanad, /document\.documentElement\.dir=/, 'Sanad must support RTL and LTR');
+console.log('PASS Sanad preview safeguards and bilingual UI');
