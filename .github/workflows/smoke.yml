@@ -23,6 +23,8 @@ jobs:
         run: node tests/sanad-admin.cjs
       - name: Verify public catalog adapter
         run: node tests/catalog.cjs
+      - name: Verify category pagination boundaries
+        run: node tests/categories-pagination.cjs
       - name: Verify catalog refresh failures and retries
         run: node tests/catalog-refresh.cjs
       - name: Verify safe storefront markup rendering
