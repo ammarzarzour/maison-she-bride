@@ -26,6 +26,6 @@ async function get(table,query){
 window.MSB_CATALOG={
  configured:valid,
  categories:()=>get('categories','select=id,slug,name_ar,name_en&order=name_en.asc'),
- products:()=>get('products','select=id,store_id,category_id,title_ar,title_en,description_ar,description_en,price_usd,stock&status=eq.published&stock=gt.0&order=created_at.desc&limit=100')
+ products:()=>get('products','select=id,store_id,category_id,title_ar,title_en,description_ar,description_en,price_usd,stock,product_images(image_url,position)&status=eq.published&stock=gt.0&order=created_at.desc&limit=100')
 };
 })();
