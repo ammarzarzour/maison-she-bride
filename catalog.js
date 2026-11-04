@@ -34,6 +34,8 @@ async function pagedProducts(){
   if(result.error||!result.configured)return {...result,rows:[]}; // Never display a partial catalog as complete.
   for(const row of result.rows){
    if(!row||typeof row.id!=='string'||!row.id||seen.has(row.id))return {configured:true,rows:[],error:'Invalid or repeated product in catalog pagination'};
+   // Reject malformed live prices/stock instead of showing NaN or misleading amounts.
+   if(!Number.isFinite(Number(row.price_usd))||Number(row.price_usd)<0||!Number.isSafeInteger(Number(row.stock))||Number(row.stock)<1)return {configured:true,rows:[],error:'Invalid price or stock in catalog'};
    seen.add(row.id);
    all.push(row);
   }
