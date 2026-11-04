@@ -191,6 +191,24 @@ async function run() {
   }
   console.log('PASS catalog rejects null blank and boolean stock');
 
+  // JSON arrays/objects can coerce to numbers (e.g. [] -> 0 or [1] -> 1).
+  // Reject these malformed payloads instead of displaying fabricated values.
+  for (const [price, stock] of [
+    [[],1], [[10],1], [{},1], [10,[]], [10,[1]], [10,{}]
+  ]) {
+    const w={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+    vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+      window:w,AbortController,setTimeout,clearTimeout,
+      fetch:async()=>({ok:true,json:async()=>[{id:'bad-json-type',title_ar:'فستان',title_en:'Dress',price_usd:price,stock}]})
+    });
+    const result=await w.MSB_CATALOG.products();
+    assert.equal(result.rows.length,0,'arrays and objects must never become numeric prices or stock');
+    assert.match(result.error,/price or stock/);
+  }
+  console.log('PASS catalog rejects array/object prices and stock');
+
+
+
 
 
   console.log('PASS catalog rejects invalid live prices and stock');
