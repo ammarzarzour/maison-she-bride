@@ -17,6 +17,8 @@ jobs:
         run: node tests/smoke.cjs
       - name: Test storefront wishlist, sorting and localization
         run: node tests/storefront.cjs
+      - name: Check corrupted carts and browser storage failures
+        run: node tests/storefront-storage.cjs
       - name: Verify language and currency preference recovery
         run: node tests/storefront-preferences.cjs
       - name: Test Sanad local demo requests
