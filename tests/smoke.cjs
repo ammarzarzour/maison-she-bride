@@ -47,3 +47,7 @@ assert.match(sanad, /No real sign-in, submissions/, 'Sanad preview must disclose
 assert.match(sanad, /localStorage\.setItem\('sanad_lang'/, 'Sanad must remember language preference');
 assert.match(sanad, /document\.documentElement\.dir=/, 'Sanad must support RTL and LTR');
 console.log('PASS Sanad preview safeguards and bilingual UI');
+
+assert.match(sanad, /id="steps"/, 'Sanad request workflow must be visible');
+assert.match(sanad, /t\.steps\.map/, 'Sanad workflow must translate');
+console.log('PASS Sanad request lifecycle guidance');
