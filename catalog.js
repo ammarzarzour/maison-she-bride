@@ -58,6 +58,15 @@ async function pagedProducts(){
    if(typeof row.title_ar!=='string'||!row.title_ar.trim()||typeof row.title_en!=='string'||!row.title_en.trim())return {configured:true,rows:[],error:'Invalid bilingual product title in catalog'};
    // Reject malformed live prices/stock instead of showing NaN or misleading amounts.
    if((row.price_usd===null||row.price_usd===undefined||typeof row.price_usd==='boolean'||String(row.price_usd).trim()===''||!Number.isFinite(Number(row.price_usd)))||Number(row.price_usd)<0||(row.stock===null||row.stock===undefined||typeof row.stock==='boolean'||String(row.stock).trim()===''||!Number.isSafeInteger(Number(row.stock)))||Number(row.stock)<1)return {configured:true,rows:[],error:'Invalid price or stock in catalog'};
+   // Images must be HTTPS URLs. Reject unexpected schemes and malformed image metadata.
+   if(row.product_images!==null&&row.product_images!==undefined){
+    if(!Array.isArray(row.product_images))return {configured:true,rows:[],error:'Invalid product images'};
+    for(const img of row.product_images){
+     if(!img||typeof img.image_url!=='string'||!/^https:\/\//i.test(img.image_url)||!Number.isSafeInteger(Number(img.position??0))||Number(img.position??0)<0)return {configured:true,rows:[],error:'Invalid product image URL or position'};
+     try{const parsed=new URL(img.image_url);if(parsed.protocol!=='https:'||!parsed.hostname||parsed.username||parsed.password)return {configured:true,rows:[],error:'Invalid product image URL'};}
+     catch{return {configured:true,rows:[],error:'Invalid product image URL'};}
+    }
+   }
    seen.add(row.id);
    all.push(row);
   }
