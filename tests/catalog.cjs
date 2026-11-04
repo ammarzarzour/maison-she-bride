@@ -59,6 +59,25 @@ async function run() {
   assert.ok(failed.error);
   console.log('PASS catalog refuses partial results on pagination errors');
 
+  // Boundary: exactly 1000 products is complete; 1001 must be rejected.
+  for (const [count, expectedLength, expectError] of [[999,999,false],[1000,1000,false],[1001,0,true]]) {
+    const boundaryWindow={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+    const boundaryRequests=[];
+    vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+      window:boundaryWindow,AbortController,setTimeout,clearTimeout,
+      fetch:async url=>{
+        const u=new URL(url),offset=Number(u.searchParams.get('offset')),limit=Number(u.searchParams.get('limit'));
+        boundaryRequests.push({offset,limit});
+        return {ok:true,json:async()=>Array.from({length:Math.max(0,Math.min(limit,count-offset))},(_,i)=>({id:String(offset+i)}))};
+      }
+    });
+    const boundary=await boundaryWindow.MSB_CATALOG.products();
+    assert.equal(boundary.rows.length,expectedLength,'catalog boundary '+count);
+    assert.equal(Boolean(boundary.error),expectError,'catalog boundary error '+count);
+    if(count>=1000)assert.deepEqual(boundaryRequests.at(-1),{offset:1000,limit:1});
+  }
+  console.log('PASS catalog handles exact 1000-item limit and rejects overflow');
+
   const bad = {MSB_SUPABASE:{url:'http://example.supabase.co',publishableKey:'service_role_secret'}};
   vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{window:bad,AbortController,setTimeout,clearTimeout,fetch:()=>{throw Error('must not fetch')}});
   assert.equal(bad.MSB_CATALOG.configured,false);
