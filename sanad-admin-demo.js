@@ -116,7 +116,7 @@
       const row=document.createElement('tr');
       cell(row,r.id);
       cell(row,SERVICES[r.service][l]);
-      const status=cell(row,t.statuses[STATES.indexOf(r.state)]);status.className='state';
+      const statusCell=cell(row,'');const chip=document.createElement('span');chip.className='state';chip.textContent=t.statuses[STATES.indexOf(r.state)];statusCell.append(chip);
       const actions=cell(row,'');const wrap=document.createElement('div');wrap.className='actions';
       if(r.state!=='done')wrap.append(button(t.advance,()=>update(r.id,'advance'),'advance'));
       wrap.append(button(t.remove,()=>update(r.id,'remove'),'remove'));
@@ -133,7 +133,7 @@
   $('statusFilter').addEventListener('change',render);
   $('refresh').addEventListener('click',render);
   window.addEventListener('storage',event=>{if(event.key===REQUESTS_KEY||event.key===LANG_KEY){
-    if(event.key===LANG_KEY){try{langPreference=localStorage.getItem(LANG_KEY)||'auto';}catch{}}
+    if(event.key===LANG_KEY){try{langPreference=localStorage.getItem(LANG_KEY)||'auto';if(!['auto','ar','en'].includes(langPreference))langPreference='auto';}catch{langPreference='auto';}}
     render();
   }});
   window.addEventListener('focus',render);
