@@ -88,6 +88,21 @@ async function run() {
     if(count>=1000)assert.deepEqual(boundaryRequests.at(-1),{offset:1000,limit:1});
   }
   console.log('PASS catalog handles exact 1000-item limit and rejects overflow');
+  // Even the overflow probe must obey its one-row limit.
+  const probeWindow={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+  vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+    window:probeWindow,AbortController,setTimeout,clearTimeout,
+    fetch:async url=>{
+      const offset=Number(new URL(url).searchParams.get('offset'));
+      const count=offset===1000?2:100;
+      return {ok:true,json:async()=>Array.from({length:count},(_,i)=>({id:'probe-'+(offset+i),price_usd:10,stock:1}))};
+    }
+  });
+  const oversizedProbe=await probeWindow.MSB_CATALOG.products();
+  assert.equal(oversizedProbe.rows.length,0);
+  assert.match(oversizedProbe.error,/overflow probe exceeds/);
+  console.log('PASS catalog rejects oversized overflow probe');
+
 
 
   // Overlapping pages indicate unstable pagination; never show duplicate cards or partial results.
