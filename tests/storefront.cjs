@@ -15,7 +15,7 @@ function node(id){
     value:'',textContent:'',innerHTML:'',disabled:false,
     options:id==='sortProducts'?[{},{},{},{}]:id==='payment'?[{},{}]:[],
     classList:{add(){},remove(){},toggle(){}},
-    addEventListener(){},setAttribute(k,v){attrs[k]=v},
+    handlers:{},addEventListener(type,handler){this.handlers[type]=handler},setAttribute(k,v){attrs[k]=v},
     getAttribute(k){return attrs[k]},scrollIntoView(){},
   };
   nodes.set(id,elem);return elem;
@@ -47,4 +47,36 @@ assert.ok(node('savedToggle').textContent.includes('Saved'));
 vm.runInContext("items=[];render()",ctx);
 assert.ok(node('noResults').textContent.includes('No published products'));
 assert.equal(node('checkoutForm').classList.add instanceof Function,true);
+
+vm.runInContext("items=Array.from({length:53},(_,i)=>({id:'item-'+i,cat:'bridal',ar:'فستان '+i,en:'Dress '+i,usd:i+1,stock:2,icon:'✦'}));filter='all';sortBy='featured';savedOnly=false;catalogPage=0;render()",ctx);
+const displayedCards=()=>((node('products').innerHTML.match(/<article class="card">/g)||[]).length);
+assert.equal(displayedCards(),24,'first page must contain 24 product cards');
+assert.equal(node('pageStatus').textContent,'Page 1 of 3');
+assert.equal(node('prevPage').disabled,true);
+node('nextPage').onclick();
+assert.equal(displayedCards(),24);
+assert.ok(node('products').innerHTML.includes('data-save="item-24"'));
+assert.equal(node('pageStatus').textContent,'Page 2 of 3');
+node('nextPage').onclick();
+assert.equal(displayedCards(),5,'last page should show remaining five cards');
+assert.equal(node('nextPage').disabled,true);
+node('nextPage').onclick();
+assert.equal(node('pageStatus').textContent,'Page 3 of 3','cannot advance past the final page');
+node('sortProducts').onchange({target:{value:'priceDesc'}});
+assert.equal(node('pageStatus').textContent,'Page 1 of 3','sorting should reset the page');
+assert.ok(node('products').innerHTML.includes('data-save="item-52"'));
+node('nextPage').onclick();
+node('search').value='Dress 52';
+node('search').handlers.input();
+assert.equal(node('pageStatus').textContent,'Page 1 of 1','search should reset and clamp pagination');
+assert.equal(displayedCards(),1);
+node('search').value='';
+node('search').handlers.input();
+node('categories').handlers.click({target:{closest:()=>({dataset:{cat:'bags'}})}});
+assert.equal(node('pageStatus').textContent,'Page 1 of 1');
+assert.equal(displayedCards(),0);
+vm.runInContext("filter='all';langSetting='ar';render()",ctx);
+assert.equal(node('pageStatus').textContent,'الصفحة 1 من 3');
+console.log('PASS bilingual product paging, navigation, sort, search and category reset');
+
 console.log('PASS Maison wishlist persistence, saved filter, price ordering, language and empty catalog');
