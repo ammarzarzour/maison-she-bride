@@ -66,6 +66,8 @@ async function run() {
   for (const [reason, api] of [
     ['category request error', {configured: true, products: goodProducts, categories: async () => ({configured: true, rows: [], error: '403'})}],
     ['product request error', {configured: true, products: async () => ({configured: true, rows: [], error: '503'}), categories: goodCategories}],
+    ['orphaned category', {configured: true, products: goodProducts, categories: async () => ({configured: true, rows: [{id: 'other-id', slug: 'other', name_ar: 'أخرى', name_en: 'Other'}], error: null})}],
+    ['missing categories', {configured: true, products: goodProducts, categories: async () => ({configured: true, rows: [], error: null})}],
     ['malformed categories', {configured: true, products: goodProducts, categories: async () => ({configured: true, rows: null, error: null})}],
     ['rejected request', {configured: true, products: goodProducts, categories: async () => { throw new Error('offline'); }}],
     ['disabled connection', {configured: false}]
