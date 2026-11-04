@@ -32,6 +32,7 @@ async function pagedProducts(){
  for(let page=0;page<maxPages;page++){
   const result=await get('products',query+'&limit='+pageSize+'&offset='+(page*pageSize));
   if(result.error||!result.configured)return {...result,rows:[]}; // Never display a partial catalog as complete.
+  if(result.rows.length>pageSize)return {configured:true,rows:[],error:'Catalog page exceeds requested limit'};
   for(const row of result.rows){
    if(!row||typeof row.id!=='string'||!row.id||seen.has(row.id))return {configured:true,rows:[],error:'Invalid or repeated product in catalog pagination'};
    // Reject malformed live prices/stock instead of showing NaN or misleading amounts.
