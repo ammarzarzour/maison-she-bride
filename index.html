@@ -47,8 +47,8 @@ $('categories').addEventListener('click',e=>{let b=e.target.closest('[data-cat]'
  render();
  const note=document.getElementById('checkoutNotice');
  note.textContent=lang()==='ar'?'المنتجات من قاعدة البيانات الحقيقية. الطلبات والدفع غير مفعّلين حالياً.':'Products are from the live database. Checkout and payments are not enabled.';
- document.getElementById('checkoutForm').classList.add('hidden');
- document.getElementById('checkoutBtn').disabled=true;
+ document.getElementById('checkoutForm').remove();
+ 
  document.getElementById('demoNotice').textContent=lang()==='ar'?'الكتالوج متصل بقاعدة البيانات؛ الشراء غير مفعّل':'Live catalog connected; purchases disabled';
 })();
 </script></body></html>
