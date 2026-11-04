@@ -78,6 +78,32 @@ async function run() {
   }
   console.log('PASS catalog handles exact 1000-item limit and rejects overflow');
 
+
+  // Overlapping pages indicate unstable pagination; never show duplicate cards or partial results.
+  const overlapWindow={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+  vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+    window:overlapWindow,AbortController,setTimeout,clearTimeout,
+    fetch:async url=>{
+      const offset=Number(new URL(url).searchParams.get('offset'));
+      const ids=offset===0?Array.from({length:100},(_,i)=>'p-'+i):['p-99','p-100'];
+      return {ok:true,json:async()=>ids.map(id=>({id}))};
+    }
+  });
+  const overlap=await overlapWindow.MSB_CATALOG.products();
+  assert.equal(overlap.rows.length,0);
+  assert.match(overlap.error,/repeated/);
+  console.log('PASS catalog rejects overlapping product pages');
+
+  const malformedWindow={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+  vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+    window:malformedWindow,AbortController,setTimeout,clearTimeout,
+    fetch:async()=>({ok:true,json:async()=>[{title_ar:'missing id'}]})
+  });
+  const malformed=await malformedWindow.MSB_CATALOG.products();
+  assert.equal(malformed.rows.length,0);
+  assert.match(malformed.error,/Invalid/);
+  console.log('PASS catalog rejects malformed product identifiers');
+
   const bad = {MSB_SUPABASE:{url:'http://example.supabase.co',publishableKey:'service_role_secret'}};
   vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{window:bad,AbortController,setTimeout,clearTimeout,fetch:()=>{throw Error('must not fetch')}});
   assert.equal(bad.MSB_CATALOG.configured,false);
