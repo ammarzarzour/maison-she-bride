@@ -115,6 +115,18 @@ async function run() {
     assert.equal(invalid.rows.length,0);
     assert.match(invalid.error,/price or stock/);
   }
+  for (const price of [null, '', '   ', false]) {
+    const w={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+    vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+      window:w,AbortController,setTimeout,clearTimeout,
+      fetch:async()=>({ok:true,json:async()=>[{id:'bad-price',price_usd:price,stock:1}]})
+    });
+    const result=await w.MSB_CATALOG.products();
+    assert.equal(result.rows.length,0);
+    assert.match(result.error,/price or stock/);
+  }
+  console.log('PASS catalog rejects null blank and boolean prices');
+
   console.log('PASS catalog rejects invalid live prices and stock');
 
   const bad = {MSB_SUPABASE:{url:'http://example.supabase.co',publishableKey:'service_role_secret'}};
