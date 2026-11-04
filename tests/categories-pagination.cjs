@@ -10,7 +10,7 @@ async function scenario(count, mutate) {
    const params=new URL(url).searchParams;
    const offset=Number(params.get('offset')),limit=Number(params.get('limit'));
    requests.push({offset,limit,url});
-   let rows=Array.from({length:Math.max(0,Math.min(limit,count-offset))},(_,i)=>({id:'cat-'+(offset+i),slug:'slug-'+(offset+i)}));
+   let rows=Array.from({length:Math.max(0,Math.min(limit,count-offset))},(_,i)=>({id:'cat-'+(offset+i),slug:'slug-'+(offset+i),name_ar:'قسم '+(offset+i),name_en:'Category '+(offset+i)}));
    if(mutate)rows=mutate(rows,offset,limit);
    return {ok:true,json:async()=>rows};
   }
@@ -32,6 +32,10 @@ async function scenario(count, mutate) {
   ['blank id', rows=>rows.map((r,i)=>i===0?{...r,id:'  '}:r),/Invalid or repeated/],
   ['blank slug',rows=>rows.map((r,i)=>i===0?{...r,slug:' '}:r),/Invalid or repeated/],
   ['missing id',rows=>rows.map((r,i)=>i===0?{slug:r.slug}:r),/Invalid or repeated/],
+  ['missing Arabic name',rows=>rows.map((r,i)=>i===0?{...r,name_ar:null}:r),/Invalid or repeated/],
+  ['blank Arabic name',rows=>rows.map((r,i)=>i===0?{...r,name_ar:'  '}:r),/Invalid or repeated/],
+  ['missing English name',rows=>rows.map((r,i)=>i===0?{...r,name_en:null}:r),/Invalid or repeated/],
+  ['blank English name',rows=>rows.map((r,i)=>i===0?{...r,name_en:''}:r),/Invalid or repeated/],
   ['oversized',rows=>rows.concat({id:'extra',slug:'extra'}),/exceeds requested limit/]
  ]){
   const {result}=await scenario(name==='duplicate'||name==='duplicate slug across pages'?101:name==='oversized'?100:2,mutate);
