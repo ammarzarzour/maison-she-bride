@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
-const pages = ['index.html', 'seller.html', 'admin.html', 'sanad-preview.html'];
+const pages = ['index.html', 'seller.html', 'admin.html', 'sanad-preview.html', 'sanad-admin-preview.html'];
 for (const file of pages) {
   const html = fs.readFileSync(file, 'utf8');
   assert.match(html, /<meta\s+name="viewport"/i, file + ': missing mobile viewport');
