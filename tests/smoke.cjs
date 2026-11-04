@@ -35,3 +35,9 @@ console.log('PASS persistent cart and stock limits');
 assert.match(storefront, /tx\.stock\+': '\+maxQty\(p\)/, 'stock availability must be visible');
 assert.match(storefront, /function renderCart\(\)\{let tx=t\(\),sum=0,count=0;reconcileCart\(\)/, 'cart totals must use reconciled quantities');
 console.log('PASS visible stock and reconciled totals');
+
+assert.match(storefront, /id="refreshCatalog"/, 'catalog refresh button must exist');
+assert.match(storefront, /async function refreshCatalog\(\)/, 'catalog refresh handler must exist');
+assert.match(storefront, /if\(catalogLoading\)return/, 'avoid overlapping catalog refreshes');
+assert.match(storefront, /if\(result\.error\)/, 'catalog fetch failure must be handled');
+console.log('PASS catalog retry and refresh UI');
