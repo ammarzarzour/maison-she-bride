@@ -6,7 +6,17 @@
 const cfg=window.MSB_SUPABASE||{};
 const url=typeof cfg.url==='string'?cfg.url.replace(/\/$/,''):'';
 const key=typeof cfg.publishableKey==='string'?cfg.publishableKey:'';
-const valid=/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(url)&&/^(sb_publishable_|eyJ)/.test(key);
+// Legacy JWT keys are accepted only when their payload explicitly declares the public anon role.
+function publicKey(value){
+ if(value.startsWith('sb_publishable_'))return value.length>'sb_publishable_'.length;
+ if(!/^eyJ[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$/.test(value))return false;
+ try{
+  const part=value.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+  const payload=JSON.parse(atob(part.padEnd(Math.ceil(part.length/4)*4,'=')));
+  return payload&&payload.role==='anon';
+ }catch(e){return false;}
+}
+const valid=/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(url)&&publicKey(key);
 const timeout=8000;
 const pageSize=100;
 const maxPages=10; // Safety bound: do not issue unbounded requests.
