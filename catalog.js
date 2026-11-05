@@ -24,20 +24,38 @@ const maxPages=10; // Safety bound: do not issue unbounded requests.
 // coercions (hex, exponent notation, signed/whitespace-only values) from text.
 const decimalPrice=value=>typeof value==='number'?Number.isFinite(value):typeof value==='string'&&/^\d+(?:\.\d+)?$/.test(value.trim());
 const decimalStock=value=>typeof value==='number'?Number.isSafeInteger(value):typeof value==='string'&&/^\d+$/.test(value.trim());
+// Retry only transient read failures; never retry malformed JSON, invalid catalog data,
+// or permanent HTTP errors. The bounded delay avoids tight loops on rate limits.
+const retryableStatuses=new Set([408,429,500,502,503,504]);
+const retryDelays=[200,500];
+const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function get(table,query){
  if(!valid)return {configured:false,rows:[],error:null};
- const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),timeout);
- try{
-  const response=await fetch(url+'/rest/v1/'+table+'?'+query,{
-   headers:{apikey:key,Authorization:'Bearer '+key,Accept:'application/json'},
-   signal:controller.signal,cache:'no-store'
-  });
-  if(!response.ok)throw new Error('Catalog request failed ('+response.status+')');
-  const rows=await response.json();
-  if(!Array.isArray(rows))throw new Error('Invalid catalog response');
-  return {configured:true,rows,error:null};
- }catch(e){return {configured:true,rows:[],error:e.message||'Catalog unavailable'};}
- finally{clearTimeout(timer);}
+ const endpoint=url+'/rest/v1/'+table+'?'+query;
+ for(let attempt=0;attempt<=retryDelays.length;attempt++){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),timeout);
+  let retry=false;
+  try{
+   const response=await fetch(endpoint,{
+    headers:{apikey:key,Authorization:'Bearer '+key,Accept:'application/json'},
+    signal:controller.signal,cache:'no-store'
+   });
+   if(!response.ok){
+    retry=retryableStatuses.has(response.status);
+    throw new Error('Catalog request failed ('+response.status+')');
+   }
+   const rows=await response.json();
+   if(!Array.isArray(rows))throw new Error('Invalid catalog response');
+   return {configured:true,rows,error:null};
+  }catch(e){
+   // Network failures and request timeouts are transient, but parse errors are not.
+   if(e.name==='AbortError'||e.name==='TypeError')retry=true;
+   if(!retry||attempt===retryDelays.length)return {configured:true,rows:[],error:e.message||'Catalog unavailable'};
+  }finally{clearTimeout(timer);}
+  await pause(retryDelays[attempt]);
+ }
+ return {configured:true,rows:[],error:'Catalog unavailable'};
 }
 async function pagedCategories(){
  const query='select=id,slug,name_ar,name_en&order=id.asc';
