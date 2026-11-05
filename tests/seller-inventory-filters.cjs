@@ -43,7 +43,7 @@ assert.equal(find('','low'),'b');
 assert.equal(find('','published'),'a');
 assert.equal(find('','archived'),'c');
 assert.equal(find('missing','all'),'');
-assert.ok(html.includes("showStockSummary(rows);\n const visible=filterSellerInventory"),'summary must use full inventory');
+assert.ok(/showStockSummary\(rows\);\s*const visible=sortSellerInventory\(filterSellerInventory\(rows,/.test(html),'summary must use full inventory before filtering and sorting');
 assert.ok(html.includes("const csv=buildInventoryCsv(cachedSellerProducts)"),'export must use full inventory');
 assert.ok(html.includes("$('inventorySearch').disabled=true"),'filter disabled during invalidation');
 console.log('PASS bilingual seller inventory filters and full export separation');
