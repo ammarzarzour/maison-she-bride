@@ -23,9 +23,25 @@ async function run() {
   assert.equal(categories.rows[0].slug,'bridal');
   assert.equal(requests.length,2);
   assert.ok(requests[0].url.includes('status=eq.published'));
-  assert.ok(requests[0].url.includes('stock=gt.0'));
+  assert.ok(requests[0].url.includes('stock=gte.0'));
   assert.equal(requests[0].opts.headers.apikey,window.MSB_SUPABASE.publishableKey);
   console.log('PASS catalog published/in-stock product requests');
+  // Published out-of-stock products remain visible, but are not purchasable.
+  // The storefront disables add-to-cart for zero stock; negative stock is invalid.
+  const zeroWindow={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+  vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+    window:zeroWindow,AbortController,setTimeout,clearTimeout,
+    fetch:async()=>({ok:true,json:async()=>[
+      {id:'available',title_ar:'فستان',title_en:'Dress',price_usd:10,stock:2},
+      {id:'sold-out',title_ar:'نفد',title_en:'Sold out',price_usd:10,stock:0}
+    ]})
+  });
+  const zeroResult=await zeroWindow.MSB_CATALOG.products();
+  assert.equal(zeroResult.error,null);
+  assert.equal(zeroResult.rows.length,2);
+  assert.equal(zeroResult.rows[1].stock,0);
+  console.log('PASS catalog retains published zero-stock products');
+
 
 
   // Two pages: 100 results followed by a final partial page.
