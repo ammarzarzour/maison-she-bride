@@ -14,7 +14,10 @@ const rows=[
 {id:'b',title_ar:'حقيبة ذهبية',title_en:'Gold Bag',status:'draft',stock:2},
 {id:'c',title_ar:'حذاء',title_en:'Gold Shoes',status:'archived',stock:8}
 ];
-const find=(q,status)=>vm.runInContext('filterSellerInventory(rows,q,status).map(p=>p.id).join(",")',vm.createContext({rows,q,status,filterSellerInventory:ctx.filterSellerInventory}));
+const find=(q,status)=>{
+ ctx.rows=rows;ctx.q=q;ctx.status=status;
+ return vm.runInContext('filterSellerInventory(rows,q,status).map(p=>p.id).join(",")',ctx);
+};
 assert.equal(find('gold','all'),'b,c');
 assert.equal(find('gold bag','all'),'b');
 assert.equal(find('زَفَاف','out'),'a','Arabic harakat should not block search');
