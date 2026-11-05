@@ -1,0 +1,15 @@
+const fs=require('node:fs');
+const assert=require('node:assert/strict');
+const html=fs.readFileSync('seller.html','utf8');
+const source=html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+assert.ok(source);
+assert.match(html,/id="refreshInventory"[^>]*disabled data-i18n="refreshInventory"/);
+assert.ok(source.includes("refreshInventory\":\"تحديث الجرد"));
+assert.ok(source.includes("refreshInventory\":\"Refresh inventory"));
+assert.ok(source.includes("$('refreshInventory').disabled=true;$('refreshInventory').textContent=tr('refreshingInventory')"));
+assert.ok(source.includes("$('refreshInventory').disabled=false;$('refreshInventory').textContent=tr('refreshInventory')"));
+assert.ok(source.includes("if(sellerInventoryGeneration===priorGeneration+1&&sellerSessionActive(epoch,authToken,ownerId,storeId))"),'superseded refresh failure must not update UI');
+assert.ok(source.includes("if(store?.status==='approved'){$('refreshInventory').disabled=false"),'initial read failure must allow retry');
+assert.ok(source.includes("cachedSellerProducts=null;exportInventorySession=null;$('refreshInventory').disabled=true"),'refresh invalidates stale inventory and export');
+assert.ok(source.includes("if(!token||!user||store?.status!=='approved')return"),'refresh requires approved seller');
+console.log('PASS bilingual seller inventory refresh guards and recovery');
