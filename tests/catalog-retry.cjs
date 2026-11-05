@@ -15,6 +15,7 @@ async function scenario(steps,expectedAttempts,expectedError=false){
   const step=steps[Math.min(requests.length-1,steps.length-1)];
   if(step==='network')throw new TypeError('Network temporarily unavailable');
   if(step==='timeout'){const e=new Error('Request aborted');e.name='AbortError';throw e}
+  if(step==='json-typeerror')return {ok:true,json:async()=>{throw new TypeError('Malformed response body')}};
   if(step==='invalid-json')return {ok:true,json:async()=>{throw new SyntaxError('Bad JSON')}};
   if(step==='not-array')return {ok:true,json:async()=>({rows:[]})};
   if(typeof step==='number')return {ok:false,status:step};
@@ -48,6 +49,7 @@ async function scenario(steps,expectedAttempts,expectedError=false){
  await scenario([503,503,503,'ok'],3,true);
  await scenario(['network','network','network','ok'],3,true);
  await scenario(['invalid-json','ok'],1,true);
+ await scenario(['json-typeerror','ok'],1,true);
  await scenario(['not-array','ok'],1,true);
  console.log('PASS catalog retries bounded transient reads, refuses permanent errors and malformed data');
 })().catch(e=>{console.error(e);process.exitCode=1});
