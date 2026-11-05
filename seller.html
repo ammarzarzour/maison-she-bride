@@ -139,7 +139,7 @@ async function loadSeller(){
  $('applicationBox').classList.add('hidden');
  if(store.status!=='approved'){$('refreshInventory').disabled=true;$('approvedBox').classList.add('hidden');$('products').textContent=tr('awaitApproval');$('stockSummary').replaceChildren();cachedSellerProducts=null;return}
  $('approvedBox').classList.remove('hidden');await loadCategories(epoch,authToken,ownerId);if(!sellerSessionActive(epoch,authToken,ownerId))return;await loadProducts();
- }catch(e){if(sellerSessionActive(epoch,authToken,ownerId))message(tr('loadError')+': '+e.message)}
+ }catch(e){if(sellerSessionActive(epoch,authToken,ownerId)){message(tr('loadError')+': '+e.message);if(store?.status==='approved'){$('refreshInventory').disabled=false;$('refreshInventory').textContent=tr('refreshInventory')}}}
 }
 $('apply').onclick=async()=>{
  if(!SELLER_MUTATIONS_ENABLED){message(tr('storeDisabled'));return}
@@ -289,9 +289,10 @@ $('exportInventory').onclick=()=>{
 $('refreshInventory').onclick=async()=>{
  if(!token||!user||store?.status!=='approved')return;
  const epoch=sellerSessionEpoch,authToken=token,ownerId=user.id,storeId=store.id;
+ const priorGeneration=sellerInventoryGeneration;
  try{await loadProducts();}
  catch(error){
-  if(sellerSessionActive(epoch,authToken,ownerId,storeId)){
+  if(sellerInventoryGeneration===priorGeneration+1&&sellerSessionActive(epoch,authToken,ownerId,storeId)){
    message(tr('inventoryRefreshFailed')+error.message);
    $('refreshInventory').disabled=false;
    $('refreshInventory').textContent=tr('refreshInventory');
