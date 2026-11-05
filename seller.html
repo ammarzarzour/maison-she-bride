@@ -6,7 +6,7 @@
 <style>
 :root{--green:#145b46;--gold:#c6a15b;--ink:#24352d;--line:#e3e9e5}*{box-sizing:border-box}
 body{margin:0;background:#f4f6f3;color:var(--ink);font-family:system-ui,Tahoma,Arial}
-header{background:var(--green);color:#fff;padding:18px 20px}header h1{margin:0;font-size:22px}header p{margin:5px 0 0;opacity:.9}
+header{background:var(--green);color:#fff;padding:18px 20px}header h1{margin:0;font-size:22px}header p{margin:5px 0 0;opacity:.9}.header-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}.language-switch{display:flex;gap:8px;align-items:center;margin:0}.language-switch select{width:auto;min-width:130px;margin:0;padding:8px;color:#145b46}
 main{max-width:900px;margin:22px auto;padding:0 14px}.panel{background:white;border:1px solid var(--line);border-radius:15px;padding:20px;margin-bottom:16px;box-shadow:0 3px 14px #152c1b0a}
 h2{font-size:19px;margin:0 0 14px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
 label{display:block;font-size:14px;margin:10px 0}input,textarea,select{display:block;width:100%;padding:12px;border:1px solid #cbd7ce;border-radius:9px;font:inherit;margin-top:6px;background:#fff}
@@ -16,42 +16,42 @@ button{border:0;border-radius:9px;background:var(--green);color:#fff;padding:12p
 .hidden{display:none!important}a{color:var(--green)}@media(max-width:500px){.panel{padding:15px}}
 </style></head>
 <body>
-<header><h1>Maison She Bride</h1><p>بوابة التاجر وإدارة المنتجات</p></header>
+<header><div class="header-row"><div><h1>Maison She Bride</h1><p data-i18n="header">بوابة التاجر وإدارة المنتجات</p></div><label class="language-switch"><span data-i18n="languageLabel">اللغة</span><select id="language" aria-label="Language"><option value="auto">🌐 Auto</option><option value="ar">العربية</option><option value="en">English</option></select></label></div></header>
 <main>
 <section class="panel" id="authPanel">
-<h2>تسجيل الدخول للتاجر</h2><p class="muted">سجّل الدخول أو أنشئ حساباً. يجب تأكيد البريد الإلكتروني إذا طلب النظام ذلك.</p>
-<label>البريد الإلكتروني<input id="email" type="email" autocomplete="email" required></label>
-<label>كلمة المرور<input id="password" type="password" autocomplete="current-password" minlength="6" required></label>
-<button id="signup">إنشاء حساب</button><button class="secondary" id="login">تسجيل الدخول</button>
+<h2 data-i18n="authTitle">تسجيل الدخول للتاجر</h2><p class="muted" data-i18n="authIntro">سجّل الدخول أو أنشئ حساباً. يجب تأكيد البريد الإلكتروني إذا طلب النظام ذلك.</p>
+<label><span data-i18n="email">البريد الإلكتروني</span><input id="email" type="email" autocomplete="email" required></label>
+<label><span data-i18n="password">كلمة المرور</span><input id="password" type="password" autocomplete="current-password" minlength="6" required></label>
+<button id="signup" data-i18n="signup">إنشاء حساب</button><button class="secondary" id="login" data-i18n="login">تسجيل الدخول</button>
 </section>
 <section class="panel hidden" id="accountPanel">
-<h2 id="welcome">حساب التاجر</h2><p id="storeStatus"></p>
+<h2 id="welcome" data-i18n="welcome">حساب التاجر</h2><p id="storeStatus"></p>
 <div id="applicationBox" class="hidden">
-<label>اسم المتجر<input id="storeName" maxlength="100" placeholder="اسم المتجر"></label>
-<button id="apply" disabled>إرسال طلب اعتماد المتجر (قيد التفعيل)</button>
+<label><span data-i18n="storeName">اسم المتجر</span><input id="storeName" maxlength="100" data-i18n-placeholder="storeName" placeholder="اسم المتجر"></label>
+<button id="apply" data-i18n="applyDisabled" disabled>إرسال طلب اعتماد المتجر (قيد التفعيل)</button>
 </div>
 <div id="approvedBox" class="hidden">
-<h2>إضافة منتج جديد</h2>
-<p class="notice">الكتابة إلى قاعدة البيانات غير مفعّلة حالياً: إنشاء المتاجر والمنتجات وتعديل المخزون تتطلب منح صلاحيات محددة ومراجعتها. هذه الواجهة للمعاينة فقط حتى اكتمال التفعيل.</p>
-<p class="muted">المنتج يُحفظ كمسودة ولا يظهر للزوار حتى تراجعه الإدارة وتنشره. الصورة اختيارية ويمكن إضافتها بصيغة JPG أو PNG أو WebP أو AVIF حتى 5 ميغابايت.</p>
+<h2 data-i18n="newProduct">إضافة منتج جديد</h2>
+<p class="notice" data-i18n="writeNotice">الكتابة إلى قاعدة البيانات غير مفعّلة حالياً: إنشاء المتاجر والمنتجات وتعديل المخزون تتطلب منح صلاحيات محددة ومراجعتها. هذه الواجهة للمعاينة فقط حتى اكتمال التفعيل.</p>
+<p class="muted" data-i18n="draftInfo">المنتج يُحفظ كمسودة ولا يظهر للزوار حتى تراجعه الإدارة وتنشره. الصورة اختيارية ويمكن إضافتها بصيغة JPG أو PNG أو WebP أو AVIF حتى 5 ميغابايت.</p>
 <form id="productForm">
 <div class="grid">
-<label>اسم المنتج بالعربية<input id="titleAr" required maxlength="160"></label>
-<label>اسم المنتج بالإنجليزية<input id="titleEn" required maxlength="160"></label>
-<label>القسم<select id="category" required></select></label>
-<label>السعر بالدولار الأمريكي<input id="price" type="number" min="0.01" step="0.01" required></label>
-<label>الكمية المتوفرة<input id="stock" type="number" min="0" step="1" value="0" required></label>
-<label>صورة المنتج<input id="photo" type="file" accept="image/jpeg,image/png,image/webp,image/avif"></label>
+<label><span data-i18n="titleAr">اسم المنتج بالعربية</span><input id="titleAr" required maxlength="160"></label>
+<label><span data-i18n="titleEn">اسم المنتج بالإنجليزية</span><input id="titleEn" required maxlength="160"></label>
+<label><span data-i18n="category">القسم</span><select id="category" required></select></label>
+<label><span data-i18n="price">السعر بالدولار الأمريكي</span><input id="price" type="number" min="0.01" step="0.01" required></label>
+<label><span data-i18n="stock">الكمية المتوفرة</span><input id="stock" type="number" min="0" step="1" value="0" required></label>
+<label><span data-i18n="photo">صورة المنتج</span><input id="photo" type="file" accept="image/jpeg,image/png,image/webp,image/avif"></label>
 </div>
-<label>الوصف بالعربية<textarea id="descAr" rows="3" maxlength="3000"></textarea></label>
-<label>الوصف بالإنجليزية<textarea id="descEn" rows="3" maxlength="3000"></textarea></label>
-<button id="saveProduct" type="submit" disabled>حفظ المنتج كمسودة (قيد التفعيل)</button>
+<label><span data-i18n="descAr">الوصف بالعربية</span><textarea id="descAr" rows="3" maxlength="3000"></textarea></label>
+<label><span data-i18n="descEn">الوصف بالإنجليزية</span><textarea id="descEn" rows="3" maxlength="3000"></textarea></label>
+<button id="saveProduct" type="submit" data-i18n="saveDisabled" disabled>حفظ المنتج كمسودة (قيد التفعيل)</button>
 </form>
 </div>
-<h2>منتجات متجري</h2><p class="muted">يمكنك مراجعة مخزون منتجاتك وحالاتها. تعديل المخزون غير مفعّل حالياً لحين اعتماد صلاحيات آمنة؛ المنتجات المنشورة تتطلب مراجعة الإدارة.</p><div id="stockSummary" class="inventory-summary" role="status" aria-live="polite"></div><div id="products"><div class="empty">جارٍ تحميل البيانات...</div></div>
-<button class="secondary" id="logout">تسجيل الخروج</button>
+<h2 data-i18n="myProducts">منتجات متجري</h2><p class="muted" data-i18n="stockInfo">يمكنك مراجعة مخزون منتجاتك وحالاتها. تعديل المخزون غير مفعّل حالياً لحين اعتماد صلاحيات آمنة؛ المنتجات المنشورة تتطلب مراجعة الإدارة.</p><div id="stockSummary" class="inventory-summary" role="status" aria-live="polite"></div><div id="products"><div class="empty" data-i18n="loading">جارٍ تحميل البيانات...</div></div>
+<button class="secondary" id="logout" data-i18n="logout">تسجيل الخروج</button>
 </section>
-<p class="muted"><a href="./">العودة إلى المتجر</a> · لا تُدخل بيانات دفع أو بيانات عملاء هنا.</p>
+<p class="muted"><a href="./" data-i18n="back">العودة إلى المتجر</a> · <span data-i18n="privacy">لا تُدخل بيانات دفع أو بيانات عملاء هنا.</span></p>
 <p id="msg" role="status"></p>
 </main>
 <script>
@@ -59,7 +59,32 @@ button{border:0;border-radius:9px;background:var(--green);color:#fff;padding:12p
 const BASE='https://cymwmswpseevemxtugdb.supabase.co';
 const KEY='sb_publishable_OevT9B8LeDvgIzOWtktYTA__LpPRQBE';
 const $=id=>document.getElementById(id);
+const translations={"ar":{"header":"بوابة التاجر وإدارة المنتجات","languageLabel":"اللغة","authTitle":"تسجيل الدخول للتاجر","authIntro":"سجّل الدخول أو أنشئ حساباً. يجب تأكيد البريد الإلكتروني إذا طلب النظام ذلك.","email":"البريد الإلكتروني","password":"كلمة المرور","signup":"إنشاء حساب","login":"تسجيل الدخول","welcome":"حساب التاجر","welcomePrefix":"مرحباً","welcomeGuest":"بك","storeName":"اسم المتجر","applyDisabled":"إرسال طلب اعتماد المتجر (قيد التفعيل)","newProduct":"إضافة منتج جديد","writeNotice":"الكتابة إلى قاعدة البيانات غير مفعّلة حالياً: إنشاء المتاجر والمنتجات وتعديل المخزون تتطلب منح صلاحيات محددة ومراجعتها. هذه الواجهة للمعاينة فقط حتى اكتمال التفعيل.","draftInfo":"المنتج يُحفظ كمسودة ولا يظهر للزوار حتى تراجعه الإدارة وتنشره. الصورة اختيارية ويمكن إضافتها بصيغة JPG أو PNG أو WebP أو AVIF حتى 5 ميغابايت.","titleAr":"اسم المنتج بالعربية","titleEn":"اسم المنتج بالإنجليزية","category":"القسم","price":"السعر بالدولار الأمريكي","stock":"الكمية المتوفرة","photo":"صورة المنتج","descAr":"الوصف بالعربية","descEn":"الوصف بالإنجليزية","saveDisabled":"حفظ المنتج كمسودة (قيد التفعيل)","myProducts":"منتجات متجري","stockInfo":"يمكنك مراجعة مخزون منتجاتك وحالاتها. تعديل المخزون غير مفعّل حالياً لحين اعتماد صلاحيات آمنة؛ المنتجات المنشورة تتطلب مراجعة الإدارة.","loading":"جارٍ تحميل البيانات...","logout":"تسجيل الخروج","back":"العودة إلى المتجر","privacy":"لا تُدخل بيانات دفع أو بيانات عملاء هنا.","storePrefix":"المتجر:","pending":"بانتظار المراجعة","approved":"معتمد","suspended":"موقوف","draft":"مسودة","published":"منشور","archived":"مؤرشف","summaryDrafts":"المسودات","summaryPublished":"المنشورة","summaryLow":"مخزون منخفض (1–3)","summaryOut":"نفد المخزون","stockText":"المخزون","statusText":"الحالة","noStore":"لا يوجد متجر مسجل لهذا الحساب. طلبات اعتماد المتاجر غير مفعّلة حالياً.","noProducts":"لم تضف منتجات إلى متجرك بعد.","awaitApproval":"ستظهر أدوات إضافة المنتجات بعد اعتماد المتجر من الإدارة.","loginConnecting":"جارٍ الاتصال...","loginInvalid":"أدخل بريداً صحيحاً وكلمة مرور من 6 أحرف على الأقل.","verifyEmail":"تم إنشاء الحساب. تحقق من بريدك الإلكتروني ثم سجّل الدخول.","loadError":"تعذر تحميل بيانات المتجر","storeDisabled":"طلبات المتاجر غير مفعّلة حتى اعتماد صلاحيات قاعدة البيانات.","productDisabled":"حفظ المنتجات غير مفعّل حتى اعتماد صلاحيات قاعدة البيانات.","stockDisabled":"تعديل المخزون غير مفعّل حتى اعتماد الصلاحيات المناسبة.","logoutDone":"تم تسجيل الخروج من هذه الصفحة.","stockOnlyDrafts":"تعديل المخزون متاح للتاجر المعتمد وللمنتجات المسودة فقط.","stockInvalid":"أدخل كمية صحيحة بين 0 و","stockNotUpdated":"لم يتم تعديل المنتج. تحقق من حالة المتجر وصلاحيات الوصول.","stockUpdated":"تم حفظ المخزون للمسودة بنجاح: ","stockDraftNote":"لا تظهر المسودة للزوار.","stockRefreshFailed":"حُفظ المخزون، لكن تعذّر تحديث القائمة: ","stockSaveFailed":"تعذّر حفظ المخزون: ","editDraftStock":"تعديل مخزون المسودة","saveStock":"حفظ المخزون","searchProducts":"استجابة قائمة المنتجات غير صالحة.","applicationNameError":"اكتب اسم المتجر (حرفان على الأقل).","applicationSent":"تم إرسال طلب اعتماد المتجر. ستتمكن من إضافة المنتجات بعد موافقة الإدارة.","saveInProgress":"جارٍ حفظ المنتج...","priceStockInvalid":"تحقق من السعر والكمية.","imageInvalid":"الصورة يجب أن تكون JPG أو PNG أو WebP أو AVIF وبحجم لا يتجاوز 5 ميغابايت.","createMissingId":"تم إرسال المنتج لكن لم يصل معرّفه. حدّث قائمة المنتجات للتحقق.","imageUploadFailed":"حُفظ المنتج كمسودة لكن فشل رفع الصورة: ","draftSaved":"تم حفظ المنتج كمسودة. لن يظهر للزوار قبل مراجعة الإدارة ونشره.","requestFailed":"تعذر تنفيذ العملية"},"en":{"header":"Seller portal & product management","languageLabel":"Language","authTitle":"Seller sign-in","authIntro":"Sign in or create an account. Verify your email if required.","email":"Email address","password":"Password","signup":"Create account","login":"Sign in","welcome":"Seller account","welcomePrefix":"Welcome","welcomeGuest":"back","storeName":"Store name","applyDisabled":"Submit store application (not enabled)","newProduct":"Add a new product","writeNotice":"Database writes are currently disabled. Store applications, product creation and stock updates require reviewed, limited permissions. This screen is a preview until activation.","draftInfo":"Products are saved as drafts and remain hidden until administrative review and publication. Optional images: JPG, PNG, WebP or AVIF, up to 5 MB.","titleAr":"Arabic product name","titleEn":"English product name","category":"Category","price":"Price in US dollars","stock":"Available quantity","photo":"Product image","descAr":"Arabic description","descEn":"English description","saveDisabled":"Save product draft (not enabled)","myProducts":"My store products","stockInfo":"Review product statuses and stock levels. Stock editing remains disabled until secure permissions are approved; published products require administrative review.","loading":"Loading data...","logout":"Sign out","back":"Back to storefront","privacy":"Do not enter payment or customer information here.","storePrefix":"Store:","pending":"Pending review","approved":"Approved","suspended":"Suspended","draft":"Draft","published":"Published","archived":"Archived","summaryDrafts":"Drafts","summaryPublished":"Published","summaryLow":"Low stock (1–3)","summaryOut":"Out of stock","stockText":"Stock","statusText":"Status","noStore":"No store is associated with this account. Applications are not enabled yet.","noProducts":"No products have been added to your store.","awaitApproval":"Product tools will appear after an administrator approves your store.","loginConnecting":"Connecting...","loginInvalid":"Enter a valid email and a password of at least 6 characters.","verifyEmail":"Account created. Verify your email and then sign in.","loadError":"Could not load store details","storeDisabled":"Store applications are disabled until database permissions are approved.","productDisabled":"Product saving is disabled until database permissions are approved.","stockDisabled":"Stock editing is disabled until the necessary permissions are approved.","logoutDone":"You have signed out of this page.","stockOnlyDrafts":"Stock edits are limited to approved sellers and draft products.","stockInvalid":"Enter a whole-number quantity between 0 and ","stockNotUpdated":"The product was not updated. Check store status and access permissions.","stockUpdated":"Draft stock saved: ","stockDraftNote":"Draft products are not visible to visitors.","stockRefreshFailed":"Stock was saved, but the list could not be refreshed: ","stockSaveFailed":"Could not save stock: ","editDraftStock":"Edit draft stock","saveStock":"Save stock","searchProducts":"Invalid products response.","applicationNameError":"Enter a store name of at least two characters.","applicationSent":"Store application submitted. You can add products after administrative approval.","saveInProgress":"Saving draft product...","priceStockInvalid":"Check the price and stock quantity.","imageInvalid":"Images must be JPG, PNG, WebP or AVIF and no larger than 5 MB.","createMissingId":"The product was sent, but no ID was returned. Refresh the list to verify.","imageUploadFailed":"The draft was saved, but image upload failed: ","draftSaved":"Draft saved. It will not appear to visitors until review and publication.","requestFailed":"Request failed"}};
 let token='',user=null,store=null,categories=[];
+let cachedSellerProducts=null;
+const supportedSellerLanguages=new Set(['auto','ar','en']);
+let sellerLanguage='auto';
+try{const saved=localStorage.getItem('msb_seller_lang');if(supportedSellerLanguages.has(saved))sellerLanguage=saved;}catch(e){}
+function sellerLocale(){return sellerLanguage==='auto'?((navigator.language||'en').toLowerCase().startsWith('ar')?'ar':'en'):sellerLanguage}
+function tr(key){return translations[sellerLocale()][key]||translations.ar[key]||key}
+function renderSellerLanguage(){
+ const locale=sellerLocale();
+ document.documentElement.lang=locale;
+ document.documentElement.dir=locale==='ar'?'rtl':'ltr';
+ $('language').value=sellerLanguage;
+ for(const node of document.querySelectorAll('[data-i18n]'))node.textContent=tr(node.dataset.i18n);
+ for(const node of document.querySelectorAll('[data-i18n-placeholder]'))node.placeholder=tr(node.dataset.i18nPlaceholder);
+ if(user){$('welcome').textContent=tr('welcomePrefix')+' '+(user.email||tr('welcomeGuest')); }
+ if(store){$('storeStatus').textContent=tr('storePrefix')+' '+store.name+' · '+tr(store.status==='approved'?'approved':store.status==='pending'?'pending':'suspended');}
+ if(Array.isArray(cachedSellerProducts))renderSellerProducts(cachedSellerProducts);
+}
+$('language').addEventListener('change',e=>{
+ sellerLanguage=supportedSellerLanguages.has(e.target.value)?e.target.value:'auto';
+ try{localStorage.setItem('msb_seller_lang',sellerLanguage)}catch(e){}
+ renderSellerLanguage();
+ message('');
+});
+
 function message(s){$('msg').textContent=s}
 async function request(path,method='GET',body=null,auth=true,extra={}){
  const headers={apikey:KEY,...(auth&&token?{Authorization:'Bearer '+token}:{}) ,...extra};
