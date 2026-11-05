@@ -81,7 +81,7 @@ async function pagedCategories(){
  return {configured:true,rows:all,error:null};
 }
 async function pagedProducts(){
- const query='select=id,store_id,category_id,title_ar,title_en,description_ar,description_en,price_usd,stock,product_images(image_url,position)&status=eq.published&stock=gt.0&order=created_at.desc,id.desc';
+ const query='select=id,store_id,category_id,title_ar,title_en,description_ar,description_en,price_usd,stock,product_images(image_url,position)&status=eq.published&stock=gte.0&order=created_at.desc,id.desc';
  const all=[];
  const seen=new Set();
  for(let page=0;page<maxPages;page++){
@@ -94,7 +94,7 @@ async function pagedProducts(){
    if(typeof row.title_ar!=='string'||!row.title_ar.trim()||typeof row.title_en!=='string'||!row.title_en.trim())return {configured:true,rows:[],error:'Invalid bilingual product title in catalog'};
    // Reject malformed prices/stock and potential stock-wide totals that overflow
    // the illustrative SYP conversion, even when each unit price is finite.
-   if((!decimalPrice(row.price_usd)||!Number.isFinite(Number(row.price_usd)))||Number(row.price_usd)<0||!Number.isFinite(Number(row.price_usd)*120)||(!decimalStock(row.stock)||!Number.isSafeInteger(Number(row.stock)))||Number(row.stock)<1||!Number.isFinite(Number(row.price_usd)*Number(row.stock)*120))return {configured:true,rows:[],error:'Invalid price or stock in catalog'};
+   if((!decimalPrice(row.price_usd)||!Number.isFinite(Number(row.price_usd)))||Number(row.price_usd)<0||!Number.isFinite(Number(row.price_usd)*120)||(!decimalStock(row.stock)||!Number.isSafeInteger(Number(row.stock)))||Number(row.stock)<0||!Number.isFinite(Number(row.price_usd)*Number(row.stock)*120))return {configured:true,rows:[],error:'Invalid price or stock in catalog'};
    // Images must be HTTPS URLs. Reject unexpected schemes and malformed image metadata.
    if(row.product_images!==null&&row.product_images!==undefined){
     if(!Array.isArray(row.product_images)||row.product_images.length>30)return {configured:true,rows:[],error:'Invalid product images'};
