@@ -41,7 +41,9 @@ async function run(){
  assert.match(node('quotePreview').value,/Demo cart summary/);
  assert.match(node('quotePreview').value,/Evening Dress × 2/);
  assert.doesNotMatch(node('quotePreview').value,/Evening \n Dress/,'product names must be kept on one line');
- assert.match(node('quotePreview').value,/40 USD/);
+ assert.match(node('quotePreview').value,/4,800 SYP/,'default stored currency is SYP');
+ node('currency').onchange({target:{value:'USD'}});
+ assert.match(node('quotePreview').value,/40 USD/,'changing currency updates demo quote');
  assert.match(node('quotePreview').value,/No real orders or payments/);
  assert.equal(node('quotePreview').value.includes('\n'),true,'display a readable multiline summary');
  await node('copyQuote').onclick();
