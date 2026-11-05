@@ -116,8 +116,9 @@ async function run(){
  assert.ok(requests[firstIndex].url.includes('/auth/v1/token?'));
  assert.ok(requests[secondIndex].url.includes('/auth/v1/token?'));
  success(requests[secondIndex],{access_token:'second-login-token'});
- await Promise.resolve();
- await Promise.resolve();
+ // The mock has separate await boundaries for fetch() and response.json().
+ // Yield a full event-loop turn before asserting that its subsequent API GET exists.
+ await new Promise(resolve=>setImmediate(resolve));
  const secondLoad=requests.at(-1);
  assert.ok(secondLoad.url.includes('/functions/v1/admin-console'));
  assert.equal(secondLoad.opts.headers.Authorization,'Bearer second-login-token');
