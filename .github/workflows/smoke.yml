@@ -37,6 +37,8 @@ jobs:
         run: node tests/seller-session-race.cjs
       - name: Verify complete seller inventory pagination and overflow safety
         run: node tests/seller-pagination.cjs
+      - name: Verify seller bilingual category pagination and fail-closed refresh
+        run: node tests/seller-categories-pagination.cjs
       - name: Reject out-of-order seller inventory refresh results
         run: node tests/seller-refresh-race.cjs
       - name: Verify admin bilingual dashboard and safe shipping drafts
