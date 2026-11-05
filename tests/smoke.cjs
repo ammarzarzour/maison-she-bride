@@ -1,6 +1,14 @@
 const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
+// Parse standalone browser scripts as well as inline page scripts. A syntax error in
+// these files can otherwise pass HTML-only smoke checks and break a deployed page.
+for (const file of ['catalog.js', 'sanad-demo.js', 'sanad-admin-demo.js']) {
+  const source = fs.readFileSync(file, 'utf8');
+  new vm.Script(source, {filename: file});
+  console.log('PASS standalone browser script syntax', file);
+}
+
 const pages = ['index.html', 'seller.html', 'admin.html', 'sanad-preview.html', 'sanad-admin-preview.html'];
 for (const file of pages) {
   const html = fs.readFileSync(file, 'utf8');
