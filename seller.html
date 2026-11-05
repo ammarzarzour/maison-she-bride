@@ -12,7 +12,7 @@ h2{font-size:19px;margin:0 0 14px}.grid{display:grid;grid-template-columns:repea
 label{display:block;font-size:14px;margin:10px 0}input,textarea,select{display:block;width:100%;padding:12px;border:1px solid #cbd7ce;border-radius:9px;font:inherit;margin-top:6px;background:#fff}
 button{border:0;border-radius:9px;background:var(--green);color:#fff;padding:12px 17px;font:inherit;cursor:pointer;margin:5px 0}button.secondary{background:#e9efeb;color:var(--green)}button:disabled{opacity:.55;cursor:wait}
 #msg{white-space:pre-wrap;line-height:1.7;margin-top:10px}.muted{color:#66766d;font-size:13px;line-height:1.7}.badge{display:inline-block;padding:4px 9px;border-radius:20px;background:#f6efdF;color:#745a24;font-size:12px}
-.product{border:1px solid var(--line);border-radius:10px;padding:12px;margin:9px 0}.product strong{display:block}.empty{padding:18px;text-align:center;color:#66766d;background:#f8faf8;border-radius:10px}
+.product{border:1px solid var(--line);border-radius:10px;padding:12px;margin:9px 0}.product strong{display:block}.stock-controls{display:flex;align-items:end;flex-wrap:wrap;gap:10px;margin-top:10px}.stock-controls label{margin:0;flex:1;min-width:160px}.stock-controls button{margin:0}.empty{padding:18px;text-align:center;color:#66766d;background:#f8faf8;border-radius:10px}
 .hidden{display:none!important}a{color:var(--green)}@media(max-width:500px){.panel{padding:15px}}
 </style></head>
 <body>
@@ -47,7 +47,7 @@ button{border:0;border-radius:9px;background:var(--green);color:#fff;padding:12p
 <button id="saveProduct" type="submit">حفظ المنتج كمسودة</button>
 </form>
 </div>
-<h2>منتجات متجري</h2><div id="products"><div class="empty">جارٍ تحميل البيانات...</div></div>
+<h2>منتجات متجري</h2><p class="muted">تعديل المخزون متاح للمسودات فقط. المنتجات المنشورة تتطلب مراجعة الإدارة؛ لا يُرسل تعديل من هذه الواجهة للمنتجات المنشورة.</p><div id="products"><div class="empty">جارٍ تحميل البيانات...</div></div>
 <button class="secondary" id="logout">تسجيل الخروج</button>
 </section>
 <p class="muted"><a href="./">العودة إلى المتجر</a> · لا تُدخل بيانات دفع أو بيانات عملاء هنا.</p>
@@ -101,11 +101,51 @@ async function loadCategories(){
  categories=await request('/rest/v1/categories?select=id,name_ar,name_en&order=name_ar.asc');
  $('category').replaceChildren();for(const c of categories){const o=document.createElement('option');o.value=c.id;o.textContent=c.name_ar+' / '+c.name_en;$('category').append(o)}
 }
+const MAX_STOCK=2147483647; // PostgreSQL integer upper bound.
+async function updateDraftStock(product,field,button){
+ if(!token||!user||!store||store.status!=='approved'||product.status!=='draft'){
+  message('تعديل المخزون متاح للتاجر المعتمد وللمنتجات المسودة فقط.');return;
+ }
+ const raw=String(field.value).trim();
+ if(!/^(?:0|[1-9][0-9]*)$/.test(raw)||!Number.isSafeInteger(Number(raw))||Number(raw)>MAX_STOCK){
+  message('أدخل كمية صحيحة بين 0 و'+MAX_STOCK+'.');return;
+ }
+ const stock=Number(raw);
+ button.disabled=true;
+ try{
+  // Limit the target by product, current store and draft state. RLS enforces ownership too.
+  const path='/rest/v1/products?select=id,stock&id=eq.'+encodeURIComponent(product.id)+
+   '&store_id=eq.'+encodeURIComponent(store.id)+'&status=eq.draft';
+  const updated=await request(path,'PATCH',{stock},true,{'Prefer':'return=representation'});
+  if(!Array.isArray(updated)||updated.length!==1||updated[0].id!==product.id||Number(updated[0].stock)!==stock){
+   throw new Error('لم يتم تعديل المنتج. تحقق من حالة المتجر وصلاحيات الوصول.');
+  }
+  message('تم حفظ المخزون للمسودة بنجاح: '+stock+'. لا تظهر المسودة للزوار.');
+  try{await loadProducts()}catch(error){message('حُفظ المخزون، لكن تعذّر تحديث القائمة: '+error.message)}
+ }catch(error){message('تعذّر حفظ المخزون: '+error.message)}
+ finally{button.disabled=false}
+}
 async function loadProducts(){
- const rows=await request('/rest/v1/products?select=id,title_ar,title_en,price_usd,stock,status,created_at&store_id=eq.'+store.id+'&order=created_at.desc');
+ const rows=await request('/rest/v1/products?select=id,title_ar,title_en,price_usd,stock,status,created_at&store_id=eq.'+encodeURIComponent(store.id)+'&order=created_at.desc');
  $('products').replaceChildren();
  if(!rows.length){$('products').innerHTML='<div class="empty">لم تضف منتجات إلى متجرك بعد.</div>';return}
- for(const p of rows){const box=document.createElement('div');box.className='product';const title=document.createElement('strong');title.textContent=p.title_ar+' · '+p.title_en;const detail=document.createElement('span');detail.className='muted';detail.textContent=Number(p.price_usd).toFixed(2)+' USD · المخزون: '+p.stock+' · الحالة: '+(p.status==='draft'?'مسودة':p.status==='published'?'منشور':'مؤرشف');box.append(title,detail);$('products').append(box)}
+ for(const p of rows){
+  const box=document.createElement('div');box.className='product';
+  const title=document.createElement('strong');title.textContent=p.title_ar+' · '+p.title_en;
+  const detail=document.createElement('span');detail.className='muted';
+  detail.textContent=Number(p.price_usd).toFixed(2)+' USD · المخزون: '+p.stock+' · الحالة: '+(p.status==='draft'?'مسودة':p.status==='published'?'منشور':'مؤرشف');
+  box.append(title,detail);
+  if(p.status==='draft'){
+   const controls=document.createElement('div');controls.className='stock-controls';
+   const label=document.createElement('label');label.textContent='تعديل مخزون المسودة';
+   const field=document.createElement('input');field.type='number';field.min='0';field.max=String(MAX_STOCK);field.step='1';field.value=String(p.stock);
+   field.setAttribute('aria-label','مخزون المسودة: '+p.title_ar);
+   const button=document.createElement('button');button.type='button';button.textContent='حفظ المخزون';
+   button.addEventListener('click',()=>updateDraftStock(p,field,button));
+   label.append(field);controls.append(label,button);box.append(controls);
+  }
+  $('products').append(box);
+ }
 }
 $('productForm').onsubmit=async e=>{
  e.preventDefault();const btn=$('saveProduct');btn.disabled=true;message('جارٍ حفظ المنتج...');
