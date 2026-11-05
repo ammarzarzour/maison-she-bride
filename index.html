@@ -56,12 +56,12 @@ function cartQuoteText(){
  for(const [id,qty] of Object.entries(cart)){
   const product=items.find(p=>p.id===id);
   if(!product||!Number.isInteger(qty)||qty<=0||qty>maxQty(product))continue;
-  const title=String(product[lang()]||'').replace(/\\s+/g,' ').trim();
+  const title=String(product[lang()]||'').replace(/\s+/g,' ').trim();
   sum+=product.usd*qty;count+=qty;
   lines.push('- '+title+' × '+qty+' — '+price(product.usd*qty));
  }
  if(!count)return '';
- return [t().quoteHeading,...lines,t().total+': '+price(sum),t().quoteDisclaimer].join('\\n');
+ return [t().quoteHeading,...lines,t().total+': '+price(sum),t().quoteDisclaimer].join('\n');
 }
 function renderCart(){let tx=t(),sum=0,count=0;reconcileCart();let rows=Object.entries(cart).filter(([id,q])=>items.some(p=>p.id==id)&&Number.isInteger(q)&&q>0).map(([id,q])=>{let p=items.find(p=>p.id==id);sum+=p.usd*q;count+=q;return '<div class="cartitem"><div><b>'+escapeHTML(p[lang()])+'</b><br><small>'+price(p.usd*q)+'</small></div><div><button data-minus="'+escapeHTML(id)+'">−</button> '+q+' <button data-plus="'+escapeHTML(id)+'">+</button></div></div>'});$('cartItems').innerHTML=rows.join('')||'<p>'+escapeHTML(tx.empty)+'</p>';$('cartCount').textContent=count;$('cartTotal').textContent=tx.total+': '+price(sum);$('checkoutForm').classList.add('hidden');const summary=cartQuoteText();$('quotePreview').value=summary||tx.quoteEmpty;$('copyQuote').disabled=!summary;$('checkoutMessage').textContent='';persistLocal('msb_cart',JSON.stringify(cart))}
 let cartPreviousFocus=null;
