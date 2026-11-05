@@ -86,6 +86,18 @@ async function run(){
   assert.equal(vm.runInContext('categories.length',a.context),0);
   assert.equal(a.node('category').children.length,0);
  }
+ // Invalid store responses must never enable the approved seller panel or fetch inventory.
+ for(const invalid of [null,{id:'not-an-array'},[{id:'store-A',name:'',status:'approved'}],[{id:'store-A',name:'Bad store',status:'unknown'}]]){
+  const a=setup();
+  vm.runInContext("token='token-A';user={id:'seller-A'}",a.context);
+  const loading=vm.runInContext('loadSeller()',a.context);
+  a.finish(0,invalid);
+  await loading;
+  assert.equal(a.calls.length,1,'invalid store must not trigger category or product reads');
+  assert.equal(vm.runInContext('store',a.context),null);
+  assert.equal(a.node('products').children.length,0);
+  assert.match(a.node('msg').textContent,/Could not load store details/);
+ }
  // A delayed login response must not silently reauthenticate after logout.
  {
   const a=setup();
