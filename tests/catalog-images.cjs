@@ -40,7 +40,7 @@ async function run(images, expectedError) {
   [{image_url:'https://example.com/a.jpg',position:[]}],
   [{image_url:'https://example.com/a.jpg',position:[1]}],
   [{image_url:'https://example.com/a.jpg',position:{}}],
-  ...['1e2','+1','1.0',' 1','1 ','0x10','-0','1e309','9007199254740992'].map(position=>[{image_url:'https://example.com/a.jpg',position}])
+  ...['1e2','+1','1.0',' 1','1 ','0x10','-0','00','01','0002','1e309','9007199254740992'].map(position=>[{image_url:'https://example.com/a.jpg',position}])
  ])await run(invalid,true);
  console.log('PASS HTTPS image URL validation and malformed image metadata cases');
 })().catch(err=>{console.error(err);process.exitCode=1});
