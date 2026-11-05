@@ -24,6 +24,12 @@ assert.equal(find('زَفَاف','out'),'a','Arabic harakat should not block sea
 assert.equal(find('حَقِيبَة','all'),'b','Arabic diacritics should not block search');
 assert.equal(find('حـقيبة','all'),'b','Arabic tatweel should not block search');
 assert.equal(find('góld','all'),'b,c','Latin accents should not block search');
+assert.equal(find('حقيبه','all'),'','unrelated spelling must not match');
+assert.equal(find('حقيبة ذهبية','all'),'b');
+assert.equal(find('حقيبة ذهبيّة','all'),'b','Arabic diacritics must not change results');
+assert.equal(find('فستان زَفَاف','all'),'a');
+assert.equal(find('فستان زفاف','all'),'a');
+assert.equal(find('حذاء','all'),'c');
 assert.equal(find('زفاف','out'),'a');
 assert.equal(find('','low'),'b');
 assert.equal(find('','published'),'a');
