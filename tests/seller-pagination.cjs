@@ -80,7 +80,8 @@ async function run(){
  // Invalid inventory must fail closed, not render NaN prices, blank names or false stock totals.
  for(const changes of [
   {title_ar:' '},{title_en:null},{price_usd:'not-a-price'},{price_usd:null},
-  {price_usd:-1},{stock:-1},{stock:1.5},{stock:'2 '},
+  {price_usd:-1},{price_usd:[10]},{price_usd:{0:10}},{price_usd:true},
+  {stock:-1},{stock:1.5},{stock:'2 '},{stock:[2]},{stock:{0:2}},{stock:true},
   {stock:2147483648},{status:'unknown'},{id:' '}
  ]){
   const a=setup([{...row(0),...changes}]);
