@@ -77,6 +77,27 @@ async function run(){
   const a=setup([],{custom:()=>Array.from({length:101},(_,i)=>row(i))});
   await assert.rejects(vm.runInContext('loadProducts()',a.context),/Invalid products response/);
  }
+ // Invalid inventory must fail closed, not render NaN prices, blank names or false stock totals.
+ for(const changes of [
+  {title_ar:' '},{title_en:null},{price_usd:'not-a-price'},{price_usd:null},
+  {price_usd:-1},{stock:-1},{stock:1.5},{stock:'2 '},
+  {stock:2147483648},{status:'unknown'},{id:' '}
+ ]){
+  const a=setup([{...row(0),...changes}]);
+  await assert.rejects(vm.runInContext('loadProducts()',a.context),/Invalid products response/);
+  assert.equal(a.node('products').children.length,0,'invalid inventory must not render');
+  assert.equal(a.node('stockSummary').children.length,0,'invalid inventory must not show counts');
+  assert.equal(vm.runInContext('cachedSellerProducts',a.context),null);
+ }
+ // An invalid later page must also clear the previously rendered complete inventory.
+ {
+  const records=[row(0)],a=setup(records);
+  await vm.runInContext('loadProducts()',a.context);
+  records[0]={...row(0),stock:'bad'};
+  await assert.rejects(vm.runInContext('loadProducts()',a.context),/Invalid products response/);
+  assert.equal(a.node('products').children.length,0);
+  assert.equal(a.node('stockSummary').children.length,0);
+ }
  // Logging out while a later page is pending must not render private rows.
  {
   const a=setup(Array.from({length:150},(_,i)=>row(i)),{defer:true});
