@@ -232,8 +232,10 @@ async function loadProducts(){
      typeof row.title_ar!=='string'||!row.title_ar.trim()||
      typeof row.title_en!=='string'||!row.title_en.trim()||
      !['draft','published','archived'].includes(row.status)||
+     !(['string','number'].includes(typeof row.price_usd))||
      !/^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/.test(String(row.price_usd))||
      !Number.isFinite(Number(row.price_usd))||Number(row.price_usd)<0||
+     !(['string','number'].includes(typeof row.stock))||
      !/^(?:0|[1-9][0-9]*)$/.test(String(row.stock))||
      !Number.isSafeInteger(Number(row.stock))||Number(row.stock)>MAX_STOCK)throw new Error(tr('searchProducts'));
    seen.add(row.id);all.push(row);
