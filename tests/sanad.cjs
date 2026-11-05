@@ -92,4 +92,35 @@ assert.equal(rows().length,1);
 $('demoClear').click();
 assert.equal(rows().length,0);
 assert.match($('demoMessage').textContent,/cleared/);
+
+// A blocked localStorage write must not be reported as a saved demo request.
+// The page remains usable in memory, but the warning must survive re-rendering.
+const blockedElements = new Map();
+const blockedGet = id => {
+  if (!blockedElements.has(id)) blockedElements.set(id,new Element(tags[id]||'div'));
+  return blockedElements.get(id);
+};
+const blockedDocument = {
+  documentElement:{lang:'en',dir:'ltr'},
+  getElementById:blockedGet,
+  createElement:tag=>new Element(tag)
+};
+const blockedStorage = {
+  getItem:()=>null,
+  setItem:()=>{throw new Error('Storage blocked');}
+};
+vm.runInNewContext(script,{document:blockedDocument,localStorage:blockedStorage,window:{confirm:()=>true},Date,Math});
+const b=blockedGet;
+b('demoService').value='0';
+b('demoForm').listeners.submit({preventDefault(){}});
+assert.match(b('demoMessage').textContent,/storage unavailable/i,'create must preserve storage warning');
+b('demoList').children[0].children[2].children[0].click();
+assert.match(b('demoMessage').textContent,/storage unavailable/i,'advance must preserve storage warning');
+b('demoList').children[0].children[2].children[1].click();
+assert.match(b('demoMessage').textContent,/storage unavailable/i,'delete must preserve storage warning');
+b('demoService').value='0';
+b('demoForm').listeners.submit({preventDefault(){}});
+b('demoClear').click();
+assert.match(b('demoMessage').textContent,/storage unavailable/i,'clear must preserve storage warning');
+
 console.log('PASS Sanad fictional request creation, local storage, workflow, filter, translation and clearing');
