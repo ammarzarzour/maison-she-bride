@@ -5,7 +5,7 @@ const html=fs.readFileSync('seller.html','utf8');
 const script=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)][0]?.[1];
 assert.ok(script?.includes('const STOCK_EDIT_ENABLED=false;'),'inventory writes must stay disabled without a narrow DB grant');
 assert.match(html,/تعديل المخزون غير مفعّل حالياً/);
-assert.match(html,/id="apply" disabled/, 'store application button must be disabled without INSERT permission');
+assert.match(html,/id="apply"[^>]*disabled/, 'store application button must be disabled without INSERT permission');
 assert.match(html,/id="saveProduct"[^>]*disabled/, 'product create button must be disabled without INSERT permission');
 assert.match(script,/const SELLER_MUTATIONS_ENABLED=false;/, 'seller mutation handlers must be gated');
 
