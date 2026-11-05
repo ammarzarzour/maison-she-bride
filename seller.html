@@ -297,7 +297,7 @@ $('refreshInventory').onclick=async()=>{
 };
 function normalizeSellerSearch(value){
  // Ignore Latin/Arabic diacritics and Arabic tatweel without changing displayed titles.
- return String(value).normalize('NFKD').replace(/[\u0300-\u036f\u0640\u064b-\u065f\u0670]/gu,'').toLocaleLowerCase();
+ return String(value).normalize('NFKD').replace(/[\u0300-\u036f\u0640\u064b-\u065f\u0670]/gu,'').replace(/[أإآٱ]/gu,'ا').replace(/ى/gu,'ي').toLocaleLowerCase();
 }
 function filterSellerInventory(rows,query,status){
  const words=normalizeSellerSearch(query||'').trim().split(/\s+/u).filter(Boolean);
