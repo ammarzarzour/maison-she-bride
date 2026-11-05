@@ -156,6 +156,20 @@ async function run() {
   }
   console.log('PASS catalog rejects blank or missing Arabic and English titles');
 
+  // Extremely large finite USD amounts can overflow the storefront's SYP display rate.
+  // Reject the entire response instead of showing an Infinity total or product price.
+  for (const hugePrice of [1e308, '1e308']) {
+    const hugeWindow={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+    vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+      window:hugeWindow,AbortController,setTimeout,clearTimeout,
+      fetch:async()=>({ok:true,json:async()=>[{id:'overflow-price',title_ar:'فستان',title_en:'Dress',price_usd:hugePrice,stock:1}]})
+    });
+    const result=await hugeWindow.MSB_CATALOG.products();
+    assert.equal(result.rows.length,0);
+    assert.match(result.error,/price or stock/);
+  }
+  console.log('PASS catalog rejects prices overflowing currency conversion');
+
   // Live catalog must not silently render NaN prices or invalid stock values.
   for (const [price,stock] of [['not-a-price',1],[10,-2],[10,1.5]]) {
     const invalidWindow={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
