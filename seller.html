@@ -262,6 +262,7 @@ async function loadProducts(){
   if(rows.length<SELLER_PAGE_SIZE)break;
  }
  if(!current())return;
+ sellerDisplayPage=0;
  cachedSellerProducts=all;
  $('refreshInventory').disabled=false;$('refreshInventory').textContent=tr('refreshInventory');
  exportInventorySession={epoch,authToken,ownerId,storeId};
