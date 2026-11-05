@@ -22,6 +22,8 @@ async function run(images, expectedError) {
 }
 (async()=>{
  await run(valid.product_images,false);
+ await run([{image_url:'https://example.com/dress.jpg',position:'2'}],false);
+ await run([{image_url:'https://example.com/dress.jpg',position:0}],false);
  await run([],false);
  await run(null,false);
  for(const invalid of [
@@ -37,7 +39,8 @@ async function run(images, expectedError) {
   [{image_url:'https://example.com/a.jpg',position:false}],
   [{image_url:'https://example.com/a.jpg',position:[]}],
   [{image_url:'https://example.com/a.jpg',position:[1]}],
-  [{image_url:'https://example.com/a.jpg',position:{}}]
+  [{image_url:'https://example.com/a.jpg',position:{}}],
+  ...['1e2','+1','1.0',' 1','1 ','0x10','-0','1e309','9007199254740992'].map(position=>[{image_url:'https://example.com/a.jpg',position}])
  ])await run(invalid,true);
  console.log('PASS HTTPS image URL validation and malformed image metadata cases');
 })().catch(err=>{console.error(err);process.exitCode=1});
