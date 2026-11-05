@@ -35,6 +35,8 @@ jobs:
         run: node tests/seller-language.cjs
       - name: Protect seller session from late authentication and inventory reads
         run: node tests/seller-session-race.cjs
+      - name: Verify complete seller inventory pagination and overflow safety
+        run: node tests/seller-pagination.cjs
       - name: Verify admin bilingual dashboard and safe shipping drafts
         run: node tests/admin-language.cjs
       - name: Verify admin session and concurrent refresh race protections
