@@ -18,7 +18,8 @@ class Element {
 }
 const nodes=new Map();
 function node(id){if(!nodes.has(id))nodes.set(id,new Element(id));return nodes.get(id)}
-const document={getElementById:node,createElement:tag=>new Element(tag)};
+const document={getElementById:node,createElement:tag=>new Element(tag),documentElement:{lang:'ar',dir:'rtl'},querySelectorAll:()=>[]};
+const localStorage={getItem:()=>null,setItem(){}};
 const requests=[];
 const products=[
  {id:'draft-one',title_ar:'فستان',title_en:'Dress',price_usd:20,stock:1,status:'draft'},
@@ -33,7 +34,7 @@ async function fetch(url,opts={}){
  assert.equal(opts.headers.Authorization,'Bearer fixture-auth');
  return {ok:true,text:async()=>JSON.stringify(products)};
 }
-const context=vm.createContext({document,fetch,FormData,URL});
+const context=vm.createContext({document,fetch,FormData,URL,navigator:{language:'ar-SY'},localStorage});
 vm.runInContext(script,context,{filename:'seller.html#script'});
 vm.runInContext("token='fixture-auth';user={id:'owner-test'};store={id:'store-test',status:'approved'}",context);
 function badges(){return node('stockSummary').children.map(x=>x.textContent)}
