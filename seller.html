@@ -228,7 +228,14 @@ async function loadProducts(){
   if(!Array.isArray(rows)||rows.length>(probe?1:SELLER_PAGE_SIZE))throw new Error(tr('searchProducts'));
   if(probe){if(rows.length)throw new Error(tr('inventoryLimit'));break;}
   for(const row of rows){
-   if(!row||typeof row.id!=='string'||!row.id.trim()||seen.has(row.id))throw new Error(tr('searchProducts'));
+   if(!row||typeof row.id!=='string'||!row.id.trim()||seen.has(row.id)||
+     typeof row.title_ar!=='string'||!row.title_ar.trim()||
+     typeof row.title_en!=='string'||!row.title_en.trim()||
+     !['draft','published','archived'].includes(row.status)||
+     !/^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/.test(String(row.price_usd))||
+     !Number.isFinite(Number(row.price_usd))||Number(row.price_usd)<0||
+     !/^(?:0|[1-9][0-9]*)$/.test(String(row.stock))||
+     !Number.isSafeInteger(Number(row.stock))||Number(row.stock)>MAX_STOCK)throw new Error(tr('searchProducts'));
    seen.add(row.id);all.push(row);
   }
   if(rows.length<SELLER_PAGE_SIZE)break;
