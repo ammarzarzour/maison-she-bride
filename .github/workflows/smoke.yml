@@ -17,6 +17,8 @@ jobs:
         run: node tests/smoke.cjs
       - name: Test storefront wishlist, sorting and localization
         run: node tests/storefront.cjs
+      - name: Test seller draft inventory editing safety
+        run: node tests/seller-stock.cjs
       - name: Check corrupted carts and browser storage failures
         run: node tests/storefront-storage.cjs
       - name: Verify language and currency preference recovery
