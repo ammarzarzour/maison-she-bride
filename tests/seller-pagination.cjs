@@ -53,6 +53,19 @@ async function run(){
   assert.equal(vm.runInContext('cachedSellerProducts',a.context),null);
   assert.deepEqual(a.calls.at(-1),{limit:1,offset:1000});
  }
+ // An invalid refresh must remove the previously rendered inventory and counts.
+ {
+  const records=Array.from({length:1001},(_,i)=>row(i));
+  const a=setup(records);
+  records.length=1;
+  await vm.runInContext('loadProducts()',a.context);
+  assert.equal(a.node('products').children.length,1);
+  for(let i=1;i<1001;i++)records.push(row(i));
+  await assert.rejects(vm.runInContext('loadProducts()',a.context),/1000/);
+  assert.equal(a.node('products').children.length,0,'stale products must not remain visible');
+  assert.equal(a.node('stockSummary').children.length,0,'stale inventory counts must be cleared');
+  assert.equal(vm.runInContext('cachedSellerProducts',a.context),null);
+ }
  // Duplicate IDs across pages are rejected rather than double-counted.
  {
   const a=setup(Array.from({length:101},(_,i)=>row(i)),{custom:({offset})=>offset===100?[row(0)]:Array.from({length:100},(_,i)=>row(i))});
