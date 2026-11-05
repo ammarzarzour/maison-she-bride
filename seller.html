@@ -76,6 +76,7 @@ function renderSellerLanguage(){
  for(const node of document.querySelectorAll('[data-i18n-placeholder]'))node.placeholder=tr(node.dataset.i18nPlaceholder);
  if(user){$('welcome').textContent=tr('welcomePrefix')+' '+(user.email||tr('welcomeGuest')); }
  if(store){$('storeStatus').textContent=tr('storePrefix')+' '+store.name+' · '+tr(store.status==='approved'?'approved':store.status==='pending'?'pending':'suspended');}
+ if(categories.length)renderSellerCategories();
  if(Array.isArray(cachedSellerProducts))renderSellerProducts(cachedSellerProducts);
 }
 $('language').addEventListener('change',e=>{
@@ -91,17 +92,17 @@ async function request(path,method='GET',body=null,auth=true,extra={}){
  if(body!==null&&!(body instanceof FormData))headers['Content-Type']='application/json';
  const res=await fetch(BASE+path,{method,headers,body:body===null?undefined:body instanceof FormData?body:JSON.stringify(body)});
  const raw=await res.text();let data;try{data=raw?JSON.parse(raw):null}catch{data=raw}
- if(!res.ok)throw new Error(data?.message||data?.msg||data?.error_description||'تعذر تنفيذ العملية ('+res.status+')');
+ if(!res.ok)throw new Error(data?.message||data?.msg||data?.error_description||tr('requestFailed')+' ('+res.status+')');
  return data;
 }
-function showAccount(){ $('authPanel').classList.add('hidden');$('accountPanel').classList.remove('hidden');$('welcome').textContent='مرحباً '+(user.email||'بك'); }
+function showAccount(){ $('authPanel').classList.add('hidden');$('accountPanel').classList.remove('hidden');$('welcome').textContent=tr('welcomePrefix')+' '+(user.email||tr('welcomeGuest')); }
 async function authenticate(kind){
- message('جارٍ الاتصال...');
+ message(tr('loginConnecting'));
  try{
  const email=$('email').value.trim(),password=$('password').value;
- if(!email||password.length<6)throw new Error('أدخل بريداً صحيحاً وكلمة مرور من 6 أحرف على الأقل.');
+ if(!email||password.length<6)throw new Error(tr('loginInvalid'));
  const data=await request('/auth/v1/'+(kind==='signup'?'signup':'token?grant_type=password'),'POST',{email,password},false);
- if(!data.access_token){message('تم إنشاء الحساب. تحقق من بريدك الإلكتروني ثم سجّل الدخول.');return}
+ if(!data.access_token){message(tr('verifyEmail'));return}
  token=data.access_token;user=data.user;showAccount();await loadSeller();
  }catch(e){message(e.message)}
 }
@@ -110,36 +111,47 @@ async function loadSeller(){
  try{
  const rows=await request('/rest/v1/stores?select=id,name,status&owner_id=eq.'+encodeURIComponent(user.id)+'&limit=1');
  store=rows?.[0]||null;
- if(!store){$('applicationBox').classList.remove('hidden');$('approvedBox').classList.add('hidden');$('storeStatus').textContent='لا يوجد متجر مسجل لهذا الحساب. أرسل طلب اعتماد للبدء.';$('products').innerHTML='<div class="empty">لا توجد منتجات بعد.</div>';$('stockSummary').replaceChildren();return}
- $('storeStatus').innerHTML='المتجر: <b></b> <span class="badge"></span>';$('storeStatus').querySelector('b').textContent=store.name;$('storeStatus').querySelector('.badge').textContent=store.status==='approved'?'معتمد':store.status==='pending'?'بانتظار المراجعة':'موقوف';
+ if(!store){$('applicationBox').classList.remove('hidden');$('approvedBox').classList.add('hidden');$('storeStatus').textContent=tr('noStore');$('products').textContent=tr('noProducts');$('stockSummary').replaceChildren();cachedSellerProducts=null;return}
+ $('storeStatus').textContent=tr('storePrefix')+' '+store.name+' · '+tr(store.status==='approved'?'approved':store.status==='pending'?'pending':'suspended');
  $('applicationBox').classList.add('hidden');
- if(store.status!=='approved'){$('approvedBox').classList.add('hidden');$('products').innerHTML='<div class="empty">ستظهر أدوات إضافة المنتجات بعد اعتماد المتجر من الإدارة.</div>';$('stockSummary').replaceChildren();return}
+ if(store.status!=='approved'){$('approvedBox').classList.add('hidden');$('products').textContent=tr('awaitApproval');$('stockSummary').replaceChildren();cachedSellerProducts=null;return}
  $('approvedBox').classList.remove('hidden');await loadCategories();await loadProducts();
- }catch(e){message('تعذر تحميل بيانات المتجر: '+e.message)}
+ }catch(e){message(tr('loadError')+': '+e.message)}
 }
 $('apply').onclick=async()=>{
- if(!SELLER_MUTATIONS_ENABLED){message('طلبات المتاجر غير مفعّلة حتى اعتماد صلاحيات قاعدة البيانات.');return}
- try{const name=$('storeName').value.trim();if(name.length<2)throw new Error('اكتب اسم المتجر (حرفان على الأقل).');
+ if(!SELLER_MUTATIONS_ENABLED){message(tr('storeDisabled'));return}
+ try{const name=$('storeName').value.trim();if(name.length<2)throw new Error(tr('applicationNameError'));
  await request('/rest/v1/stores','POST',{name,owner_id:user.id,status:'pending'},true,{'Prefer':'return=minimal'});
- message('تم إرسال طلب اعتماد المتجر. ستتمكن من إضافة المنتجات بعد موافقة الإدارة.');await loadSeller();
+ message(tr('applicationSent'));await loadSeller();
  }catch(e){message(e.message)}
 };
+function renderSellerCategories(){
+ const selected=$('category').value;
+ $('category').replaceChildren();
+ for(const c of categories){
+  const o=document.createElement('option');o.value=c.id;
+  o.textContent=sellerLocale()==='ar'?c.name_ar+' / '+c.name_en:c.name_en+' / '+c.name_ar;
+  $('category').append(o);
+ }
+ if(categories.some(c=>c.id===selected))$('category').value=selected;
+}
 async function loadCategories(){
  categories=await request('/rest/v1/categories?select=id,name_ar,name_en&order=name_ar.asc');
- $('category').replaceChildren();for(const c of categories){const o=document.createElement('option');o.value=c.id;o.textContent=c.name_ar+' / '+c.name_en;$('category').append(o)}
+ if(!Array.isArray(categories))throw new Error(tr('searchProducts'));
+ renderSellerCategories();
 }
 const MAX_STOCK=2147483647; // PostgreSQL integer upper bound.
 const SELLER_MUTATIONS_ENABLED=false; // Database currently denies authenticated INSERT/UPDATE grants.
 // Database authenticated role currently has no UPDATE(stock) grant. Do not offer a nonworking action.
 const STOCK_EDIT_ENABLED=false;
 async function updateDraftStock(product,field,button){
- if(!STOCK_EDIT_ENABLED){message('تعديل المخزون غير مفعّل حتى اعتماد الصلاحيات المناسبة.');return;}
+ if(!STOCK_EDIT_ENABLED){message(tr('stockDisabled'));return;}
  if(!token||!user||!store||store.status!=='approved'||product.status!=='draft'){
-  message('تعديل المخزون متاح للتاجر المعتمد وللمنتجات المسودة فقط.');return;
+  message(tr('stockOnlyDrafts'));return;
  }
  const raw=String(field.value).trim();
  if(!/^(?:0|[1-9][0-9]*)$/.test(raw)||!Number.isSafeInteger(Number(raw))||Number(raw)>MAX_STOCK){
-  message('أدخل كمية صحيحة بين 0 و'+MAX_STOCK+'.');return;
+  message(tr('stockInvalid')+MAX_STOCK+'.');return;
  }
  const stock=Number(raw);
  button.disabled=true;
@@ -149,36 +161,40 @@ async function updateDraftStock(product,field,button){
    '&store_id=eq.'+encodeURIComponent(store.id)+'&status=eq.draft';
   const updated=await request(path,'PATCH',{stock},true,{'Prefer':'return=representation'});
   if(!Array.isArray(updated)||updated.length!==1||updated[0].id!==product.id||Number(updated[0].stock)!==stock){
-   throw new Error('لم يتم تعديل المنتج. تحقق من حالة المتجر وصلاحيات الوصول.');
+   throw new Error(tr('stockNotUpdated'));
   }
-  message('تم حفظ المخزون للمسودة بنجاح: '+stock+'. لا تظهر المسودة للزوار.');
-  try{await loadProducts()}catch(error){message('حُفظ المخزون، لكن تعذّر تحديث القائمة: '+error.message)}
- }catch(error){message('تعذّر حفظ المخزون: '+error.message)}
+  message(tr('stockUpdated')+stock+'. '+tr('stockDraftNote'));
+  try{await loadProducts()}catch(error){message(tr('stockRefreshFailed')+error.message)}
+ }catch(error){message(tr('stockSaveFailed')+error.message)}
  finally{button.disabled=false}
 }
 function showStockSummary(rows){
  const summary=$('stockSummary');summary.replaceChildren();
- const counts=[['المسودات',rows.filter(p=>p.status==='draft').length],['المنشورة',rows.filter(p=>p.status==='published').length],['مخزون منخفض (1–3)',rows.filter(p=>Number(p.stock)>=1&&Number(p.stock)<=3).length],['نفد المخزون',rows.filter(p=>Number(p.stock)===0).length]];
+ const counts=[[tr('summaryDrafts'),rows.filter(p=>p.status==='draft').length],[tr('summaryPublished'),rows.filter(p=>p.status==='published').length],[tr('summaryLow'),rows.filter(p=>Number(p.stock)>=1&&Number(p.stock)<=3).length],[tr('summaryOut'),rows.filter(p=>Number(p.stock)===0).length]];
  for(const [label,count] of counts){const badge=document.createElement('span');badge.textContent=label+': '+count;summary.append(badge)}
 }
 async function loadProducts(){
  const rows=await request('/rest/v1/products?select=id,title_ar,title_en,price_usd,stock,status,created_at&store_id=eq.'+encodeURIComponent(store.id)+'&order=created_at.desc');
- if(!Array.isArray(rows))throw new Error('استجابة قائمة المنتجات غير صالحة.');
+ if(!Array.isArray(rows))throw new Error(tr('searchProducts'));
+ cachedSellerProducts=rows;
+ renderSellerProducts(rows);
+}
+function renderSellerProducts(rows){
  showStockSummary(rows);
  $('products').replaceChildren();
- if(!rows.length){$('products').innerHTML='<div class="empty">لم تضف منتجات إلى متجرك بعد.</div>';return}
+ if(!rows.length){$('products').textContent=tr('noProducts');return}
  for(const p of rows){
   const box=document.createElement('div');box.className='product';
-  const title=document.createElement('strong');title.textContent=p.title_ar+' · '+p.title_en;
+  const title=document.createElement('strong');title.textContent=sellerLocale()==='ar'?p.title_ar+' · '+p.title_en:p.title_en+' · '+p.title_ar;
   const detail=document.createElement('span');detail.className='muted';
-  detail.textContent=Number(p.price_usd).toFixed(2)+' USD · المخزون: '+p.stock+' · الحالة: '+(p.status==='draft'?'مسودة':p.status==='published'?'منشور':'مؤرشف');
+  detail.textContent=Number(p.price_usd).toFixed(2)+' USD · '+tr('stockText')+': '+p.stock+' · '+tr('statusText')+': '+tr(p.status==='draft'?'draft':p.status==='published'?'published':'archived');
   box.append(title,detail);
   if(p.status==='draft'&&STOCK_EDIT_ENABLED){
    const controls=document.createElement('div');controls.className='stock-controls';
-   const label=document.createElement('label');label.textContent='تعديل مخزون المسودة';
+   const label=document.createElement('label');label.textContent=tr('editDraftStock');
    const field=document.createElement('input');field.type='number';field.min='0';field.max=String(MAX_STOCK);field.step='1';field.value=String(p.stock);
-   field.setAttribute('aria-label','مخزون المسودة: '+p.title_ar);
-   const button=document.createElement('button');button.type='button';button.textContent='حفظ المخزون';
+   field.setAttribute('aria-label',tr('editDraftStock')+': '+p.title_ar);
+   const button=document.createElement('button');button.type='button';button.textContent=tr('saveStock');
    button.addEventListener('click',()=>updateDraftStock(p,field,button));
    label.append(field);controls.append(label,button);box.append(controls);
   }
@@ -186,25 +202,26 @@ async function loadProducts(){
  }
 }
 $('productForm').onsubmit=async e=>{
- e.preventDefault();if(!SELLER_MUTATIONS_ENABLED){message('حفظ المنتجات غير مفعّل حتى اعتماد صلاحيات قاعدة البيانات.');return}const btn=$('saveProduct');btn.disabled=true;message('جارٍ حفظ المنتج...');
+ e.preventDefault();if(!SELLER_MUTATIONS_ENABLED){message(tr('productDisabled'));return}const btn=$('saveProduct');btn.disabled=true;message(tr('saveInProgress'));
  try{
  const price=Number($('price').value),stock=Number($('stock').value),file=$('photo').files[0];
- if(!(price>0)||!Number.isInteger(stock)||stock<0)throw new Error('تحقق من السعر والكمية.');
- if(file&&(file.size>5*1024*1024||!['image/jpeg','image/png','image/webp','image/avif'].includes(file.type)))throw new Error('الصورة يجب أن تكون JPG أو PNG أو WebP أو AVIF وبحجم لا يتجاوز 5 ميغابايت.');
+ if(!(price>0)||!Number.isInteger(stock)||stock<0)throw new Error(tr('priceStockInvalid'));
+ if(file&&(file.size>5*1024*1024||!['image/jpeg','image/png','image/webp','image/avif'].includes(file.type)))throw new Error(tr('imageInvalid'));
  const payload={store_id:store.id,category_id:$('category').value,title_ar:$('titleAr').value.trim(),title_en:$('titleEn').value.trim(),description_ar:$('descAr').value.trim(),description_en:$('descEn').value.trim(),price_usd:price,stock,status:'draft'};
  const created=await request('/rest/v1/products?select=id','POST',payload,true,{'Prefer':'return=representation'});
- const product=created?.[0];if(!product?.id)throw new Error('تم إرسال المنتج لكن لم يصل معرّفه. حدّث قائمة المنتجات للتحقق.');
+ const product=created?.[0];if(!product?.id)throw new Error(tr('createMissingId'));
  if(file){
  const ext=file.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
  const path=store.id+'/'+product.id+'/'+crypto.randomUUID()+'.'+ext;
  const uploaded=await fetch(BASE+'/storage/v1/object/product-images/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+token,'Content-Type':file.type,'x-upsert':'false'},body:file});
- if(!uploaded.ok){const err=await uploaded.json().catch(()=>({}));throw new Error('حُفظ المنتج كمسودة لكن فشل رفع الصورة: '+(err.message||uploaded.status))}
+ if(!uploaded.ok){const err=await uploaded.json().catch(()=>({}));throw new Error(tr('imageUploadFailed')+(err.message||uploaded.status))}
  const imageUrl=BASE+'/storage/v1/object/public/product-images/'+path;
  await request('/rest/v1/product_images','POST',{product_id:product.id,image_url:imageUrl,position:0},true,{'Prefer':'return=minimal'});
  }
- e.target.reset();message('تم حفظ المنتج كمسودة. لن يظهر للزوار قبل مراجعة الإدارة ونشره.');await loadProducts();
+ e.target.reset();message(tr('draftSaved'));await loadProducts();
  }catch(err){message(err.message)}
  finally{btn.disabled=false}
 };
-$('logout').onclick=()=>{token='';user=null;store=null;$('stockSummary').replaceChildren();$('accountPanel').classList.add('hidden');$('authPanel').classList.remove('hidden');$('password').value='';message('تم تسجيل الخروج من هذه الصفحة.')};
+$('logout').onclick=()=>{token='';user=null;store=null;$('stockSummary').replaceChildren();cachedSellerProducts=null;$('accountPanel').classList.add('hidden');$('authPanel').classList.remove('hidden');$('password').value='';message(tr('logoutDone'))};
+renderSellerLanguage();
 </script></body></html>
