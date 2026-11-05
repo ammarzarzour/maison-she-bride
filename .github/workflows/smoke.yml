@@ -33,6 +33,8 @@ jobs:
         run: node tests/cart-demo-quote.cjs
       - name: Test read-only seller inventory and disabled writes
         run: node tests/seller-stock.cjs
+      - name: Verify seller inventory search and stock filters
+        run: node tests/seller-inventory-filters.cjs
       - name: Verify safe seller inventory CSV export
         run: node tests/seller-inventory-export.cjs
       - name: Verify seller Arabic and English language switching
