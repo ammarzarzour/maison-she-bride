@@ -39,11 +39,13 @@ function setup(deviceLanguage,savedChoice=null,blockedStorage=false){
   orders:[{id:'order-123456789',status:'pending',total_amount:25,currency:'USD',invoice_number:'OLD',shipping_carrier:'Old Carrier',tracking_number:'OLDTRACK',created_at:'2026-11-05T00:00:00Z'}]
  };
  const requests=[];
+ let denyNext=false;
  async function fetch(url,opts={}){
   requests.push({url,opts});
   assert.equal(opts.method,'GET','test must never trigger an admin write');
   assert.ok(url.includes('/functions/v1/admin-console'));
   assert.equal(opts.headers.Authorization,'Bearer test-admin-token');
+  if(denyNext){denyNext=false;return {ok:false,status:403,json:async()=>({error:'No admin permission'})};}
   return {ok:true,json:async()=>data};
  }
  const context=vm.createContext({document,localStorage,navigator:{language:deviceLanguage},fetch,URL});
@@ -51,7 +53,7 @@ function setup(deviceLanguage,savedChoice=null,blockedStorage=false){
  const change=v=>node('language').handlers.change({target:{value:v}});
  const text=key=>labels.find(e=>e.dataset.i18n===key).textContent;
  const orderFields=()=>node('ordersRows').children[0].children[6].children;
- return {context,change,node,document,saved,requests,staticKeys,labels,text,orderFields};
+ return {context,change,node,document,saved,requests,staticKeys,labels,text,orderFields,deny:()=>{denyNext=true}};
 }
 async function run(){
  const a=setup('ar-SY');
@@ -112,9 +114,18 @@ async function run(){
  blocked.change('ar');
  assert.equal(blocked.document.documentElement.dir,'rtl','language must work even if storage is blocked');
 
+ a.deny();
+ await vm.runInContext('load()',a.context);
+ assert.equal(vm.runInContext('token',a.context),'','403 must revoke local admin session');
+ assert.equal(vm.runInContext('lastDashboard',a.context),null,'403 must clear cached privileged data');
+ assert.equal(vm.runInContext('shippingDrafts.size',a.context),0,'403 must clear unsaved shipping drafts');
+ assert.equal(a.node('ordersRows').children.length,0,'403 must erase rendered order data');
+ assert.equal(a.node('productsRows').children.length,0,'403 must erase rendered product data');
+ assert.equal(a.node('storesRows').children.length,0,'403 must erase rendered store data');
+ assert.equal(a.node('ordersCount').textContent,'0','403 must clear dashboard counters');
  a.node('logout').onclick();
  assert.equal(vm.runInContext('lastDashboard',a.context),null);
  assert.equal(vm.runInContext('shippingDrafts.size',a.context),0,'unsaved shipping state should be cleared on logout');
- console.log('PASS admin AR/EN language, saved auto preference, server-free switching, and unsaved shipment drafts');
+ console.log('PASS admin bilingual UI, persisted preferences, unsaved shipping drafts, and denied-session cleanup');
 }
 run().catch(err=>{console.error(err);process.exitCode=1});
