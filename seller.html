@@ -188,19 +188,23 @@ function showStockSummary(rows){
 // Read all supported inventory pages; never silently present Supabase's default
 // response limit as the complete stock summary. No partial results are rendered.
 const SELLER_PAGE_SIZE=100,SELLER_MAX_PAGES=10;
+// Prevent overlapping refreshes in one session from publishing out-of-order inventory.
+let sellerInventoryGeneration=0;
 async function loadProducts(){
  if(!token||!user||!store)return;
  const epoch=sellerSessionEpoch,authToken=token,ownerId=user.id,storeId=store.id;
+ const generation=++sellerInventoryGeneration;
+ const current=()=>generation===sellerInventoryGeneration&&sellerSessionActive(epoch,authToken,ownerId,storeId);
  const query='/rest/v1/products?select=id,title_ar,title_en,price_usd,stock,status,created_at&store_id=eq.'+encodeURIComponent(storeId)+'&order=created_at.desc,id.desc';
  // Invalidate previously displayed inventory before any network read: failures
  // must not leave stale counts or products looking like a current complete list.
  cachedSellerProducts=null;$('products').replaceChildren();$('stockSummary').replaceChildren();
  const all=[],seen=new Set();
  for(let page=0;page<=SELLER_MAX_PAGES;page++){
-  if(!sellerSessionActive(epoch,authToken,ownerId,storeId))return;
+  if(!current())return;
   const probe=page===SELLER_MAX_PAGES;
   const rows=await request(query+'&limit='+(probe?1:SELLER_PAGE_SIZE)+'&offset='+(page*SELLER_PAGE_SIZE));
-  if(!sellerSessionActive(epoch,authToken,ownerId,storeId))return;
+  if(!current())return;
   if(!Array.isArray(rows)||rows.length>(probe?1:SELLER_PAGE_SIZE))throw new Error(tr('searchProducts'));
   if(probe){if(rows.length)throw new Error(tr('inventoryLimit'));break;}
   for(const row of rows){
@@ -209,7 +213,7 @@ async function loadProducts(){
   }
   if(rows.length<SELLER_PAGE_SIZE)break;
  }
- if(!sellerSessionActive(epoch,authToken,ownerId,storeId))return;
+ if(!current())return;
  cachedSellerProducts=all;
  renderSellerProducts(all);
 }
