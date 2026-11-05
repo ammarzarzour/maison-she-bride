@@ -21,6 +21,6 @@ assert.ok(html.includes("$('exportInventory').disabled=false"),'export enabled o
 assert.ok(html.includes("store.status!=='approved'"),'authenticated approved store guard required');
 assert.ok(html.includes('exportInventorySession={epoch,authToken,ownerId,storeId}'),'export snapshot must be bound to session and store');
 assert.ok(html.includes('sellerSessionActive(exportInventorySession.epoch,exportInventorySession.authToken,exportInventorySession.ownerId,exportInventorySession.storeId)'),'export must reject changed account or session');
-assert.ok(html.includes("exportInventorySession=null;cachedSellerProducts=null;$('exportInventory').disabled=true;"),'authentication and store refresh must invalidate old exports');
-assert.ok(html.includes("cachedSellerProducts=null;exportInventorySession=null;$('exportInventory').disabled=true;"),'inventory refresh and logout must invalidate old exports');
+assert.match(html,/exportInventorySession=null;cachedSellerProducts=null;[^\n]*\$\('exportInventory'\)\.disabled=true;/,'authentication and store refresh must invalidate old exports');
+assert.match(html,/cachedSellerProducts=null;exportInventorySession=null;[^\n]*\$\('exportInventory'\)\.disabled=true;/,'inventory refresh and logout must invalidate old exports');
 console.log('PASS safe bilingual read-only seller inventory CSV and session binding');
