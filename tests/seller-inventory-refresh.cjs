@@ -12,6 +12,6 @@ assert.ok(source.includes("++sellerInventoryGeneration; // Invalidate an in-flig
 assert.ok(source.includes("await loadSeller();\n};\nfunction normalizeSellerSearch"),'manual refresh must recheck store status before inventory');
 assert.ok(source.includes("$('products').replaceChildren();$('stockSummary').replaceChildren();"),'store revalidation must clear stale inventory');
 assert.ok(source.includes("if(store?.status==='approved'){$('refreshInventory').disabled=false"),'initial read failure must allow retry');
-assert.ok(source.includes("cachedSellerProducts=null;exportInventorySession=null;$('refreshInventory').disabled=true"),'refresh invalidates stale inventory and export');
+assert.ok(source.includes("cachedSellerProducts=null;exportInventorySession=null;")&&source.includes("$('refreshInventory').disabled=true;$('exportInventory').disabled=true"),'refresh invalidates stale inventory and export even with pagination controls');
 assert.ok(source.includes("if(!token||!user||store?.status!=='approved')return"),'refresh requires approved seller');
 console.log('PASS bilingual seller inventory refresh guards and recovery');
