@@ -126,7 +126,11 @@ $('signup').onclick=()=>authenticate('signup');$('login').onclick=()=>authentica
 async function loadSeller(){
  if(!token||!user)return;
  const epoch=sellerSessionEpoch,authToken=token,ownerId=user.id;
+ ++sellerInventoryGeneration; // Invalidate an in-flight product read before rechecking store approval.
  exportInventorySession=null;cachedSellerProducts=null;$('exportInventory').disabled=true;
+ $('inventorySearch').disabled=true;$('inventoryFilter').disabled=true;$('inventoryCount').textContent='';
+ $('products').replaceChildren();$('stockSummary').replaceChildren();
+ $('refreshInventory').disabled=true;$('refreshInventory').textContent=tr('refreshingInventory');
  try{
  const rows=await request('/rest/v1/stores?select=id,name,status&owner_id=eq.'+encodeURIComponent(ownerId)+'&limit=1');
  if(!sellerSessionActive(epoch,authToken,ownerId))return;
@@ -288,16 +292,8 @@ $('exportInventory').onclick=()=>{
 };
 $('refreshInventory').onclick=async()=>{
  if(!token||!user||store?.status!=='approved')return;
- const epoch=sellerSessionEpoch,authToken=token,ownerId=user.id,storeId=store.id;
- const priorGeneration=sellerInventoryGeneration;
- try{await loadProducts();}
- catch(error){
-  if(sellerInventoryGeneration===priorGeneration+1&&sellerSessionActive(epoch,authToken,ownerId,storeId)){
-   message(tr('inventoryRefreshFailed')+error.message);
-   $('refreshInventory').disabled=false;
-   $('refreshInventory').textContent=tr('refreshInventory');
-  }
- }
+ // Re-read store approval before any new inventory query; suspended stores fail closed.
+ await loadSeller();
 };
 function normalizeSellerSearch(value){
  // Ignore Latin/Arabic diacritics and Arabic tatweel without changing displayed titles.
