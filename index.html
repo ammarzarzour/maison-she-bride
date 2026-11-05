@@ -123,7 +123,13 @@ async function refreshCatalog(){
  if(catalogLoading)return;
  const api=window.MSB_CATALOG;
  if(!api||!api.configured){catalogLoadFailed();return;}
- catalogLoading=true;$('refreshCatalog').disabled=true;$('results').textContent=t().loading;
+ catalogLoading=true;$('refreshCatalog').disabled=true;
+ // Invalidate displayed stock and demo quotes before asynchronous reads begin.
+ // Keep the stored cart intact until a complete catalog has been validated.
+ catalogReady=false;catalogError=false;items=[];render();
+ $('results').textContent=t().loading;
+ $('noResults').textContent=t().loading;
+ $('noResults').classList.remove('hidden');
  try{
   const [result,categoryResult]=await Promise.all([api.products(),api.categories()]);
   if(result.error||categoryResult.error||!result.configured||!categoryResult.configured||!Array.isArray(result.rows)||!Array.isArray(categoryResult.rows)){catalogLoadFailed();return;}
