@@ -221,6 +221,34 @@ async function run() {
   }
   console.log('PASS catalog rejects array/object prices and stock');
 
+  // JSON numeric text must use ordinary decimal notation, never JavaScript's
+  // permissive Number() coercions such as hexadecimal, exponents or signs.
+  for (const [price, stock] of [
+    ['0x10',1], ['1e3',1], ['+12',1], ['-0',1],
+    [10,'0x10'], [10,'1e2'], [10,'+2'], [10,'2.0']
+  ]) {
+    const w={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+    vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+      window:w,AbortController,setTimeout,clearTimeout,
+      fetch:async()=>({ok:true,json:async()=>[{id:'bad-decimal',title_ar:'فستان',title_en:'Dress',price_usd:price,stock}]})
+    });
+    const result=await w.MSB_CATALOG.products();
+    assert.equal(result.rows.length,0,'non-decimal numeric text must be rejected');
+    assert.match(result.error,/price or stock/);
+  }
+  for (const [price, stock] of [['12.50','2'],['0','1'],[12.5,2]]) {
+    const w={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+    vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+      window:w,AbortController,setTimeout,clearTimeout,
+      fetch:async()=>({ok:true,json:async()=>[{id:'valid-decimal',title_ar:'فستان',title_en:'Dress',price_usd:price,stock}]})
+    });
+    const result=await w.MSB_CATALOG.products();
+    assert.equal(result.error,null,'valid decimal values must remain supported');
+    assert.equal(result.rows.length,1);
+  }
+  console.log('PASS catalog accepts decimal numeric strings and rejects JavaScript-only numeric formats');
+
+
 
 
 
