@@ -21,7 +21,9 @@ async function check(images,expectedError){
  await check([],null);
  await check(Array.from({length:30},(_,i)=>image(i)),null);
  await check([image(0),image(0)],'Duplicate product image position');
- await check([image(1),image('01')],'Duplicate product image position');
+ // Canonical numeric strings are accepted, but non-canonical strings such as '01' are rejected before duplicate checking.
+ await check([image(1),image('1')],'Duplicate product image position');
+ await check([image(1),image('01')],'Invalid product image URL or position');
  await check(Array.from({length:31},(_,i)=>image(i)),'Invalid product images');
  await check([image(0),image(1,'https://images.example.org/another.jpg')],null);
  console.log('PASS catalog image position uniqueness and bounded gallery metadata');
