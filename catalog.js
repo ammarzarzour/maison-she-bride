@@ -20,6 +20,10 @@ const valid=/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(url)&&publicKey(key);
 const timeout=8000;
 const pageSize=100;
 const maxPages=10; // Safety bound: do not issue unbounded requests.
+// Supabase numeric fields may be JSON numbers or decimal strings. Reject JS-only
+// coercions (hex, exponent notation, signed/whitespace-only values) from text.
+const decimalPrice=value=>typeof value==='number'?Number.isFinite(value):typeof value==='string'&&/^\d+(?:\.\d+)?$/.test(value.trim());
+const decimalStock=value=>typeof value==='number'?Number.isSafeInteger(value):typeof value==='string'&&/^\d+$/.test(value.trim());
 async function get(table,query){
  if(!valid)return {configured:false,rows:[],error:null};
  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),timeout);
@@ -67,7 +71,7 @@ async function pagedProducts(){
    // Both languages must have usable product names; never render undefined or empty cards.
    if(typeof row.title_ar!=='string'||!row.title_ar.trim()||typeof row.title_en!=='string'||!row.title_en.trim())return {configured:true,rows:[],error:'Invalid bilingual product title in catalog'};
    // Reject malformed live prices/stock instead of showing NaN or misleading amounts.
-   if((!['number','string'].includes(typeof row.price_usd)||String(row.price_usd).trim()===''||!Number.isFinite(Number(row.price_usd)))||Number(row.price_usd)<0||!Number.isFinite(Number(row.price_usd)*120)||(!['number','string'].includes(typeof row.stock)||String(row.stock).trim()===''||!Number.isSafeInteger(Number(row.stock)))||Number(row.stock)<1)return {configured:true,rows:[],error:'Invalid price or stock in catalog'};
+   if((!decimalPrice(row.price_usd)||!Number.isFinite(Number(row.price_usd)))||Number(row.price_usd)<0||!Number.isFinite(Number(row.price_usd)*120)||(!decimalStock(row.stock)||!Number.isSafeInteger(Number(row.stock)))||Number(row.stock)<1)return {configured:true,rows:[],error:'Invalid price or stock in catalog'};
    // Images must be HTTPS URLs. Reject unexpected schemes and malformed image metadata.
    if(row.product_images!==null&&row.product_images!==undefined){
     if(!Array.isArray(row.product_images))return {configured:true,rows:[],error:'Invalid product images'};
