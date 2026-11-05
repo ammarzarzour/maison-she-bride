@@ -16,9 +16,10 @@
 'use strict';
 const BASE='https://cymwmswpseevemxtugdb.supabase.co',KEY='sb_publishable_OevT9B8LeDvgIzOWtktYTA__LpPRQBE',FN=BASE+'/functions/v1/admin-console';
 const $=id=>document.getElementById(id);let token='';
-const adminStrings={"ar":{"header":"لوحة الإدارة المركزية","language":"اللغة","adminLogin":"دخول الإدارة","loginInfo":"الدخول متاح للحسابات التي منحتها الإدارة صلاحية admin من بيانات الحساب الآمنة في Supabase.","email":"البريد الإلكتروني","password":"كلمة المرور","login":"تسجيل الدخول","storesCount":"المتاجر المعروضة","pendingCount":"طلبات اعتماد المتاجر","productsCount":"المنتجات","draftCount":"مسودات المنتجات","ordersCount":"الطلبات","applications":"طلبات اعتماد المتاجر","reviewProducts":"مراجعة المنتجات","recentOrders":"أحدث الطلبات","storeName":"اسم المتجر","status":"الحالة","applicationDate":"تاريخ الطلب","action":"الإجراء","product":"المنتج","price":"السعر","stock":"المخزون","orderNo":"رقم الطلب","total":"الإجمالي","invoice":"الفاتورة","carrier":"شركة الشحن","tracking":"رقم التتبع","updateShipment":"تحديث الشحنة","date":"التاريخ","refresh":"تحديث البيانات","logout":"تسجيل الخروج","back":"العودة إلى المتجر","loggingIn":"جارٍ تسجيل الدخول...","loginFailed":"تعذر تسجيل الدخول","apiFailed":"فشل الاتصال بلوحة الإدارة","updating":"جارٍ تنفيذ الإجراء...","updated":"تم تحديث الحالة بنجاح.","loaded":"تم تحميل البيانات من قاعدة البيانات.","loggedOut":"تم تسجيل الخروج.","saving":"جارٍ حفظ بيانات الشحنة...","saved":"تم حفظ بيانات الفاتورة والشحن.","noStores":"لا توجد متاجر","noProducts":"لا توجد منتجات","noOrders":"لا توجد طلبات حتى الآن","approve":"اعتماد","suspend":"إيقاف","publish":"نشر","archive":"أرشفة","saveShipment":"حفظ الشحنة","pending":"بانتظار الاعتماد","approved":"معتمد","suspended":"موقوف","draft":"مسودة","published":"منشور","archived":"مؤرشف","confirmed":"مؤكد / قيد التجهيز","shipped":"تم الشحن","delivered":"تم التسليم","cancelled":"ملغي","orderPending":"قيد الانتظار"},"en":{"header":"Central administration dashboard","language":"Language","adminLogin":"Administrator sign-in","loginInfo":"Only accounts granted admin access through trusted Supabase data may sign in.","email":"Email address","password":"Password","login":"Sign in","storesCount":"Stores","pendingCount":"Pending store applications","productsCount":"Products","draftCount":"Draft products","ordersCount":"Orders","applications":"Store applications","reviewProducts":"Review products","recentOrders":"Recent orders","storeName":"Store name","status":"Status","applicationDate":"Application date","action":"Action","product":"Product","price":"Price","stock":"Stock","orderNo":"Order number","total":"Total","invoice":"Invoice","carrier":"Shipping carrier","tracking":"Tracking number","updateShipment":"Shipment update","date":"Date","refresh":"Refresh data","logout":"Sign out","back":"Back to storefront","loggingIn":"Signing in...","loginFailed":"Could not sign in","apiFailed":"Admin dashboard connection failed","updating":"Applying update...","updated":"Status updated successfully.","loaded":"Database data loaded.","loggedOut":"Signed out.","saving":"Saving shipment details...","saved":"Invoice and shipping details saved.","noStores":"No stores","noProducts":"No products","noOrders":"No orders yet","approve":"Approve","suspend":"Suspend","publish":"Publish","archive":"Archive","saveShipment":"Save shipment","pending":"Pending review","approved":"Approved","suspended":"Suspended","draft":"Draft","published":"Published","archived":"Archived","confirmed":"Confirmed / preparing","shipped":"Shipped","delivered":"Delivered","cancelled":"Cancelled","orderPending":"Pending"}};
+const adminStrings={"ar":{"header":"لوحة الإدارة المركزية","language":"اللغة","adminLogin":"دخول الإدارة","loginInfo":"الدخول متاح للحسابات التي منحتها الإدارة صلاحية admin من بيانات الحساب الآمنة في Supabase.","email":"البريد الإلكتروني","password":"كلمة المرور","login":"تسجيل الدخول","storesCount":"المتاجر المعروضة","pendingCount":"طلبات اعتماد المتاجر","productsCount":"المنتجات","draftCount":"مسودات المنتجات","ordersCount":"الطلبات","applications":"طلبات اعتماد المتاجر","reviewProducts":"مراجعة المنتجات","recentOrders":"أحدث الطلبات","storeName":"اسم المتجر","status":"الحالة","applicationDate":"تاريخ الطلب","action":"الإجراء","product":"المنتج","price":"السعر","stock":"المخزون","orderNo":"رقم الطلب","total":"الإجمالي","invoice":"الفاتورة","carrier":"شركة الشحن","tracking":"رقم التتبع","updateShipment":"تحديث الشحنة","date":"التاريخ","refresh":"تحديث البيانات","logout":"تسجيل الخروج","back":"العودة إلى المتجر","loggingIn":"جارٍ تسجيل الدخول...","loginFailed":"تعذر تسجيل الدخول","apiFailed":"فشل الاتصال بلوحة الإدارة","updating":"جارٍ تنفيذ الإجراء...","updated":"تم تحديث الحالة بنجاح.","loaded":"تم تحميل البيانات من قاعدة البيانات.","loggedOut":"تم تسجيل الخروج.","sessionExpired":"انتهت صلاحية جلسة الإدارة. الرجاء تسجيل الدخول مجدداً.","saving":"جارٍ حفظ بيانات الشحنة...","saved":"تم حفظ بيانات الفاتورة والشحن.","noStores":"لا توجد متاجر","noProducts":"لا توجد منتجات","noOrders":"لا توجد طلبات حتى الآن","approve":"اعتماد","suspend":"إيقاف","publish":"نشر","archive":"أرشفة","saveShipment":"حفظ الشحنة","pending":"بانتظار الاعتماد","approved":"معتمد","suspended":"موقوف","draft":"مسودة","published":"منشور","archived":"مؤرشف","confirmed":"مؤكد / قيد التجهيز","shipped":"تم الشحن","delivered":"تم التسليم","cancelled":"ملغي","orderPending":"قيد الانتظار"},"en":{"header":"Central administration dashboard","language":"Language","adminLogin":"Administrator sign-in","loginInfo":"Only accounts granted admin access through trusted Supabase data may sign in.","email":"Email address","password":"Password","login":"Sign in","storesCount":"Stores","pendingCount":"Pending store applications","productsCount":"Products","draftCount":"Draft products","ordersCount":"Orders","applications":"Store applications","reviewProducts":"Review products","recentOrders":"Recent orders","storeName":"Store name","status":"Status","applicationDate":"Application date","action":"Action","product":"Product","price":"Price","stock":"Stock","orderNo":"Order number","total":"Total","invoice":"Invoice","carrier":"Shipping carrier","tracking":"Tracking number","updateShipment":"Shipment update","date":"Date","refresh":"Refresh data","logout":"Sign out","back":"Back to storefront","loggingIn":"Signing in...","loginFailed":"Could not sign in","apiFailed":"Admin dashboard connection failed","updating":"Applying update...","updated":"Status updated successfully.","loaded":"Database data loaded.","loggedOut":"Signed out.","sessionExpired":"Administrator session expired. Please sign in again.","saving":"Saving shipment details...","saved":"Invoice and shipping details saved.","noStores":"No stores","noProducts":"No products","noOrders":"No orders yet","approve":"Approve","suspend":"Suspend","publish":"Publish","archive":"Archive","saveShipment":"Save shipment","pending":"Pending review","approved":"Approved","suspended":"Suspended","draft":"Draft","published":"Published","archived":"Archived","confirmed":"Confirmed / preparing","shipped":"Shipped","delivered":"Delivered","cancelled":"Cancelled","orderPending":"Pending"}};
 const supportedAdminLanguages=new Set(['auto','ar','en']);
 let adminLanguage='auto',lastDashboard=null;
+let adminSessionVersion=0,adminLoadVersion=0,adminAuthAttempt=0;
 const shippingDrafts=new Map();
 try{const saved=localStorage.getItem('msb_admin_lang');if(supportedAdminLanguages.has(saved))adminLanguage=saved;}catch(e){}
 function currentAdminLocale(){return adminLanguage==='auto'?((navigator.language||'en').toLowerCase().startsWith('ar')?'ar':'en'):adminLanguage}
@@ -38,20 +39,37 @@ $('language').addEventListener('change',e=>{
 });
 function msg(s){$('msg').textContent=s}
 async function auth(){
+ const attempt=++adminAuthAttempt;
  msg(tt('loggingIn'));
- try{const r=await fetch(BASE+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({email:$('email').value.trim(),password:$('password').value})});const d=await r.json();if(!r.ok)throw Error(d.msg||d.message||d.error_description||tt('loginFailed'));token=d.access_token;$('loginPanel').classList.add('hidden');$('dashboard').classList.remove('hidden');await load();}
- catch(e){msg(e.message)}
+ try{
+  const r=await fetch(BASE+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({email:$('email').value.trim(),password:$('password').value})});
+  const d=await r.json();
+  if(attempt!==adminAuthAttempt)return; // Ignore an older sign-in response.
+  if(!r.ok||!d.access_token)throw Error(d.msg||d.message||d.error_description||tt('loginFailed'));
+  token=d.access_token;adminSessionVersion++;
+  $('loginPanel').classList.add('hidden');$('dashboard').classList.remove('hidden');
+  await load();
+ }catch(e){if(attempt===adminAuthAttempt)msg(e.message)}
 }
 async function api(method='GET',body=null){
- const r=await fetch(FN,{method,headers:{apikey:KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const d=await r.json().catch(()=>({}));if(!r.ok){
+ const requestToken=token;
+ if(!requestToken)throw Error(tt('loginFailed'));
+ const r=await fetch(FN,{method,headers:{apikey:KEY,Authorization:'Bearer '+requestToken,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+ const d=await r.json().catch(()=>({}));
+ if(!r.ok){
   const err=new Error(d.error||d.message||tt('apiFailed')+' ('+r.status+')');
   err.status=r.status;
-  if(r.status===401||r.status===403)resetAdminSession();
+  // A rejected response from an older account must not log out a newer one.
+  if((r.status===401||r.status===403)&&token===requestToken){
+   resetAdminSession();
+   msg(tt('sessionExpired'));
+  }
   throw err;
  }
  return d;
 }
 function resetAdminSession(){
+ adminSessionVersion++;adminLoadVersion++;adminAuthAttempt++;
  token='';lastDashboard=null;shippingDrafts.clear();
  $('dashboard').classList.add('hidden');
  $('loginPanel').classList.remove('hidden');
@@ -62,15 +80,29 @@ function resetAdminSession(){
 function date(v){return v?new Date(v).toLocaleString(currentAdminLocale()==='ar'?'ar-SY':'en-GB'):'—'}
 function cell(tr,value){const td=document.createElement('td');td.textContent=value;tr.append(td);return td}
 function actionButton(label,fn,kind=''){const b=document.createElement('button');b.textContent=label;if(kind)b.className=kind;b.onclick=fn;return b}
-async function act(entity,id,action){try{msg(tt('updating'));await api('POST',{entity,id,action});msg(tt('updated'));await load()}catch(e){msg(e.message)}}
+async function act(entity,id,action){
+ if(!token)return;
+ const session=adminSessionVersion;
+ try{
+  msg(tt('updating'));
+  await api('POST',{entity,id,action});
+  if(session!==adminSessionVersion)return;
+  msg(tt('updated'));await load();
+ }catch(e){if(session===adminSessionVersion)msg(e.message)}
+}
 async function load(){
+ if(!token)return;
+ const session=adminSessionVersion,request=++adminLoadVersion;
  try{
   const d=await api();
+  // An earlier refresh or a response arriving after logout cannot re-show records.
+  if(session!==adminSessionVersion||request!==adminLoadVersion||!token)return;
   lastDashboard=d;shippingDrafts.clear();
   renderDashboard(d);msg(tt('loaded'));
  }catch(e){
+  if(session!==adminSessionVersion||request!==adminLoadVersion)return;
   msg(e.message);
-  if(e.status===401||e.status===403||String(e.message).includes('غير مخوّل'))resetAdminSession()
+  if(e.status===401||e.status===403||String(e.message).includes('غير مخوّل'))resetAdminSession();
  }
 }
 function renderDashboard(d){
@@ -83,7 +115,16 @@ function renderDashboard(d){
  element.addEventListener('change',()=>{shippingDrafts.set(o.id,{...shippingDrafts.get(o.id),[field]:element.value})});
  element.addEventListener('input',()=>{shippingDrafts.set(o.id,{...shippingDrafts.get(o.id),[field]:element.value})});
 }
-const save=actionButton(tt('saveShipment'),async()=>{try{msg(tt('saving'));await api('POST',{entity:'orders',id:o.id,action:'update_shipping',invoice_number:inv.value,shipping_carrier:carrier.value,tracking_number:track.value,status:status.value});shippingDrafts.delete(o.id);msg(tt('saved'));await load()}catch(e){msg(e.message)}});td.append(inv,carrier,track,status,save);tr.append(td);cell(tr,date(o.created_at));$('ordersRows').append(tr)}
+const save=actionButton(tt('saveShipment'),async()=>{
+ if(!token)return;
+ const session=adminSessionVersion;
+ try{
+  msg(tt('saving'));
+  await api('POST',{entity:'orders',id:o.id,action:'update_shipping',invoice_number:inv.value,shipping_carrier:carrier.value,tracking_number:track.value,status:status.value});
+  if(session!==adminSessionVersion)return;
+  shippingDrafts.delete(o.id);msg(tt('saved'));await load();
+ }catch(e){if(session===adminSessionVersion)msg(e.message)}
+});td.append(inv,carrier,track,status,save);tr.append(td);cell(tr,date(o.created_at));$('ordersRows').append(tr)}
  if(!d.orders.length){const tr=document.createElement('tr');cell(tr,tt('noOrders'));$('ordersRows').append(tr)}
 }
 
