@@ -125,7 +125,10 @@ async function loadSeller(){
  try{
  const rows=await request('/rest/v1/stores?select=id,name,status&owner_id=eq.'+encodeURIComponent(ownerId)+'&limit=1');
  if(!sellerSessionActive(epoch,authToken,ownerId))return;
- store=rows?.[0]||null;
+ // A successful HTTP response is not proof of a valid store record. Fail closed
+ // rather than treating malformed JSON or an unexpected row as a seller store.
+ if(!Array.isArray(rows)||rows.length>1||rows.some(row=>!row||typeof row.id!=='string'||!row.id.trim()||typeof row.name!=='string'||!row.name.trim()||!['pending','approved','suspended'].includes(row.status)))throw new Error(tr('loadError'));
+ store=rows[0]||null;
  if(!store){$('applicationBox').classList.remove('hidden');$('approvedBox').classList.add('hidden');$('storeStatus').textContent=tr('noStore');$('products').textContent=tr('noProducts');$('stockSummary').replaceChildren();cachedSellerProducts=null;return}
  $('storeStatus').textContent=tr('storePrefix')+' '+store.name+' · '+tr(store.status==='approved'?'approved':store.status==='pending'?'pending':'suspended');
  $('applicationBox').classList.add('hidden');
