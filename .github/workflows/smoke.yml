@@ -33,6 +33,8 @@ jobs:
         run: node tests/seller-stock.cjs
       - name: Verify seller Arabic and English language switching
         run: node tests/seller-language.cjs
+      - name: Protect seller session from late authentication and inventory reads
+        run: node tests/seller-session-race.cjs
       - name: Verify admin bilingual dashboard and safe shipping drafts
         run: node tests/admin-language.cjs
       - name: Verify admin session and concurrent refresh race protections
