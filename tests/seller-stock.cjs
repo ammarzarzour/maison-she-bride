@@ -5,6 +5,9 @@ const html=fs.readFileSync('seller.html','utf8');
 const script=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)][0]?.[1];
 assert.ok(script?.includes('const STOCK_EDIT_ENABLED=false;'),'inventory writes must stay disabled without a narrow DB grant');
 assert.match(html,/تعديل المخزون غير مفعّل حالياً/);
+assert.match(html,/id="apply" disabled/, 'store application button must be disabled without INSERT permission');
+assert.match(html,/id="saveProduct"[^>]*disabled/, 'product create button must be disabled without INSERT permission');
+assert.match(script,/const SELLER_MUTATIONS_ENABLED=false;/, 'seller mutation handlers must be gated');
 
 class Element {
  constructor(tag='div'){this.tagName=tag;this.children=[];this.listeners={};this.textContent='';this.value='';this.disabled=false;this.attributes={};this.className='';this.innerHTML='';this.classList={add(){},remove(){}};}
@@ -36,6 +39,13 @@ vm.runInContext("token='fixture-auth';user={id:'owner-test'};store={id:'store-te
 function badges(){return node('stockSummary').children.map(x=>x.textContent)}
 async function run(){
  await vm.runInContext('loadProducts()',context);
+ const requestCount=requests.length;
+ await node('apply').onclick();
+ assert.equal(requests.length,requestCount, 'application cannot write without permission');
+ assert.match(node('msg').textContent,/غير مفعّلة/);
+ await node('productForm').onsubmit({preventDefault(){}});
+ assert.equal(requests.length,requestCount, 'product cannot be saved without permission');
+ assert.match(node('msg').textContent,/غير مفعّل/);
  assert.equal(node('products').children.length,2);
  assert.deepEqual(badges(),['المسودات: 1','المنشورة: 1','مخزون منخفض (1–3): 1','نفد المخزون: 0']);
  for(const card of node('products').children)assert.equal(card.children.some(x=>x.className==='stock-controls'),false,'no nonfunctional stock controls may be displayed');
