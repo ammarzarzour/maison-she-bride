@@ -23,6 +23,8 @@ jobs:
         run: node tests/seller-language.cjs
       - name: Verify admin bilingual dashboard and safe shipping drafts
         run: node tests/admin-language.cjs
+      - name: Verify admin session and concurrent refresh race protections
+        run: node tests/admin-session-race.cjs
       - name: Check corrupted carts and browser storage failures
         run: node tests/storefront-storage.cjs
       - name: Verify language and currency preference recovery
