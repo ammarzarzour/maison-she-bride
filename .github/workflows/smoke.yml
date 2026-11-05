@@ -17,6 +17,8 @@ jobs:
         run: node tests/smoke.cjs
       - name: Test storefront wishlist, sorting and localization
         run: node tests/storefront.cjs
+      - name: Test accessible cart dialog focus and keyboard controls
+        run: node tests/cart-accessibility.cjs
       - name: Test read-only seller inventory and disabled writes
         run: node tests/seller-stock.cjs
       - name: Verify seller Arabic and English language switching
