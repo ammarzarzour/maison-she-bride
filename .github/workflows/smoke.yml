@@ -19,6 +19,8 @@ jobs:
         run: node tests/storefront.cjs
       - name: Verify Arabic and English accent-insensitive product search
         run: node tests/storefront-search.cjs
+      - name: Test bilingual product photo gallery controls
+        run: node tests/storefront-gallery.cjs
       - name: Test accessible cart dialog focus and keyboard controls
         run: node tests/cart-accessibility.cjs
       - name: Test bilingual quantity controls and focus after cart redraw
