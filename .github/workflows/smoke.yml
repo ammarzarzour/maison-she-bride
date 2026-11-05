@@ -19,6 +19,8 @@ jobs:
         run: node tests/storefront.cjs
       - name: Test accessible cart dialog focus and keyboard controls
         run: node tests/cart-accessibility.cjs
+      - name: Test bilingual quantity controls and focus after cart redraw
+        run: node tests/cart-quantity-focus.cjs
       - name: Verify non-identifying bilingual demo cart quote
         run: node tests/cart-demo-quote.cjs
       - name: Test read-only seller inventory and disabled writes
