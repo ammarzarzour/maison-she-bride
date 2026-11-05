@@ -19,6 +19,8 @@ jobs:
         run: node tests/storefront.cjs
       - name: Test read-only seller inventory and disabled writes
         run: node tests/seller-stock.cjs
+      - name: Verify seller Arabic and English language switching
+        run: node tests/seller-language.cjs
       - name: Check corrupted carts and browser storage failures
         run: node tests/storefront-storage.cjs
       - name: Verify language and currency preference recovery
