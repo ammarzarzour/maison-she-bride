@@ -17,6 +17,10 @@ const rows=[
 const find=(q,status)=>vm.runInContext('filterSellerInventory(rows,q,status).map(p=>p.id).join(",")',vm.createContext({rows,q,status,filterSellerInventory:ctx.filterSellerInventory}));
 assert.equal(find('gold','all'),'b,c');
 assert.equal(find('gold bag','all'),'b');
+assert.equal(find('زَفَاف','out'),'a','Arabic harakat should not block search');
+assert.equal(find('حَقِيبَة','all'),'b','Arabic diacritics should not block search');
+assert.equal(find('حـقيبة','all'),'b','Arabic tatweel should not block search');
+assert.equal(find('góld','all'),'b,c','Latin accents should not block search');
 assert.equal(find('زفاف','out'),'a');
 assert.equal(find('','low'),'b');
 assert.equal(find('','published'),'a');
