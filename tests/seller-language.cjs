@@ -93,6 +93,12 @@ async function run(){
  assert.equal(ar.document.documentElement.lang,'ar');
  assert.equal(ar.saved.get('msb_seller_lang'),'auto');
 
+ vm.runInContext("store=null;user={id:'no-store',email:'seller@example.invalid'};renderSellerLanguage()",ar.context);
+ assert.ok(ar.node('storeStatus').textContent.includes('غير مفعّلة'),'no-store warning should be localized in Arabic');
+ ar.change('en');
+ assert.ok(ar.node('storeStatus').textContent.includes('not enabled'),'no-store warning should be localized in English');
+ assert.equal(ar.requests.length,1,'switching no-store language should remain offline');
+
  const restored=setup('en-GB','ar');
  assert.equal(restored.document.documentElement.dir,'rtl','explicit selection overrides browser locale');
  const autoEnglish=setup('en-GB','auto');
