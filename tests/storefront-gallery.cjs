@@ -1,0 +1,53 @@
+const fs=require('node:fs');
+const vm=require('node:vm');
+const assert=require('node:assert/strict');
+const html=fs.readFileSync('index.html','utf8');
+const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(x=>x[1]);
+const nodes=new Map(),listeners={},store=new Map();
+function node(id){
+ if(nodes.has(id))return nodes.get(id);
+ const elem={value:'',textContent:'',innerHTML:'',disabled:false,options:id==='sortProducts'?[{},{},{},{}]:[],
+  classList:{add(){},remove(){},toggle(){}},addEventListener(type,fn){listeners[id+':'+type]=fn},
+  setAttribute(){},scrollIntoView(){}};
+ nodes.set(id,elem);return elem;
+}
+const document={documentElement:{},getElementById:node,addEventListener(){}};
+const context=vm.createContext({document,localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,String(v))},navigator:{language:'en-US'},Intl,URL,window:{MSB_CATALOG:{configured:false}}});
+vm.runInContext(scripts[0],context,{filename:'storefront'});
+const photo1='https://images.example.org/dress1.jpg';
+const photo2='https://images.example.org/dress2.jpg';
+const photo3='https://images.example.org/dress3.jpg';
+vm.runInContext("items=[{id:'dress',cat:'bridal',ar:'فستان عروس',en:'Bridal gown',usd:90,stock:2,icon:'✦',images:["+JSON.stringify(photo1)+","+JSON.stringify(photo2)+","+JSON.stringify(photo3)+"]},{id:'bag',cat:'bags',ar:'حقيبة',en:'Bag',usd:20,stock:5,icon:'✦',images:[]}];catalogReady=true;render()",context);
+let markup=node('products').innerHTML;
+assert.match(markup,/data-photo="dress" data-photo-index="0"/);
+assert.match(markup,/data-photo="dress" data-photo-index="2"/);
+assert.match(markup,/Show photo 2 of 3/);
+assert.match(markup,/aria-pressed="true"/);
+assert.match(markup,/src="https:\/\/images.example.org\/dress1.jpg"/);
+assert.equal((markup.match(/data-photo-index=/g)||[]).length,3);
+assert.doesNotMatch(markup,/data-photo="bag"/,'products without galleries have no photo selectors');
+const buttonAttrs=new Map(),image={src:photo1};
+const buttons=[0,1,2].map(i=>({dataset:{photo:'dress',photoIndex:String(i)},setAttribute(k,v){buttonAttrs.set(i+':'+k,v)}}));
+const card={querySelector:selector=>selector==='img'?image:null,querySelectorAll:()=>buttons};
+const target={dataset:{photo:'dress',photoIndex:'1'},closest:selector=>selector==='[data-photo][data-photo-index]'?target:selector==='article'?card:null};
+listeners['products:click']({target});
+assert.equal(image.src,photo2);
+assert.equal(buttonAttrs.get('1:aria-pressed'),'true');
+assert.equal(buttonAttrs.get('0:aria-pressed'),'false');
+vm.runInContext("render()",context);
+markup=node('products').innerHTML;
+assert.match(markup,/src="https:\/\/images.example.org\/dress2.jpg"/,'selected photo survives ordinary rerenders');
+assert.match(markup,/data-photo="dress" data-photo-index="1" aria-label="Show photo 2 of 3" aria-pressed="true"/);
+vm.runInContext("langSetting='ar';render()",context);
+assert.equal(document.documentElement.dir,'rtl');
+assert.match(node('products').innerHTML,/عرض الصورة 2 من 3/);
+assert.match(node('products').innerHTML,/src="https:\/\/images.example.org\/dress2.jpg"/);
+vm.runInContext("langSetting='en';render()",context);
+const bad={dataset:{photo:'dress',photoIndex:'50'},closest:target.closest};
+listeners['products:click']({target:bad});
+assert.equal(image.src,photo2,'out-of-range image selection must be ignored');
+vm.runInContext("gallerySelection.clear();render()",context);
+assert.match(node('products').innerHTML,/src="https:\/\/images.example.org\/dress1.jpg"/);
+assert.doesNotMatch(node('products').innerHTML,/data-photo="bag"/);
+assert.equal(store.has('msb_gallery'),false,'gallery selection is never stored as browsing history');
+console.log('PASS accessible bilingual multi-image gallery, selection, validation, rerender and reset');
