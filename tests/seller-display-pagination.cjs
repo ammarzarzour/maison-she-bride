@@ -19,5 +19,5 @@ assert.ok(html.includes("const page=sellerPageSlice(visible,sellerDisplayPage)")
 assert.ok(html.includes("showStockSummary(rows);"),'summary should use all rows');
 assert.ok(html.includes("buildInventoryCsv(cachedSellerProducts)"),'CSV should use all rows');
 for(const field of ['inventorySearch','inventoryFilter','inventorySort'])assert.ok(html.includes("$('"+field+"').addEventListener"),'missing filter handler');
-assert.ok(html.includes("sellerDisplayPage=0;\n exportInventorySession="),'new catalog resets page');
+assert.ok(html.includes("sellerDisplayPage=0;\n cachedSellerProducts=all;"),'successful inventory reload resets page');
 console.log('PASS seller inventory paging and complete export');
