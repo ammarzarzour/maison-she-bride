@@ -12,7 +12,7 @@ h2{font-size:19px;margin:0 0 14px}.grid{display:grid;grid-template-columns:repea
 label{display:block;font-size:14px;margin:10px 0}input,textarea,select{display:block;width:100%;padding:12px;border:1px solid #cbd7ce;border-radius:9px;font:inherit;margin-top:6px;background:#fff}
 button{border:0;border-radius:9px;background:var(--green);color:#fff;padding:12px 17px;font:inherit;cursor:pointer;margin:5px 0}button.secondary{background:#e9efeb;color:var(--green)}button:disabled{opacity:.55;cursor:wait}
 #msg{white-space:pre-wrap;line-height:1.7;margin-top:10px}.muted{color:#66766d;font-size:13px;line-height:1.7}.badge{display:inline-block;padding:4px 9px;border-radius:20px;background:#f6efdF;color:#745a24;font-size:12px}
-.product{border:1px solid var(--line);border-radius:10px;padding:12px;margin:9px 0}.product strong{display:block}.stock-controls{display:flex;align-items:end;flex-wrap:wrap;gap:10px;margin-top:10px}.stock-controls label{margin:0;flex:1;min-width:160px}.stock-controls button{margin:0}.empty{padding:18px;text-align:center;color:#66766d;background:#f8faf8;border-radius:10px}
+.product{border:1px solid var(--line);border-radius:10px;padding:12px;margin:9px 0}.product strong{display:block}.inventory-summary{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}.inventory-summary span{background:#edf4ef;border:1px solid #d2e2d8;padding:9px 12px;border-radius:10px;font-size:13px;color:#145b46}.stock-controls{display:flex;align-items:end;flex-wrap:wrap;gap:10px;margin-top:10px}.stock-controls label{margin:0;flex:1;min-width:160px}.stock-controls button{margin:0}.empty{padding:18px;text-align:center;color:#66766d;background:#f8faf8;border-radius:10px}
 .hidden{display:none!important}a{color:var(--green)}@media(max-width:500px){.panel{padding:15px}}
 </style></head>
 <body>
@@ -47,7 +47,7 @@ button{border:0;border-radius:9px;background:var(--green);color:#fff;padding:12p
 <button id="saveProduct" type="submit">حفظ المنتج كمسودة</button>
 </form>
 </div>
-<h2>منتجات متجري</h2><p class="muted">تعديل المخزون متاح للمسودات فقط. المنتجات المنشورة تتطلب مراجعة الإدارة؛ لا يُرسل تعديل من هذه الواجهة للمنتجات المنشورة.</p><div id="products"><div class="empty">جارٍ تحميل البيانات...</div></div>
+<h2>منتجات متجري</h2><p class="muted">يمكنك مراجعة مخزون منتجاتك وحالاتها. تعديل المخزون غير مفعّل حالياً لحين اعتماد صلاحيات آمنة؛ المنتجات المنشورة تتطلب مراجعة الإدارة.</p><div id="stockSummary" class="inventory-summary" role="status" aria-live="polite"></div><div id="products"><div class="empty">جارٍ تحميل البيانات...</div></div>
 <button class="secondary" id="logout">تسجيل الخروج</button>
 </section>
 <p class="muted"><a href="./">العودة إلى المتجر</a> · لا تُدخل بيانات دفع أو بيانات عملاء هنا.</p>
@@ -84,10 +84,10 @@ async function loadSeller(){
  try{
  const rows=await request('/rest/v1/stores?select=id,name,status&owner_id=eq.'+encodeURIComponent(user.id)+'&limit=1');
  store=rows?.[0]||null;
- if(!store){$('applicationBox').classList.remove('hidden');$('approvedBox').classList.add('hidden');$('storeStatus').textContent='لا يوجد متجر مسجل لهذا الحساب. أرسل طلب اعتماد للبدء.';$('products').innerHTML='<div class="empty">لا توجد منتجات بعد.</div>';return}
+ if(!store){$('applicationBox').classList.remove('hidden');$('approvedBox').classList.add('hidden');$('storeStatus').textContent='لا يوجد متجر مسجل لهذا الحساب. أرسل طلب اعتماد للبدء.';$('products').innerHTML='<div class="empty">لا توجد منتجات بعد.</div>';$('stockSummary').replaceChildren();return}
  $('storeStatus').innerHTML='المتجر: <b></b> <span class="badge"></span>';$('storeStatus').querySelector('b').textContent=store.name;$('storeStatus').querySelector('.badge').textContent=store.status==='approved'?'معتمد':store.status==='pending'?'بانتظار المراجعة':'موقوف';
  $('applicationBox').classList.add('hidden');
- if(store.status!=='approved'){$('approvedBox').classList.add('hidden');$('products').innerHTML='<div class="empty">ستظهر أدوات إضافة المنتجات بعد اعتماد المتجر من الإدارة.</div>';return}
+ if(store.status!=='approved'){$('approvedBox').classList.add('hidden');$('products').innerHTML='<div class="empty">ستظهر أدوات إضافة المنتجات بعد اعتماد المتجر من الإدارة.</div>';$('stockSummary').replaceChildren();return}
  $('approvedBox').classList.remove('hidden');await loadCategories();await loadProducts();
  }catch(e){message('تعذر تحميل بيانات المتجر: '+e.message)}
 }
@@ -102,7 +102,10 @@ async function loadCategories(){
  $('category').replaceChildren();for(const c of categories){const o=document.createElement('option');o.value=c.id;o.textContent=c.name_ar+' / '+c.name_en;$('category').append(o)}
 }
 const MAX_STOCK=2147483647; // PostgreSQL integer upper bound.
+// Database authenticated role currently has no UPDATE(stock) grant. Do not offer a nonworking action.
+const STOCK_EDIT_ENABLED=false;
 async function updateDraftStock(product,field,button){
+ if(!STOCK_EDIT_ENABLED){message('تعديل المخزون غير مفعّل حتى اعتماد الصلاحيات المناسبة.');return;}
  if(!token||!user||!store||store.status!=='approved'||product.status!=='draft'){
   message('تعديل المخزون متاح للتاجر المعتمد وللمنتجات المسودة فقط.');return;
  }
@@ -125,8 +128,15 @@ async function updateDraftStock(product,field,button){
  }catch(error){message('تعذّر حفظ المخزون: '+error.message)}
  finally{button.disabled=false}
 }
+function showStockSummary(rows){
+ const summary=$('stockSummary');summary.replaceChildren();
+ const counts=[['المسودات',rows.filter(p=>p.status==='draft').length],['المنشورة',rows.filter(p=>p.status==='published').length],['مخزون منخفض (1–3)',rows.filter(p=>Number(p.stock)>=1&&Number(p.stock)<=3).length],['نفد المخزون',rows.filter(p=>Number(p.stock)===0).length]];
+ for(const [label,count] of counts){const badge=document.createElement('span');badge.textContent=label+': '+count;summary.append(badge)}
+}
 async function loadProducts(){
  const rows=await request('/rest/v1/products?select=id,title_ar,title_en,price_usd,stock,status,created_at&store_id=eq.'+encodeURIComponent(store.id)+'&order=created_at.desc');
+ if(!Array.isArray(rows))throw new Error('استجابة قائمة المنتجات غير صالحة.');
+ showStockSummary(rows);
  $('products').replaceChildren();
  if(!rows.length){$('products').innerHTML='<div class="empty">لم تضف منتجات إلى متجرك بعد.</div>';return}
  for(const p of rows){
@@ -135,7 +145,7 @@ async function loadProducts(){
   const detail=document.createElement('span');detail.className='muted';
   detail.textContent=Number(p.price_usd).toFixed(2)+' USD · المخزون: '+p.stock+' · الحالة: '+(p.status==='draft'?'مسودة':p.status==='published'?'منشور':'مؤرشف');
   box.append(title,detail);
-  if(p.status==='draft'){
+  if(p.status==='draft'&&STOCK_EDIT_ENABLED){
    const controls=document.createElement('div');controls.className='stock-controls';
    const label=document.createElement('label');label.textContent='تعديل مخزون المسودة';
    const field=document.createElement('input');field.type='number';field.min='0';field.max=String(MAX_STOCK);field.step='1';field.value=String(p.stock);
@@ -168,5 +178,5 @@ $('productForm').onsubmit=async e=>{
  }catch(err){message(err.message)}
  finally{btn.disabled=false}
 };
-$('logout').onclick=()=>{token='';user=null;store=null;$('accountPanel').classList.add('hidden');$('authPanel').classList.remove('hidden');$('password').value='';message('تم تسجيل الخروج من هذه الصفحة.')};
+$('logout').onclick=()=>{token='';user=null;store=null;$('stockSummary').replaceChildren();$('accountPanel').classList.add('hidden');$('authPanel').classList.remove('hidden');$('password').value='';message('تم تسجيل الخروج من هذه الصفحة.')};
 </script></body></html>
