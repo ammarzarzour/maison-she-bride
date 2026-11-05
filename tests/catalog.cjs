@@ -171,7 +171,7 @@ async function run() {
   console.log('PASS catalog rejects prices overflowing currency conversion');
 
   // Valid unit prices may still overflow when multiplied by inventory.
-  for (const [price,stock,reject] of [[1e300,1000000,true],[1e300,1,false],[100,3,false]]) {
+  for (const [price,stock,reject] of [[1e301,1000000,true],[1e301,1,false],[100,3,false]]) {
     const w={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
     vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
       window:w,AbortController,setTimeout,clearTimeout,
