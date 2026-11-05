@@ -24,6 +24,8 @@ const maxPages=10; // Safety bound: do not issue unbounded requests.
 // coercions (hex, exponent notation, signed/whitespace-only values) from text.
 const decimalPrice=value=>typeof value==='number'?Number.isFinite(value):typeof value==='string'&&/^\d+(?:\.\d+)?$/.test(value.trim());
 const decimalStock=value=>typeof value==='number'?Number.isSafeInteger(value):typeof value==='string'&&/^\d+$/.test(value.trim());
+// Image positions use the same canonical non-negative integer representation as stock.
+const imagePosition=value=>typeof value==='number'?(Number.isSafeInteger(value)&&value>=0):typeof value==='string'&&/^\d+$/.test(value)&&Number.isSafeInteger(Number(value));
 // Retry only transient read failures; never retry malformed JSON, invalid catalog data,
 // or permanent HTTP errors. The bounded delay avoids tight loops on rate limits.
 const retryableStatuses=new Set([408,429,500,502,503,504]);
@@ -95,7 +97,7 @@ async function pagedProducts(){
     if(!Array.isArray(row.product_images)||row.product_images.length>30)return {configured:true,rows:[],error:'Invalid product images'};
     const imagePositions=new Set();
     for(const img of row.product_images){
-     if(!img||typeof img.image_url!=='string'||!/^https:\/\//i.test(img.image_url)||!(['number','string'].includes(typeof (img.position??0)))||String(img.position??0).trim()===''||!Number.isSafeInteger(Number(img.position??0))||Number(img.position??0)<0)return {configured:true,rows:[],error:'Invalid product image URL or position'};
+     if(!img||typeof img.image_url!=='string'||!/^https:\/\//i.test(img.image_url)||!imagePosition(img.position??0))return {configured:true,rows:[],error:'Invalid product image URL or position'};
      const position=Number(img.position??0);
      if(imagePositions.has(position))return {configured:true,rows:[],error:'Duplicate product image position'};
      imagePositions.add(position);
