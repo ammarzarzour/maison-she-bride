@@ -25,7 +25,7 @@ const maxPages=10; // Safety bound: do not issue unbounded requests.
 const decimalPrice=value=>typeof value==='number'?Number.isFinite(value):typeof value==='string'&&/^\d+(?:\.\d+)?$/.test(value);
 const decimalStock=value=>typeof value==='number'?Number.isSafeInteger(value):typeof value==='string'&&/^\d+$/.test(value);
 // Image positions use the same canonical non-negative integer representation as stock.
-const imagePosition=value=>typeof value==='number'?(Number.isSafeInteger(value)&&value>=0):typeof value==='string'&&/^\d+$/.test(value)&&Number.isSafeInteger(Number(value));
+const imagePosition=value=>typeof value==='number'?(Number.isSafeInteger(value)&&value>=0):typeof value==='string'&&/^(?:0|[1-9]\d*)$/.test(value)&&Number.isSafeInteger(Number(value));
 // Retry only transient read failures; never retry malformed JSON, invalid catalog data,
 // or permanent HTTP errors. The bounded delay avoids tight loops on rate limits.
 const retryableStatuses=new Set([408,429,500,502,503,504]);
