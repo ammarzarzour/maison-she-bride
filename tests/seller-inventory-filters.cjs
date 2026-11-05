@@ -30,6 +30,10 @@ assert.equal(find('حقيبة ذهبيه','all'),'','taa marbuta is not silently
 assert.equal(find('فستان زفاف','published'),'a');
 assert.equal(find('فستان زفاف','draft'),'');
 assert.equal(find('حذاء','archived'),'c');
+assert.equal(find('حذاء','published'),'');
+assert.equal(find('حقيبة','low'),'b');
+assert.equal(find('حقيبة','out'),'');
+assert.equal(find('زفاف','low'),'');
 assert.equal(find('حقيبة ذهبيّة','all'),'b','Arabic diacritics must not change results');
 assert.equal(find('فستان زَفَاف','all'),'a');
 assert.equal(find('فستان زفاف','all'),'a');
