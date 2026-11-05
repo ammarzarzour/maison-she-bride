@@ -170,6 +170,20 @@ async function run() {
   }
   console.log('PASS catalog rejects prices overflowing currency conversion');
 
+  // Valid unit prices may still overflow when multiplied by inventory.
+  for (const [price,stock,reject] of [[1e300,1000000,true],[1e300,1,false],[100,3,false]]) {
+    const w={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+    vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+      window:w,AbortController,setTimeout,clearTimeout,
+      fetch:async()=>({ok:true,json:async()=>[{id:'subtotal-test',title_ar:'فستان',title_en:'Dress',price_usd:price,stock}]})
+    });
+    const result=await w.MSB_CATALOG.products();
+    assert.equal(Boolean(result.error),reject,'stock-wide converted total overflow');
+    assert.equal(result.rows.length,reject?0:1);
+  }
+  console.log('PASS catalog rejects overflow of price times stock times display rate');
+
+
   // Live catalog must not silently render NaN prices or invalid stock values.
   for (const [price,stock] of [['not-a-price',1],[10,-2],[10,1.5]]) {
     const invalidWindow={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
