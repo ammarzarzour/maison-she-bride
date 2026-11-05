@@ -133,15 +133,15 @@
       if (request.state !== 'done') actions.append(button(t.advance, () => {
         const index = states.indexOf(request.state);
         if (index >= 0 && index < states.length-1) request.state = states[index+1];
-        persist();
+        const saved = persist();
         renderDemo();
-        showMessage('changed');
+        if (saved) showMessage('changed');
       }));
       actions.append(button(t.remove, () => {
         requests = requests.filter(r => r.id !== request.id);
-        persist();
+        const saved = persist();
         renderDemo();
-        showMessage('deleted');
+        if (saved) showMessage('deleted');
       }, 'demo-danger'));
       article.append(actions);
       root.append(article);
@@ -154,17 +154,17 @@
     if (!Number.isInteger(service) || service < 0 || service >= services.length) return;
     const id = 'DEMO-' + (Date.now().toString(36).slice(-6) + Math.random().toString(36).slice(2, 8)).slice(0, 12).toUpperCase();
     requests.unshift({id, service, state:'draft'});
-    persist();
+    const saved = persist();
     $('demoFilter').value = 'all';
     renderDemo();
-    showMessage('made');
+    if (saved) showMessage('made');
   });
   $('demoClear').addEventListener('click', () => {
     if (!requests.length || !window.confirm(text().confirm)) return;
     requests = [];
-    persist();
+    const saved = persist();
     renderDemo();
-    showMessage('cleared');
+    if (saved) showMessage('cleared');
   });
   $('demoFilter').addEventListener('change', renderDemo);
   $('language').addEventListener('change', () => {
