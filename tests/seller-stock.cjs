@@ -11,7 +11,7 @@ assert.match(html,/id="saveProduct"[^>]*disabled/, 'product create button must b
 assert.match(script,/const SELLER_MUTATIONS_ENABLED=false;/, 'seller mutation handlers must be gated');
 
 class Element {
- constructor(tag='div'){this.tagName=tag;this.children=[];this.listeners={};this.textContent='';this.value='';this.disabled=false;this.attributes={};this.className='';this.innerHTML='';this.classList={add(){},remove(){}};}
+ constructor(tag='div'){this.tagName=tag;this.children=[];this.listeners={};this.textContent='';this.value='';this.disabled=false;this.attributes={};this.className='';this.innerHTML='';this.classList={add(){},remove(){},toggle(name,force){return force===undefined?true:!!force;}};}
  append(...xs){this.children.push(...xs);}
  replaceChildren(...xs){this.children=xs;}
  addEventListener(name,fn){this.listeners[name]=fn;}
