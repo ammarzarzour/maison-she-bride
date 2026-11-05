@@ -4,9 +4,9 @@ const assert=require('node:assert/strict');
 const html=fs.readFileSync('seller.html','utf8');
 const script=html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
 assert.ok(script);
-const from=script.indexOf('function filterSellerInventory(');
+const from=script.indexOf('function normalizeSellerSearch(');
 const to=script.indexOf("$('inventorySearch').addEventListener",from);
-assert.ok(from>=0&&to>from);
+assert.ok(from>=0&&to>from,'search normalizer and filter must be extracted together');
 const ctx=vm.createContext({});
 vm.runInContext(script.slice(from,to),ctx);
 const rows=[
