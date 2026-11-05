@@ -43,7 +43,21 @@ async function auth(){
  catch(e){msg(e.message)}
 }
 async function api(method='GET',body=null){
- const r=await fetch(FN,{method,headers:{apikey:KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||d.message||tt('apiFailed')+' ('+r.status+')');return d;
+ const r=await fetch(FN,{method,headers:{apikey:KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const d=await r.json().catch(()=>({}));if(!r.ok){
+  const err=new Error(d.error||d.message||tt('apiFailed')+' ('+r.status+')');
+  err.status=r.status;
+  if(r.status===401||r.status===403)resetAdminSession();
+  throw err;
+ }
+ return d;
+}
+function resetAdminSession(){
+ token='';lastDashboard=null;shippingDrafts.clear();
+ $('dashboard').classList.add('hidden');
+ $('loginPanel').classList.remove('hidden');
+ $('password').value='';
+ for(const id of ['storesRows','productsRows','ordersRows'])$(''+id).replaceChildren();
+ for(const id of ['storesCount','pendingCount','productsCount','draftCount','ordersCount'])$(''+id).textContent='0';
 }
 function date(v){return v?new Date(v).toLocaleString(currentAdminLocale()==='ar'?'ar-SY':'en-GB'):'—'}
 function cell(tr,value){const td=document.createElement('td');td.textContent=value;tr.append(td);return td}
@@ -56,7 +70,7 @@ async function load(){
   renderDashboard(d);msg(tt('loaded'));
  }catch(e){
   msg(e.message);
-  if(String(e.message).includes('غير مخوّل')){$('dashboard').classList.add('hidden');$('loginPanel').classList.remove('hidden');token='';lastDashboard=null;shippingDrafts.clear()}
+  if(e.status===401||e.status===403||String(e.message).includes('غير مخوّل'))resetAdminSession()
  }
 }
 function renderDashboard(d){
@@ -73,6 +87,6 @@ const save=actionButton(tt('saveShipment'),async()=>{try{msg(tt('saving'));await
  if(!d.orders.length){const tr=document.createElement('tr');cell(tr,tt('noOrders'));$('ordersRows').append(tr)}
 }
 
-$('login').onclick=auth;$('refresh').onclick=load;$('logout').onclick=()=>{token='';lastDashboard=null;shippingDrafts.clear();$('dashboard').classList.add('hidden');$('loginPanel').classList.remove('hidden');$('password').value='';msg(tt('loggedOut'))};
+$('login').onclick=auth;$('refresh').onclick=load;$('logout').onclick=()=>{resetAdminSession();msg(tt('loggedOut'))};
 localizeStatic();
 </script></body></html>
