@@ -238,8 +238,8 @@ async function run() {
   // JSON numeric text must use ordinary decimal notation, never JavaScript's
   // permissive Number() coercions such as hexadecimal, exponents or signs.
   for (const [price, stock] of [
-    ['0x10',1], ['1e3',1], ['+12',1], ['-0',1],
-    [10,'0x10'], [10,'1e2'], [10,'+2'], [10,'2.0']
+    ['0x10',1], ['1e3',1], ['+12',1], ['-0',1], [' 12',1], ['12 ',1], ['\t12',1],
+    [10,'0x10'], [10,'1e2'], [10,'+2'], [10,'2.0'], [10,' 2'], [10,'2 '], [10,'\n2']
   ]) {
     const w={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
     vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
