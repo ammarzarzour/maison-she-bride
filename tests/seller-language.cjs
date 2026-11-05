@@ -12,7 +12,7 @@ function setup(language='ar-SY',savedPreference=null,denyStorage=false){
  const saved=new Map(savedPreference===null?[]:[['msb_seller_lang',savedPreference]]);
  const elements=new Map();
  class Element{
-  constructor(tag='div'){this.tagName=tag;this.children=[];this.listeners={};this.textContent='';this.value='';this.innerHTML='';this.disabled=false;this.className='';this.dataset={};this.classList={add(){},remove(){}};}
+  constructor(tag='div'){this.tagName=tag;this.children=[];this.listeners={};this.textContent='';this.value='';this.innerHTML='';this.disabled=false;this.className='';this.dataset={};this.classList={add(){},remove(){},toggle(){}};}
   append(...xs){this.children.push(...xs)}
   replaceChildren(...xs){this.children=xs}
   addEventListener(name,fn){this.listeners[name]=fn}
