@@ -299,12 +299,16 @@ $('refreshInventory').onclick=async()=>{
   }
  }
 };
+function normalizeSellerSearch(value){
+ // Ignore Latin/Arabic diacritics and Arabic tatweel without changing displayed titles.
+ return String(value).normalize('NFKD').replace(/[\u0300-\u036f\u0640\u064b-\u065f\u0670]/gu,'').toLocaleLowerCase();
+}
 function filterSellerInventory(rows,query,status){
- const words=String(query||'').normalize('NFKC').toLocaleLowerCase().trim().split(/\s+/u).filter(Boolean);
+ const words=normalizeSellerSearch(query||'').trim().split(/\s+/u).filter(Boolean);
  return rows.filter(p=>{
   const stock=Number(p.stock);
   const matchesStatus=status==='all'||status===p.status||(status==='low'&&stock>=1&&stock<=3)||(status==='out'&&stock===0);
-  const searchable=(p.title_ar+' '+p.title_en+' '+p.id).normalize('NFKC').toLocaleLowerCase();
+  const searchable=normalizeSellerSearch(p.title_ar+' '+p.title_en+' '+p.id);
   return matchesStatus&&words.every(word=>searchable.includes(word));
  });
 }
