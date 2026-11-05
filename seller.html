@@ -146,11 +146,27 @@ function renderSellerCategories(){
 }
 async function loadCategories(epoch=sellerSessionEpoch,authToken=token,ownerId=user?.id){
  if(!sellerSessionActive(epoch,authToken,ownerId))return;
- const rows=await request('/rest/v1/categories?select=id,name_ar,name_en&order=name_ar.asc');
+ // Avoid showing stale category options during a refresh or a failed page.
+ categories=[];renderSellerCategories();
+ const all=[],seen=new Set();
+ const query='/rest/v1/categories?select=id,name_ar,name_en&order=name_ar.asc,id.asc';
+ for(let page=0;page<=SELLER_MAX_PAGES;page++){
+  if(!sellerSessionActive(epoch,authToken,ownerId))return;
+  const probe=page===SELLER_MAX_PAGES;
+  const rows=await request(query+'&limit='+(probe?1:SELLER_PAGE_SIZE)+'&offset='+(page*SELLER_PAGE_SIZE));
+  if(!sellerSessionActive(epoch,authToken,ownerId))return;
+  if(!Array.isArray(rows)||rows.length>(probe?1:SELLER_PAGE_SIZE))throw new Error(tr('searchProducts'));
+  if(probe){if(rows.length)throw new Error(tr('inventoryLimit'));break;}
+  for(const row of rows){
+   if(!row||typeof row.id!=='string'||!row.id.trim()||seen.has(row.id)||
+      typeof row.name_ar!=='string'||!row.name_ar.trim()||
+      typeof row.name_en!=='string'||!row.name_en.trim())throw new Error(tr('searchProducts'));
+   seen.add(row.id);all.push(row);
+  }
+  if(rows.length<SELLER_PAGE_SIZE)break;
+ }
  if(!sellerSessionActive(epoch,authToken,ownerId))return;
- if(!Array.isArray(rows))throw new Error(tr('searchProducts'));
- categories=rows;
- renderSellerCategories();
+ categories=all;renderSellerCategories();
 }
 const MAX_STOCK=2147483647; // PostgreSQL integer upper bound.
 const SELLER_MUTATIONS_ENABLED=false; // Database currently denies authenticated INSERT/UPDATE grants.
