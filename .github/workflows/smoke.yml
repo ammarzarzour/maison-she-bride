@@ -33,6 +33,8 @@ jobs:
         run: node tests/sanad-admin.cjs
       - name: Verify public catalog adapter
         run: node tests/catalog.cjs
+      - name: Verify bounded catalog read retries
+        run: node tests/catalog-retry.cjs
       - name: Verify catalog image metadata safety
         run: node tests/catalog-images.cjs
       - name: Verify category pagination boundaries
