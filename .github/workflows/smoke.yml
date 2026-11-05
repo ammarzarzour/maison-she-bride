@@ -57,6 +57,8 @@ jobs:
         run: node tests/catalog-retry.cjs
       - name: Verify catalog image metadata safety
         run: node tests/catalog-images.cjs
+      - name: Reject malformed image URL controls and surrounding whitespace
+        run: node tests/catalog-image-url-controls.cjs
       - name: Verify bounded product image galleries and unique positions
         run: node tests/catalog-image-gallery.cjs
       - name: Verify category pagination boundaries
