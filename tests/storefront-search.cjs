@@ -30,6 +30,11 @@ assert.match(search('CRÈME'),/data-add="p2"/);
 assert.match(search('Leather'),/data-add="p3"/);
 assert.match(search('حرير'),/data-add="p1"/);
 assert.match(search('eveningwear'),/data-add="p1"/);
+// Search terms can span languages, descriptions and category names in any order.
+assert.match(search('silk wedding'),/data-add="p1"/);
+assert.match(search('bridal حرير'),/data-add="p1"/);
+assert.match(search('eveningwear dress'),/data-add="p1"/);
+assert.doesNotMatch(search('silk leather'),/data-add=/);
 assert.match(search('bridal'),/data-add="p1"/);
 assert.match(search('فساتين الاعراس'),/data-add="p1"/);
 assert.doesNotMatch(search('فساتين الاعراس'),/data-add="p2"/);
