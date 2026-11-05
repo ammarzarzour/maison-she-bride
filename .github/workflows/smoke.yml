@@ -37,6 +37,8 @@ jobs:
         run: node tests/seller-inventory-refresh.cjs
       - name: Verify seller inventory stock and name sorting
         run: node tests/seller-inventory-sort.cjs
+      - name: Verify seller inventory display pagination
+        run: node tests/seller-display-pagination.cjs
       - name: Verify seller inventory search and stock filters
         run: node tests/seller-inventory-filters.cjs
       - name: Verify safe seller inventory CSV export
