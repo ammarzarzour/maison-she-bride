@@ -38,11 +38,13 @@ async function get(table,query){
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),timeout);
   let retry=false;
+  let fetching=true;
   try{
    const response=await fetch(endpoint,{
     headers:{apikey:key,Authorization:'Bearer '+key,Accept:'application/json'},
     signal:controller.signal,cache:'no-store'
    });
+   fetching=false;
    if(!response.ok){
     retry=retryableStatuses.has(response.status);
     throw new Error('Catalog request failed ('+response.status+')');
@@ -52,7 +54,7 @@ async function get(table,query){
    return {configured:true,rows,error:null};
   }catch(e){
    // Network failures and request timeouts are transient, but parse errors are not.
-   if(e.name==='AbortError'||e.name==='TypeError')retry=true;
+   if(e.name==='AbortError'||(fetching&&e.name==='TypeError'))retry=true;
    if(!retry||attempt===retryDelays.length)return {configured:true,rows:[],error:e.message||'Catalog unavailable'};
   }finally{clearTimeout(timer);}
   await pause(retryDelays[attempt]);
