@@ -103,14 +103,20 @@ function showAccount(){ $('authPanel').classList.add('hidden');$('accountPanel')
 async function authenticate(kind){
  const epoch=++sellerSessionEpoch;
  message(tr('loginConnecting'));
+ const password=$('password').value;
  try{
- const email=$('email').value.trim(),password=$('password').value;
+ const email=$('email').value.trim();
  if(!email||password.length<6)throw new Error(tr('loginInvalid'));
  const data=await request('/auth/v1/'+(kind==='signup'?'signup':'token?grant_type=password'),'POST',{email,password},false);
  if(epoch!==sellerSessionEpoch)return;
  if(!data.access_token){message(tr('verifyEmail'));return}
  token=data.access_token;user=data.user;store=null;cachedSellerProducts=null;showAccount();await loadSeller();
  }catch(e){if(epoch===sellerSessionEpoch)message(e.message)}
+ finally{
+  // Never retain a submitted password after its authentication attempt finishes.
+  // Do not erase newer input or another authentication attempt's credentials.
+  if(epoch===sellerSessionEpoch&&$('password').value===password)$('password').value='';
+ }
 }
 $('signup').onclick=()=>authenticate('signup');$('login').onclick=()=>authenticate('login');
 async function loadSeller(){
