@@ -40,4 +40,10 @@ node('language').onchange({target:{value:'en'}});
 assert.equal(document.documentElement.dir,'ltr');
 assert.match(search('فستان الاعراس'),/data-add="p1"/);
 assert.match(search('creme'),/data-add="p2"/);
-console.log('PASS bilingual storefront search across names, descriptions and category labels');
+// A published product with zero inventory remains discoverable but cannot be added.
+vm.runInContext("items.push({id:'sold',cat:'bridal',ar:'فستان غير متوفر',en:'Sold Out Dress',usd:9,stock:0,icon:'✦'});render()",context);
+assert.match(search('Sold Out Dress'),/data-add="sold" disabled aria-disabled="true">Out of stock<\/button>/);
+node('language').onchange({target:{value:'ar'}});
+assert.match(search('فستان غير متوفر'),/data-add="sold" disabled aria-disabled="true">نفدت الكمية<\/button>/);
+assert.equal(vm.runInContext("Object.hasOwn(cart,'sold')",context),false);
+console.log('PASS bilingual storefront search and sold-out availability');
