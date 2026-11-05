@@ -1,0 +1,23 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const html=fs.readFileSync('seller.html','utf8');
+const script=html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+assert.ok(script);
+const start=script.indexOf('const SELLER_DISPLAY_PAGE_SIZE=25;');
+const end=script.indexOf('function resetSellerDisplayPage()',start);
+assert.ok(start>=0&&end>start);
+const ctx=vm.createContext({});
+vm.runInContext(script.slice(start,end),ctx);
+const rows=Array.from({length:53},(_,i)=>({id:i}));
+function page(n){return vm.runInContext('sellerPageSlice(rows,n)',vm.createContext({rows,sellerPageSlice:ctx.sellerPageSlice,n}))}
+assert.equal(page(0).items.length,25);
+assert.equal(page(1).items[0].id,25);
+assert.equal(page(2).items.length,3);
+assert.equal(page(999).current,2);
+assert.equal(page(-5).current,0);
+assert.equal(vm.runInContext('sellerPageSlice([],10).count',vm.createContext({sellerPageSlice:ctx.sellerPageSlice})),1);
+assert.ok(html.includes("const page=sellerPageSlice(visible,sellerDisplayPage)"));
+assert.ok(html.includes("showStockSummary(rows);"),'summary should use all rows');
+assert.ok(html.includes("buildInventoryCsv(cachedSellerProducts)"),'CSV should use all rows');
+for(const field of ['inventorySearch','inventoryFilter','inventorySort'])assert.ok(html.includes("$('"+field+"').addEventListener"),'missing filter handler');
+assert.ok(html.includes("sellerDisplayPage=0;\n exportInventorySession="),'new catalog resets page');
+console.log('PASS seller inventory paging and complete export');
