@@ -192,6 +192,9 @@ async function loadProducts(){
  if(!token||!user||!store)return;
  const epoch=sellerSessionEpoch,authToken=token,ownerId=user.id,storeId=store.id;
  const query='/rest/v1/products?select=id,title_ar,title_en,price_usd,stock,status,created_at&store_id=eq.'+encodeURIComponent(storeId)+'&order=created_at.desc,id.desc';
+ // Invalidate previously displayed inventory before any network read: failures
+ // must not leave stale counts or products looking like a current complete list.
+ cachedSellerProducts=null;$('products').replaceChildren();$('stockSummary').replaceChildren();
  const all=[],seen=new Set();
  for(let page=0;page<=SELLER_MAX_PAGES;page++){
   if(!sellerSessionActive(epoch,authToken,ownerId,storeId))return;
