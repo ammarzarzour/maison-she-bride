@@ -76,6 +76,7 @@ function renderSellerLanguage(){
  for(const node of document.querySelectorAll('[data-i18n-placeholder]'))node.placeholder=tr(node.dataset.i18nPlaceholder);
  if(user){$('welcome').textContent=tr('welcomePrefix')+' '+(user.email||tr('welcomeGuest')); }
  if(store){$('storeStatus').textContent=tr('storePrefix')+' '+store.name+' · '+tr(store.status==='approved'?'approved':store.status==='pending'?'pending':'suspended');}
+ else if(user){$('storeStatus').textContent=tr('noStore');}
  if(categories.length)renderSellerCategories();
  if(Array.isArray(cachedSellerProducts))renderSellerProducts(cachedSellerProducts);
 }
