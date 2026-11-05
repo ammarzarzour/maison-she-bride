@@ -3,6 +3,7 @@ const vm=require('node:vm');
 const assert=require('node:assert/strict');
 const html=fs.readFileSync('seller.html','utf8');
 const script=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)][0]?.[1];
+assert.match(script,/if\(epoch===sellerSessionEpoch&&\$\('password'\)\.value===password\)\$\('password'\)\.value='';/, 'completed authentication must clear only its own password');
 assert.ok(script?.includes('const STOCK_EDIT_ENABLED=false;'),'inventory writes must stay disabled without a narrow DB grant');
 assert.match(html,/تعديل المخزون غير مفعّل حالياً/);
 assert.match(html,/id="apply"[^>]*disabled/, 'store application button must be disabled without INSERT permission');
