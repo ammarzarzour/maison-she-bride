@@ -92,9 +92,13 @@ async function pagedProducts(){
    if((!decimalPrice(row.price_usd)||!Number.isFinite(Number(row.price_usd)))||Number(row.price_usd)<0||!Number.isFinite(Number(row.price_usd)*120)||(!decimalStock(row.stock)||!Number.isSafeInteger(Number(row.stock)))||Number(row.stock)<1)return {configured:true,rows:[],error:'Invalid price or stock in catalog'};
    // Images must be HTTPS URLs. Reject unexpected schemes and malformed image metadata.
    if(row.product_images!==null&&row.product_images!==undefined){
-    if(!Array.isArray(row.product_images))return {configured:true,rows:[],error:'Invalid product images'};
+    if(!Array.isArray(row.product_images)||row.product_images.length>30)return {configured:true,rows:[],error:'Invalid product images'};
+    const imagePositions=new Set();
     for(const img of row.product_images){
      if(!img||typeof img.image_url!=='string'||!/^https:\/\//i.test(img.image_url)||!(['number','string'].includes(typeof (img.position??0)))||String(img.position??0).trim()===''||!Number.isSafeInteger(Number(img.position??0))||Number(img.position??0)<0)return {configured:true,rows:[],error:'Invalid product image URL or position'};
+     const position=Number(img.position??0);
+     if(imagePositions.has(position))return {configured:true,rows:[],error:'Duplicate product image position'};
+     imagePositions.add(position);
      try{const parsed=new URL(img.image_url);if(parsed.protocol!=='https:'||!parsed.hostname||parsed.username||parsed.password)return {configured:true,rows:[],error:'Invalid product image URL'};}
      catch{return {configured:true,rows:[],error:'Invalid product image URL'};}
     }
