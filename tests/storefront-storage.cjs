@@ -9,6 +9,7 @@ assert.ok(script?.includes('function readCart()'), 'missing cart storage validat
 function setup(initial, blockedWrites = false, blockedReads = false) {
   const saved = new Map(Object.entries(initial));
   const nodes = new Map();
+  let activeElement = null;
   function node(id) {
     if (nodes.has(id)) return nodes.get(id);
     const attrs = {};
@@ -19,6 +20,7 @@ function setup(initial, blockedWrites = false, blockedReads = false) {
       classList: {
         add(value) { classes.add(value); },
         remove(value) { classes.delete(value); },
+        contains(value) { return classes.has(value); },
         toggle(value, flag) {
           const active = flag === undefined ? !classes.has(value) : flag;
           if (active) classes.add(value); else classes.delete(value);
@@ -27,12 +29,14 @@ function setup(initial, blockedWrites = false, blockedReads = false) {
       setAttribute(name, value) { attrs[name] = value; },
       getAttribute(name) { return attrs[name]; },
       addEventListener(name, fn) { this.handlers[name] = fn; },
-      scrollIntoView() {}
+      scrollIntoView() {},
+      focus() { activeElement = element; },
+      isConnected: true
     };
     nodes.set(id, element);
     return element;
   }
-  const document = {getElementById: node, documentElement: {}, addEventListener() {}};
+  const document = {getElementById: node, documentElement: {}, addEventListener() {}, get activeElement() { return activeElement; }};
   const localStorage = {
     getItem(key) {
       if (blockedReads) throw new Error('Storage unavailable');
