@@ -47,6 +47,13 @@
 - النموذج **غير حكومي وغير صالح للطلبات الحقيقية**؛ البيانات الوهمية محلية في المتصفح. لا توجد مصادقة رسمية أو مدفوعات.
 - نشر GitHub Pages مستقل عن نجاح اختبارات GitHub Actions؛ يجب التحقق من نتيجة مهمة `pages build and deployment` ومن فتح الرابط على متصفح فعلي. لا يوجد مستودع GitHub منفصل لسند بعد.
 
+## تحديث التجربة الآمنة (Maison She Bride وSanad Syria)
+
+- **متجر Maison She Bride:** أُزيلت حقول الاسم والهاتف وعنوان الشحن وخيارات الدفع الوهمية من نافذة السلة التجريبية، واستُبدلت بمعاينة نصية للمنتجات والكميات وإجمالي العرض، ثنائية اللغة ومتوافقة مع العملة المختارة. يمكن نسخ الملخص عبر الحافظة عندما يدعمها المتصفح، أو تحديد النص ونسخه يدوياً إذا منع النسخ. لا تُنقل البيانات ولا يُنشأ طلب أو معاملة مالية، والأسعار وأسعار الصرف للتجربة فقط.
+- لا يُسمح بنسخ ملخص سلة فارغة أو في أثناء تعذر تحميل الكتالوج، ويُحدّ عدد القطع حسب مخزون الكتالوج المحمّل قبل إنتاج الملخص. العناوين تُطبع نصياً دون تضمين HTML، وتُزال أسطر العنوان غير المتوقعة للحفاظ على وضوح الملخص.
+- **سند سوريا:** تفضيل اللغة للواجهة الخدمية يقبل `auto` أو `ar` أو `en` فقط، ويعود إلى لغة الجهاز عند فساد القيمة المخزنة أو حظر الوصول إلى التخزين المحلي. يظل التبديل اليدوي يعمل داخل الصفحة عند تعطيل الحفظ. لا تزال الطلبات وهمية ومحلية، ولا توجد حسابات رسمية أو رفع وثائق.
+- اختبارات انحدار: `tests/cart-demo-quote.cjs` و`tests/sanad-language.cjs` ضمن فحوص GitHub Actions.
+
 ## حالة التشغيل
 
 **الموقع ليس جاهزاً لاستقبال مبيعات حقيقية.**
@@ -88,6 +95,7 @@
 node tests/smoke.cjs
 node tests/storefront.cjs
 node tests/cart-accessibility.cjs
+node tests/cart-demo-quote.cjs
 node tests/seller-stock.cjs
 node tests/seller-language.cjs
 node tests/admin-language.cjs
@@ -96,6 +104,7 @@ node tests/storefront-preferences.cjs
 node tests/storefront-storage.cjs
 node tests/storefront-safety.cjs
 node tests/sanad.cjs
+node tests/sanad-language.cjs
 node tests/sanad-admin.cjs
 node tests/catalog.cjs
 node tests/catalog-retry.cjs
