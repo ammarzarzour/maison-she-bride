@@ -83,6 +83,24 @@ async function run(){
   assert.equal(a.node('category').children.length,0,'logout must not render late private options');
   assert.equal(vm.runInContext('categories.length',a.context),0);
  }
+ {
+  // Two reads in the same authenticated session: an older, slower page must
+  // not replace the newer completed category list.
+  const rows=Array.from({length:150},(_,i)=>row(i));
+  const a=setup(rows,{defer:true});
+  const older=vm.runInContext('loadCategories()',a.context);
+  await new Promise(resolve=>setImmediate(resolve));
+  rows.splice(0,rows.length,row(900));
+  const newer=vm.runInContext('loadCategories()',a.context);
+  await newer;
+  assert.equal(a.node('category').children.length,1);
+  assert.equal(a.node('category').children[0].value,'category-900');
+  a.release();
+  await older;
+  assert.equal(a.node('category').children.length,1,'older category response must not overwrite newer options');
+  assert.equal(a.node('category').children[0].value,'category-900');
+  assert.equal(vm.runInContext('categories.length',a.context),1);
+ }
  console.log('PASS seller bilingual category pagination, overflow, validation, stale state and logout isolation');
 }
 run().catch(e=>{console.error(e);process.exitCode=1});
