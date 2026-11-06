@@ -21,6 +21,11 @@ for(const bad of [{price:'0'},{price:'Infinity'},{price:'1e3'},{price:' 125'},{p
 }
 assert.ok(html.includes('id="previewProduct"'));
 assert.ok(html.includes('id="productPreview"'));
+assert.ok(html.includes('id="hideProductPreview"'));
+assert.ok(source.includes("$('hideProductPreview').addEventListener('click'"),'preview can be dismissed');
+assert.ok(source.includes("sellerDraftPreviewVisible=false;$('productPreview').replaceChildren()"),'dismissal clears content and state');
+assert.ok(source.includes('"hidePreview":"إخفاء المعاينة"'),'Arabic hide label');
+assert.ok(source.includes('"hidePreview":"Hide preview"'),'English hide label');
 assert.ok(source.includes("target.replaceChildren()"),'preview must render as DOM text');
 assert.ok(source.includes('line.textContent=value'),'untrusted draft fields must never use HTML');
 assert.ok(!source.slice(from,source.indexOf("$('productForm').onsubmit",from)).includes('request('),'preview must not write to API');
