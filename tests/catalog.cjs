@@ -187,7 +187,7 @@ async function run() {
   console.log('PASS catalog rejects blank or missing Arabic and English titles');
 
   // Invisible control characters must not enter visible bilingual product titles.
-  for (const [ar,en] of [['فستان\\nجديد','Dress'],['فستان','Dress\\tNew'],['فستان','Dress\\u007fNew']]) {
+  for (const [ar,en] of [['فستان\nجديد','Dress'],['فستان','Dress\tNew'],['فستان','Dress\u007fNew']]) {
     const w={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
     vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
       window:w,AbortController,setTimeout,clearTimeout,
