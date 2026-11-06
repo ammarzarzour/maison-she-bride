@@ -16,6 +16,8 @@ assert.equal(page(999).current,2);
 assert.equal(page(-5).current,0);
 assert.equal(vm.runInContext('sellerPageSlice([],10).count',vm.createContext({sellerPageSlice:ctx.sellerPageSlice})),1);
 assert.ok(html.includes("const page=sellerPageSlice(visible,sellerDisplayPage)"));
+assert.ok(html.includes("$('inventoryPages').setAttribute('aria-label',sellerLocale()==='ar'?'صفحات الجرد':'Inventory pages')"),'pagination landmark must follow selected language');
+assert.ok(html.includes('aria-label="صفحات الجرد"'),'initial Arabic landmark must be localized');
 assert.ok(html.includes("showStockSummary(rows);"),'summary should use all rows');
 assert.ok(html.includes("buildInventoryCsv(cachedSellerProducts)"),'CSV should use all rows');
 for(const field of ['inventorySearch','inventoryFilter','inventorySort'])assert.ok(html.includes("$('"+field+"').addEventListener"),'missing filter handler');
