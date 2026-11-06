@@ -432,7 +432,7 @@ function sellerParseDraftImport(record,availableCategories){
  if(Object.keys(record).some(key=>!keys.includes(key))||keys.some(key=>!Object.hasOwn(record,key)))return null;
  if(!['title_ar','title_en','description_ar','description_en','category_id','price_usd'].every(key=>typeof record[key]==='string'))return null;
  if(typeof record.stock!=='number'||!Number.isSafeInteger(record.stock))return null;
- if(record.description_ar.length>3000||record.description_en.length>3000||!availableCategories.some(c=>c.id===record.category_id))return null;
+ if(record.description_ar.length>3000||record.description_en.length>3000||!Array.isArray(availableCategories)||!availableCategories.some(c=>c&&c.id===record.category_id))return null;
  const valid=sellerDraftExportRecord({titleAr:record.title_ar,titleEn:record.title_en,descAr:record.description_ar,descEn:record.description_en,categoryId:record.category_id,price:record.price_usd,stock:String(record.stock)});
  if(!valid)return null;
  return valid;
