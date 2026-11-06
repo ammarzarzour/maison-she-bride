@@ -8,7 +8,7 @@ function deferred(){let resolve,reject;const promise=new Promise((yes,no)=>{reso
 function setup(){
  const nodes=new Map(),calls=[],pending=[];
  class Node{
-  constructor(tag='div'){this.tagName=tag;this.children=[];this.textContent='';this.value='';this.disabled=false;this.listeners={};this.classList={add(){},remove(){}};}
+  constructor(tag='div'){this.tagName=tag;this.children=[];this.textContent='';this.value='';this.disabled=false;this.listeners={};this.classList={add(){},remove(){},toggle(){}};}
   append(...xs){this.children.push(...xs)}
   replaceChildren(...xs){this.children=xs}
   addEventListener(type,fn){this.listeners[type]=fn}
