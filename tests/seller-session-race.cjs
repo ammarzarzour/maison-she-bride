@@ -98,6 +98,19 @@ async function run(){
   assert.equal(a.node('products').children.length,0);
   assert.match(a.node('msg').textContent,/Could not load store details/);
  }
+ // Two stores owned by one account are ambiguous: never choose one silently.
+ {
+  const a=setup();
+  vm.runInContext("token='token-A';user={id:'seller-A'}",a.context);
+  const loading=vm.runInContext('loadSeller()',a.context);
+  assert.equal(new URL(a.calls[0].url).searchParams.get('limit'),'2','lookup must request two rows to detect duplicates');
+  a.finish(0,[{id:'store-A',name:'First',status:'approved'},{id:'store-B',name:'Second',status:'approved'}]);
+  await loading;
+  assert.equal(a.calls.length,1,'ambiguous ownership must not fetch private inventory');
+  assert.equal(vm.runInContext('store',a.context),null);
+  assert.equal(a.node('products').children.length,0);
+  assert.match(a.node('msg').textContent,/Could not load store details/);
+ }
  // A delayed login response must not silently reauthenticate after logout.
  {
   const a=setup();
