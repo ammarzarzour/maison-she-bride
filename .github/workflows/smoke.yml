@@ -43,6 +43,8 @@ jobs:
         run: node tests/seller-inventory-filters.cjs
       - name: Verify safe seller inventory CSV export
         run: node tests/seller-inventory-export.cjs
+      - name: Verify local-only bilingual seller draft preview
+        run: node tests/seller-draft-preview.cjs
       - name: Verify seller Arabic and English language switching
         run: node tests/seller-language.cjs
       - name: Protect seller session from late authentication and inventory reads
