@@ -28,6 +28,8 @@ assert.ok(!source.slice(from,source.indexOf("$('productForm').onsubmit",from)).i
 assert.ok(source.includes("if(sellerDraftPreviewVisible)showSellerDraftPreview();"),'preview must follow locale');
 assert.ok(source.includes("$('productForm').addEventListener('input'"),'preview updates after edits');
 assert.ok(source.includes("$('productForm').addEventListener('change'"),'preview updates after select changes');
-assert.ok(source.includes("$('productForm').reset();sellerSessionEpoch++"),'logout must erase draft inputs');
+assert.ok(source.includes("for(const id of ['titleAr','titleEn','price','stock','descAr','descEn','photo'])$(id).value=''"),'logout must clear all draft fields including image');
+assert.ok(source.includes("sellerDraftPreviewVisible=false"),'logout must invalidate preview visibility');
+assert.ok(source.includes("$('productPreview').replaceChildren()"),'logout must clear preview contents');
 assert.ok(source.includes("categories=[];renderSellerCategories();\n $('productPreview').replaceChildren()"),'category refresh must hide old preview');
 console.log('PASS bilingual local-only seller draft preview validation and safe rendering');
