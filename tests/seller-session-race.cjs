@@ -111,6 +111,32 @@ async function run(){
   assert.equal(a.node('products').children.length,0);
   assert.match(a.node('msg').textContent,/Could not load store details/);
  }
+ // Starting a new login must immediately hide the old seller's inventory,
+ // including when the replacement login eventually fails.
+ {
+  const a=setup();
+  vm.runInContext("token='token-A';user={id:'seller-A'};store={id:'store-A',status:'approved'};categories=[{id:'private',name_ar:'خاص',name_en:'Private'}];cachedSellerProducts=[{id:'private-product'}];exportInventorySession={epoch:0}",a.context);
+  a.node('products').append(new (a.node('products').constructor)());
+  a.node('stockSummary').append(new (a.node('products').constructor)());
+  a.node('storeStatus').textContent='Private store';
+  a.node('email').value='new@example.invalid';
+  a.node('password').value='wrong-password';
+  const attempt=a.node('login').onclick();
+  assert.equal(vm.runInContext('token',a.context),'');
+  assert.equal(vm.runInContext('user',a.context),null);
+  assert.equal(vm.runInContext('store',a.context),null);
+  assert.equal(vm.runInContext('categories.length',a.context),0);
+  assert.equal(vm.runInContext('cachedSellerProducts',a.context),null);
+  assert.equal(vm.runInContext('exportInventorySession',a.context),null);
+  assert.equal(a.node('products').children.length,0);
+  assert.equal(a.node('stockSummary').children.length,0);
+  assert.equal(a.node('storeStatus').textContent,'');
+  a.finish(0,{message:'Invalid credentials'},false);
+  await attempt;
+  assert.equal(vm.runInContext('token',a.context),'');
+  assert.equal(a.node('products').children.length,0);
+  assert.match(a.node('msg').textContent,/Invalid credentials/);
+ }
  // A delayed login response must not silently reauthenticate after logout.
  {
   const a=setup();
