@@ -298,6 +298,18 @@ async function run() {
     assert.equal(legacy.MSB_CATALOG.configured,expected,'JWT role '+role);
   }
   console.log('PASS legacy JWT configuration permits anon only');
+  // Reject malformed publishable keys before any request is made. A trailing
+  // space or line break must not be forwarded as an API credential.
+  for(const candidate of ['sb_publishable_', 'sb_publishable_bad key', 'sb_publishable_test\\n', 'sb_publishable_test\\t', 'sb_publishable_é']){
+    const malformed={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:candidate}};
+    vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+      window:malformed,AbortController,setTimeout,clearTimeout,
+      fetch:()=>{throw Error('malformed key must not be sent')}
+    });
+    assert.equal(malformed.MSB_CATALOG.configured,false,JSON.stringify(candidate));
+  }
+  console.log('PASS malformed publishable keys are rejected');
+
 
   const bad = {MSB_SUPABASE:{url:'http://example.supabase.co',publishableKey:'service_role_secret'}};
   vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{window:bad,AbortController,setTimeout,clearTimeout,fetch:()=>{throw Error('must not fetch')}});
