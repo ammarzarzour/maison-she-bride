@@ -7,7 +7,7 @@ assert.match(source,/SELLER_PAGE_SIZE=100,SELLER_MAX_PAGES=10/);
 function setup(rows,options={}){
  const nodes=new Map(),calls=[];
  class Node{
-  constructor(){this.children=[];this.textContent='';this.value='';this.listeners={};this.classList={add(){},remove(){}};}
+  constructor(){this.children=[];this.textContent='';this.value='';this.listeners={};this.classList={add(){},remove(){},toggle(){}};}
   append(...xs){this.children.push(...xs)}
   replaceChildren(...xs){this.children=xs}
   addEventListener(k,v){this.listeners[k]=v}
@@ -39,7 +39,7 @@ async function run(){
  for(const n of [0,1,99,100,101,200,1000]){
   const a=setup(Array.from({length:n},(_,i)=>row(i)));
   await vm.runInContext('loadProducts()',a.context);
-  assert.equal(a.node('products').children.length,n,'all rows must render for '+n);
+  assert.equal(a.node('products').children.length,Math.min(n,25),'only the current display page renders for '+n);
   assert.equal(vm.runInContext('cachedSellerProducts.length',a.context),n);
   assert.equal(a.calls.length,Math.floor(n/100)+1);
   for(let i=0;i<a.calls.length;i++)assert.deepEqual(a.calls[i],{offset:i*100,limit:i===10?1:100});
