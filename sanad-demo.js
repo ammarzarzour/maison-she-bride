@@ -73,12 +73,26 @@
     try {
       const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
       if (!Array.isArray(parsed)) return [];
+      const seen = new Set();
       return parsed.filter(r => r && typeof r.id === 'string' && /^DEMO-[A-Z0-9]{6,16}$/.test(r.id) &&
         Number.isInteger(r.service) && r.service >= 0 && r.service < services.length &&
-        states.includes(r.state)).slice(0, MAX).map(r => ({id: r.id, service: r.service, state: r.state}));
+        states.includes(r.state) && !seen.has(r.id) && (seen.add(r.id), true))
+        .slice(0, MAX).map(r => ({id: r.id, service: r.service, state: r.state}));
     } catch { return []; }
   }
   let requests = load();
+  // Distinct references matter: the status and delete actions target requests by ID.
+  // A per-page sequence prevents collisions even when the clock/random source repeats.
+  let demoSequence = 0;
+  function nextDemoId() {
+    const stamp = Date.now().toString(36).slice(-6).padStart(6, '0');
+    for (let attempt = 0; attempt <= MAX; attempt++) {
+      const suffix = (demoSequence++).toString(36).padStart(3, '0');
+      const id = ('DEMO-' + stamp + suffix + Math.random().toString(36).slice(2, 8)).toUpperCase();
+      if (!requests.some(request => request.id === id)) return id;
+    }
+    return null;
+  }
   function persist() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(requests));
@@ -152,7 +166,8 @@
     if (requests.length >= MAX) {showMessage('maximum');return;}
     const service = Number($('demoService').value);
     if (!Number.isInteger(service) || service < 0 || service >= services.length) return;
-    const id = 'DEMO-' + (Date.now().toString(36).slice(-6) + Math.random().toString(36).slice(2, 8)).slice(0, 12).toUpperCase();
+    const id = nextDemoId();
+    if (!id) {showMessage('maximum');return;}
     requests.unshift({id, service, state:'draft'});
     const saved = persist();
     $('demoFilter').value = 'all';
