@@ -69,7 +69,7 @@ async function pagedCategories(){
   if(result.error||!result.configured)return {...result,rows:[]};
   if(result.rows.length>pageSize)return {configured:true,rows:[],error:'Category page exceeds requested limit'};
   for(const row of result.rows){
-   if(!row||typeof row.id!=='string'||!row.id.trim()||seen.has(row.id)||typeof row.slug!=='string'||!row.slug.trim()||row.slug!==row.slug.trim()||/[\u0000-\u001f\u007f]/.test(row.slug)||slugs.has(row.slug)||typeof row.name_ar!=='string'||!row.name_ar.trim()||typeof row.name_en!=='string'||!row.name_en.trim())return {configured:true,rows:[],error:'Invalid or repeated category in catalog pagination'};
+   if(!row||typeof row.id!=='string'||!row.id.trim()||row.id!==row.id.trim()||/[\u0000-\u001f\u007f]/.test(row.id)||seen.has(row.id)||typeof row.slug!=='string'||!row.slug.trim()||row.slug!==row.slug.trim()||/[\u0000-\u001f\u007f]/.test(row.slug)||slugs.has(row.slug)||typeof row.name_ar!=='string'||!row.name_ar.trim()||typeof row.name_en!=='string'||!row.name_en.trim())return {configured:true,rows:[],error:'Invalid or repeated category in catalog pagination'};
    seen.add(row.id);slugs.add(row.slug);all.push(row);
   }
   if(result.rows.length<pageSize)return {configured:true,rows:all,error:null};
@@ -89,7 +89,7 @@ async function pagedProducts(){
   if(result.error||!result.configured)return {...result,rows:[]}; // Never display a partial catalog as complete.
   if(result.rows.length>pageSize)return {configured:true,rows:[],error:'Catalog page exceeds requested limit'};
   for(const row of result.rows){
-   if(!row||typeof row.id!=='string'||!row.id.trim()||seen.has(row.id))return {configured:true,rows:[],error:'Invalid or repeated product in catalog pagination'};
+   if(!row||typeof row.id!=='string'||!row.id.trim()||row.id!==row.id.trim()||/[\u0000-\u001f\u007f]/.test(row.id)||seen.has(row.id))return {configured:true,rows:[],error:'Invalid or repeated product in catalog pagination'};
    // Both languages must have usable product names; never render undefined or empty cards.
    if(typeof row.title_ar!=='string'||!row.title_ar.trim()||typeof row.title_en!=='string'||!row.title_en.trim())return {configured:true,rows:[],error:'Invalid bilingual product title in catalog'};
    // Reject malformed prices/stock and potential stock-wide totals that overflow
