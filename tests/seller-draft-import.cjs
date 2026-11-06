@@ -15,6 +15,13 @@ for(const bad of [{version:2},{status:'published'},{stock:1.5},{stock:-1},{price
 assert.equal(parse(null),null);
 assert.equal(parse([draft]),null);
 assert.equal(parse(draft,[]),null);
+// Imported drafts must never accept unexpected personal or payment fields.
+for(const field of ['customer_email','customer_phone','payment_token','shipping_address']){
+ assert.equal(parse({...draft,[field]:'unexpected'}),null,field);
+}
+// A draft must refer to a category currently available to this seller.
+assert.equal(parse(draft,[{id:'different'}]),null);
+
 assert.ok(html.includes('id="importProductDraft"'));
 assert.ok(source.includes('file.size>32768'),'file size bounded');
 assert.ok(source.includes('generation!==sellerDraftImportGeneration'),'late reads ignored');
