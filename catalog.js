@@ -91,7 +91,7 @@ async function pagedProducts(){
   for(const row of result.rows){
    if(!row||typeof row.id!=='string'||!row.id.trim()||row.id!==row.id.trim()||/[\u0000-\u001f\u007f]/.test(row.id)||seen.has(row.id))return {configured:true,rows:[],error:'Invalid or repeated product in catalog pagination'};
    // Both languages must have usable product names; never render undefined or empty cards.
-   if(typeof row.title_ar!=='string'||!row.title_ar.trim()||typeof row.title_en!=='string'||!row.title_en.trim())return {configured:true,rows:[],error:'Invalid bilingual product title in catalog'};
+   if(typeof row.title_ar!=='string'||!row.title_ar.trim()||/[\u0000-\u001f\u007f]/.test(row.title_ar)||typeof row.title_en!=='string'||!row.title_en.trim()||/[\u0000-\u001f\u007f]/.test(row.title_en))return {configured:true,rows:[],error:'Invalid bilingual product title in catalog'};
    // Reject malformed prices/stock and potential stock-wide totals that overflow
    // the illustrative SYP conversion, even when each unit price is finite.
    if((!decimalPrice(row.price_usd)||!Number.isFinite(Number(row.price_usd)))||Number(row.price_usd)<0||!Number.isFinite(Number(row.price_usd)*120)||(!decimalStock(row.stock)||!Number.isSafeInteger(Number(row.stock)))||Number(row.stock)<0||!Number.isFinite(Number(row.price_usd)*Number(row.stock)*120))return {configured:true,rows:[],error:'Invalid price or stock in catalog'};
