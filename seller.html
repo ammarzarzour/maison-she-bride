@@ -292,12 +292,18 @@ $('exportInventory').onclick=()=>{
  if(!exportInventorySession||!sellerSessionActive(exportInventorySession.epoch,exportInventorySession.authToken,exportInventorySession.ownerId,exportInventorySession.storeId)||store?.status!=='approved'||!Array.isArray(cachedSellerProducts)){
   message(tr('exportFailed'));return;
  }
- const csv=buildInventoryCsv(cachedSellerProducts);
- const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+ let url=null,link=null;
  try{
-  const link=document.createElement('a');link.href=url;link.download='maison-she-bride-inventory.csv';
-  link.style.display='none';document.body.append(link);link.click();link.remove();
- }finally{URL.revokeObjectURL(url)}
+  const csv=buildInventoryCsv(cachedSellerProducts);
+  url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  link=document.createElement('a');link.href=url;link.download='maison-she-bride-inventory.csv';
+  link.style.display='none';document.body.append(link);link.click();
+ }catch(error){
+  message(tr('exportFailed'));
+ }finally{
+  if(link)link.remove();
+  if(url!==null)URL.revokeObjectURL(url);
+ }
 };
 $('refreshInventory').onclick=async()=>{
  if(!token||!user||store?.status!=='approved')return;
