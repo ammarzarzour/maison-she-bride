@@ -41,6 +41,9 @@ assert.ok(source.includes("URL.createObjectURL(photo)"),'photo preview must use 
 assert.ok(source.includes("URL.revokeObjectURL(sellerPreviewImageUrl)"),'object URLs must be revoked');
 assert.ok(source.includes("photo.size<=5*1024*1024"),'oversized images must not be previewed');
 assert.ok(source.includes("['image/jpeg','image/png','image/webp','image/avif'].includes(photo.type)"),'unsupported images must not be previewed');
+assert.ok(source.includes("warning.textContent=tr('previewImageInvalid')"),'invalid images must display localized warning');
+assert.ok(source.includes('"previewImageInvalid":"تعذّر عرض الصورة:'),'Arabic invalid image warning');
+assert.ok(source.includes('"previewImageInvalid":"Image cannot be previewed:'),'English invalid image warning');
 assert.ok(source.includes("img.alt=data.title"),'preview photo needs translated alt text');
 assert.ok(source.includes("sellerDraftPreviewVisible=false;releaseSellerPreviewImage();"),'logout must release image');
 console.log('PASS bilingual local-only seller draft preview validation and safe rendering');
