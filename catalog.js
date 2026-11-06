@@ -8,7 +8,7 @@ const url=typeof cfg.url==='string'?cfg.url.replace(/\/$/,''):'';
 const key=typeof cfg.publishableKey==='string'?cfg.publishableKey:'';
 // Legacy JWT keys are accepted only when their payload explicitly declares the public anon role.
 function publicKey(value){
- if(value.startsWith('sb_publishable_'))return value.length>'sb_publishable_'.length;
+ if(value.startsWith('sb_publishable_'))return /^sb_publishable_[A-Za-z0-9_-]+$/.test(value);
  if(!/^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value))return false;
  try{
   const part=value.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
