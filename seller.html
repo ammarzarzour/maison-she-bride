@@ -132,7 +132,7 @@ async function loadSeller(){
  $('products').replaceChildren();$('stockSummary').replaceChildren();
  $('refreshInventory').disabled=true;$('refreshInventory').textContent=tr('refreshingInventory');
  try{
- const rows=await request('/rest/v1/stores?select=id,name,status&owner_id=eq.'+encodeURIComponent(ownerId)+'&limit=1');
+ const rows=await request('/rest/v1/stores?select=id,name,status&owner_id=eq.'+encodeURIComponent(ownerId)+'&limit=2');
  if(!sellerSessionActive(epoch,authToken,ownerId))return;
  // A successful HTTP response is not proof of a valid store record. Fail closed
  // rather than treating malformed JSON or an unexpected row as a seller store.
