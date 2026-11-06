@@ -273,7 +273,7 @@ async function loadProducts(){
 // Spreadsheet formula prefixes are escaped to prevent CSV formula injection.
 function inventoryCsvCell(value){
  const raw=String(value??'');
- const safe=/^[\s]*[=+@-]/u.test(raw)?"'"+raw:raw;
+ const safe=/^[\s\u200b-\u200f\u202a-\u202e\u2060\u2066-\u2069\ufeff]*[=+@-]/u.test(raw)?"'"+raw:raw;
  return '"'+safe.replace(/"/g,'""')+'"';
 }
 function buildInventoryCsv(rows){
