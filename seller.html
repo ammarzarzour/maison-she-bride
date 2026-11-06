@@ -180,6 +180,7 @@ async function loadCategories(epoch=sellerSessionEpoch,authToken=token,ownerId=u
  if(!current())return;
  // Avoid showing stale category options during a refresh or a failed page.
  categories=[];renderSellerCategories();
+ releaseSellerPreviewImage();
  $('productPreview').replaceChildren();$('productPreview').classList.add('hidden');
  const all=[],seen=new Set();
  const query='/rest/v1/categories?select=id,name_ar,name_en&order=name_ar.asc,id.asc';
