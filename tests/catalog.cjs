@@ -186,6 +186,20 @@ async function run() {
   }
   console.log('PASS catalog rejects blank or missing Arabic and English titles');
 
+  // Invisible control characters must not enter visible bilingual product titles.
+  for (const [ar,en] of [['فستان\\nجديد','Dress'],['فستان','Dress\\tNew'],['فستان','Dress\\u007fNew']]) {
+    const w={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+    vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+      window:w,AbortController,setTimeout,clearTimeout,
+      fetch:async()=>({ok:true,json:async()=>[{id:'control-title',title_ar:ar,title_en:en,price_usd:10,stock:1}]})
+    });
+    const result=await w.MSB_CATALOG.products();
+    assert.equal(result.rows.length,0,'control characters in titles must not render');
+    assert.match(result.error,/bilingual product title/);
+  }
+  console.log('PASS catalog rejects control characters in bilingual titles');
+
+
   // Extremely large finite USD amounts can overflow the storefront's SYP display rate.
   // Reject the entire response instead of showing an Infinity total or product price.
   for (const hugePrice of [1e308, '1e308']) {
