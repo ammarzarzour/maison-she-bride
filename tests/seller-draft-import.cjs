@@ -21,6 +21,9 @@ for(const field of ['customer_email','customer_phone','payment_token','shipping_
 }
 // A draft must refer to a category currently available to this seller.
 assert.equal(parse(draft,[{id:'different'}]),null);
+assert.equal(parse(draft,null),null,'missing category data rejected safely');
+assert.equal(parse(draft,{}),null,'invalid category data rejected safely');
+assert.equal(parse(draft,[null]),null,'null category entry rejected safely');
 
 assert.ok(html.includes('id="importProductDraft"'));
 assert.ok(source.includes('file.size>32768'),'file size bounded');
