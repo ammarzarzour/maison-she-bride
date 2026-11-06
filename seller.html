@@ -114,7 +114,7 @@ async function authenticate(kind){
  $('category').replaceChildren();$('inventoryCount').textContent='';
  $('inventoryPages').classList.add('hidden');
  // A new authentication attempt must never inherit a previous seller's export.
- exportInventorySession=null;cachedSellerProducts=null;$('refreshInventory').disabled=true;$('exportInventory').disabled=true;$('inventorySearch').disabled=true;$('inventoryFilter').disabled=true;$('inventorySort').disabled=true;
+ exportInventorySession=null;cachedSellerProducts=null;$('productPreview').replaceChildren();$('productPreview').classList.add('hidden');$('refreshInventory').disabled=true;$('exportInventory').disabled=true;$('inventorySearch').disabled=true;$('inventoryFilter').disabled=true;$('inventorySort').disabled=true;
  message(tr('loginConnecting'));
  const password=$('password').value;
  try{
@@ -179,6 +179,7 @@ async function loadCategories(epoch=sellerSessionEpoch,authToken=token,ownerId=u
  if(!current())return;
  // Avoid showing stale category options during a refresh or a failed page.
  categories=[];renderSellerCategories();
+ $('productPreview').replaceChildren();$('productPreview').classList.add('hidden');
  const all=[],seen=new Set();
  const query='/rest/v1/categories?select=id,name_ar,name_en&order=name_ar.asc,id.asc';
  for(let page=0;page<=SELLER_MAX_PAGES;page++){
@@ -383,7 +384,10 @@ function renderSellerProducts(rows){
 // Browser-only draft preview: no image upload, API writes or persistent storage.
 function sellerDraftPreviewData(fields,locale){
  const titleAr=String(fields.titleAr||'').trim(),titleEn=String(fields.titleEn||'').trim();
- const price=Number(fields.price),stock=Number(fields.stock);
+ const priceRaw=String(fields.price??''),stockRaw=String(fields.stock??'');
+ // Reject blank, exponential and implicit numeric conversions in a draft preview.
+ if(!/^(?:0|[1-9][0-9]*)(?:\.[0-9]{1,2})?$/.test(priceRaw)||!/^(?:0|[1-9][0-9]*)$/.test(stockRaw))return null;
+ const price=Number(priceRaw),stock=Number(stockRaw);
  if(!titleAr||!titleEn||titleAr.length>160||titleEn.length>160||!Number.isFinite(price)||price<=0||!Number.isSafeInteger(stock)||stock<0||stock>1000000||!fields.categoryValid)return null;
  return {title:locale==='ar'?titleAr:titleEn,other:locale==='ar'?titleEn:titleAr,price:price.toFixed(2),stock,description:String(locale==='ar'?fields.descAr||'':fields.descEn||'').trim().slice(0,3000),category:locale==='ar'?fields.categoryAr:fields.categoryEn};
 }
@@ -399,6 +403,9 @@ function showSellerDraftPreview(){
  }
 }
 $('previewProduct').addEventListener('click',showSellerDraftPreview);
+// Keep an open preview synchronized with edits; never show a stale price or stock.
+$('productForm').addEventListener('input',()=>{if(!$('productPreview').classList.contains('hidden'))showSellerDraftPreview()});
+$('productForm').addEventListener('change',()=>{if(!$('productPreview').classList.contains('hidden'))showSellerDraftPreview()});
 $('productForm').onsubmit=async e=>{
  e.preventDefault();if(!SELLER_MUTATIONS_ENABLED){message(tr('productDisabled'));return}const btn=$('saveProduct');btn.disabled=true;message(tr('saveInProgress'));
  try{
@@ -420,6 +427,6 @@ $('productForm').onsubmit=async e=>{
  }catch(err){message(err.message)}
  finally{btn.disabled=false}
 };
-$('logout').onclick=()=>{sellerSessionEpoch++;token='';user=null;store=null;categories=[];$('stockSummary').replaceChildren();$('products').replaceChildren();$('storeStatus').textContent='';$('category').replaceChildren();cachedSellerProducts=null;exportInventorySession=null;$('inventoryPages').classList.add('hidden');$('exportInventory').disabled=true;$('inventorySearch').disabled=true;$('inventoryFilter').disabled=true;$('inventorySort').disabled=true;$('inventoryCount').textContent='';$('accountPanel').classList.add('hidden');$('authPanel').classList.remove('hidden');$('password').value='';message(tr('logoutDone'))};
+$('logout').onclick=()=>{$('productPreview').replaceChildren();$('productPreview').classList.add('hidden');$('productForm').reset();sellerSessionEpoch++;token='';user=null;store=null;categories=[];$('stockSummary').replaceChildren();$('products').replaceChildren();$('storeStatus').textContent='';$('category').replaceChildren();cachedSellerProducts=null;exportInventorySession=null;$('inventoryPages').classList.add('hidden');$('exportInventory').disabled=true;$('inventorySearch').disabled=true;$('inventoryFilter').disabled=true;$('inventorySort').disabled=true;$('inventoryCount').textContent='';$('accountPanel').classList.add('hidden');$('authPanel').classList.remove('hidden');$('password').value='';message(tr('logoutDone'))};
 renderSellerLanguage();
 </script></body></html>
