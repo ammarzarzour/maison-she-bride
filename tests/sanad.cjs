@@ -64,6 +64,7 @@ assert.match(rows()[0].id,/^DEMO-[A-Z0-9]{6,16}$/);
 assert.match($('demoMessage').textContent,/لم يُرسل/);
 submit(3);
 assert.equal(rows().length,2);
+assert.notEqual(rows()[0].id,rows()[1].id,'new demo references must be distinct');
 assert.equal($('demoList').children.length,2);
 
 $('demoFilter').value='review';
@@ -122,5 +123,44 @@ b('demoService').value='0';
 b('demoForm').listeners.submit({preventDefault(){}});
 b('demoClear').click();
 assert.match(b('demoMessage').textContent,/storage unavailable/i,'clear must preserve storage warning');
+
+// Fixed clock and random output must not create identical references: otherwise
+// deleting one fictional request would remove every request sharing its ID.
+const collisionState = new Map([['sanad_preview_requests_v1',JSON.stringify([
+  {id:'DEMO-AAAAAA',service:0,state:'draft'},
+  {id:'DEMO-AAAAAA',service:1,state:'done'},
+  {id:'DEMO-BBBBBB',service:2,state:'review'}
+])]]);
+const collisionElements = new Map();
+const collisionGet = id => {
+  if(!collisionElements.has(id))collisionElements.set(id,new Element(tags[id]||'div'));
+  return collisionElements.get(id);
+};
+const collisionDocument = {
+  documentElement:{lang:'en',dir:'ltr'},
+  getElementById:collisionGet,
+  createElement:tag=>new Element(tag)
+};
+const collisionStorage = {
+  getItem:key=>collisionState.get(key)||null,
+  setItem:(key,value)=>collisionState.set(key,String(value))
+};
+vm.runInNewContext(script,{
+  document:collisionDocument,localStorage:collisionStorage,window:{confirm:()=>true},
+  Date:{now:()=>1700000000000},Math:{random:()=>0.5}
+});
+const c=collisionGet;
+assert.equal(c('demoList').children.length,2,'duplicate saved references must be ignored');
+for(let i=0;i<3;i++){
+  c('demoService').value='0';
+  c('demoForm').listeners.submit({preventDefault(){}});
+}
+const collisionRows=JSON.parse(collisionState.get('sanad_preview_requests_v1'));
+assert.equal(collisionRows.length,5);
+assert.equal(new Set(collisionRows.map(row=>row.id)).size,5,'fixed clock and random must still yield unique IDs');
+c('demoList').children[0].children[2].children[1].click();
+const afterDelete=JSON.parse(collisionState.get('sanad_preview_requests_v1'));
+assert.equal(afterDelete.length,4,'deleting one request must not delete another');
+assert.equal(new Set(afterDelete.map(row=>row.id)).size,4);
 
 console.log('PASS Sanad fictional request creation, local storage, workflow, filter, translation and clearing');
