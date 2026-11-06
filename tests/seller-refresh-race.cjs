@@ -8,7 +8,7 @@ function deferred(){let resolve;const promise=new Promise(r=>resolve=r);return {
 function setup(){
  const nodes=new Map(),calls=[];
  class Node{
-  constructor(){this.children=[];this.textContent='';this.value='';this.listeners={};this.classList={add(){},remove(){}}}
+  constructor(){this.children=[];this.textContent='';this.value='';this.listeners={};this.classList={add(){},remove(){},toggle(){}}}
   append(...nodes){this.children.push(...nodes)}
   replaceChildren(...nodes){this.children=nodes}
   addEventListener(name,fn){this.listeners[name]=fn}
