@@ -16,7 +16,7 @@ assert.equal(preview(fields,'en').title,'Bridal dress');
 assert.equal(preview(fields,'en').category,'Dresses');
 assert.equal(preview(fields,'ar').price,'125.50');
 assert.equal(preview(fields,'ar').stock,3);
-for(const bad of [{price:'0'},{price:'Infinity'},{stock:'-1'},{stock:'1.2'},{stock:'1000001'},{titleAr:'  '},{categoryValid:false}]){
+for(const bad of [{price:'0'},{price:'Infinity'},{price:'1e3'},{price:' 125'},{price:'12.345'},{price:''},{stock:'-1'},{stock:'1.2'},{stock:'1e2'},{stock:' 3'},{stock:''},{stock:'1000001'},{titleAr:'  '},{categoryValid:false}]){
  assert.equal(preview({...fields,...bad},'ar'),null,JSON.stringify(bad));
 }
 assert.ok(html.includes('id="previewProduct"'));
@@ -26,4 +26,8 @@ assert.ok(source.includes('line.textContent=value'),'untrusted draft fields must
 assert.ok(!source.slice(from,source.indexOf("$('productForm').onsubmit",from)).includes('request('),'preview must not write to API');
 assert.ok(!source.slice(from,source.indexOf("$('productForm').onsubmit",from)).includes('fetch('),'preview must not upload');
 assert.ok(source.includes("if(!$('productPreview').classList.contains('hidden'))showSellerDraftPreview();"),'preview must follow locale');
+assert.ok(source.includes("$('productForm').addEventListener('input'"),'preview updates after edits');
+assert.ok(source.includes("$('productForm').addEventListener('change'"),'preview updates after select changes');
+assert.ok(source.includes("$('productForm').reset();sellerSessionEpoch++"),'logout must erase draft inputs');
+assert.ok(source.includes("categories=[];renderSellerCategories();\n $('productPreview').replaceChildren()"),'category refresh must hide old preview');
 console.log('PASS bilingual local-only seller draft preview validation and safe rendering');
