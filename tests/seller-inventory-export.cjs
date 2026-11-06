@@ -31,4 +31,7 @@ assert.ok(html.includes('exportInventorySession={epoch,authToken,ownerId,storeId
 assert.ok(html.includes('sellerSessionActive(exportInventorySession.epoch,exportInventorySession.authToken,exportInventorySession.ownerId,exportInventorySession.storeId)'),'export must reject changed account or session');
 assert.match(html,/exportInventorySession=null;cachedSellerProducts=null;[^\n]*\$\('exportInventory'\)\.disabled=true;/,'authentication and store refresh must invalidate old exports');
 assert.match(html,/cachedSellerProducts=null;exportInventorySession=null;[^\n]*\$\('exportInventory'\)\.disabled=true;/,'inventory refresh and logout must invalidate old exports');
+assert.ok(html.includes("}catch(error){\n  message(tr('exportFailed'));"),'download errors should show localized feedback');
+assert.ok(html.includes("if(link)link.remove();"),'temporary download links must be cleaned up even if click fails');
+assert.ok(html.includes("if(url!==null)URL.revokeObjectURL(url);"),'object URLs must be released only after successful creation');
 console.log('PASS safe bilingual read-only seller inventory CSV and session binding');
