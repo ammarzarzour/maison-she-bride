@@ -36,7 +36,7 @@ assert.ok(source.includes("$('productForm').addEventListener('change'"),'preview
 assert.ok(source.includes("for(const id of ['titleAr','titleEn','price','stock','descAr','descEn','photo'])$(id).value=''"),'logout must clear all draft fields including image');
 assert.ok(source.includes("sellerDraftPreviewVisible=false"),'logout must invalidate preview visibility');
 assert.ok(source.includes("$('productPreview').replaceChildren()"),'logout must clear preview contents');
-assert.ok(source.includes("categories=[];renderSellerCategories();\n $('productPreview').replaceChildren()"),'category refresh must hide old preview');
+assert.ok(source.includes("categories=[];renderSellerCategories();\n releaseSellerPreviewImage();\n $('productPreview').replaceChildren()"),'category refresh must hide old preview');
 assert.ok(source.includes("URL.createObjectURL(photo)"),'photo preview must use local object URL');
 assert.ok(source.includes("URL.revokeObjectURL(sellerPreviewImageUrl)"),'object URLs must be revoked');
 assert.ok(source.includes("photo.size<=5*1024*1024"),'oversized images must not be previewed');
