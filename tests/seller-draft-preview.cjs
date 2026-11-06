@@ -25,7 +25,7 @@ assert.ok(source.includes("target.replaceChildren()"),'preview must render as DO
 assert.ok(source.includes('line.textContent=value'),'untrusted draft fields must never use HTML');
 assert.ok(!source.slice(from,source.indexOf("$('productForm').onsubmit",from)).includes('request('),'preview must not write to API');
 assert.ok(!source.slice(from,source.indexOf("$('productForm').onsubmit",from)).includes('fetch('),'preview must not upload');
-assert.ok(source.includes("if(!$('productPreview').classList.contains('hidden'))showSellerDraftPreview();"),'preview must follow locale');
+assert.ok(source.includes("if(sellerDraftPreviewVisible)showSellerDraftPreview();"),'preview must follow locale');
 assert.ok(source.includes("$('productForm').addEventListener('input'"),'preview updates after edits');
 assert.ok(source.includes("$('productForm').addEventListener('change'"),'preview updates after select changes');
 assert.ok(source.includes("$('productForm').reset();sellerSessionEpoch++"),'logout must erase draft inputs');
