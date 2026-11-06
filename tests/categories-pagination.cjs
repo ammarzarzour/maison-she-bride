@@ -37,6 +37,8 @@ async function scenario(count, mutate) {
   ['missing id',rows=>rows.map((r,i)=>i===0?{slug:r.slug}:r),/Invalid or repeated/],
   ['missing Arabic name',rows=>rows.map((r,i)=>i===0?{...r,name_ar:null}:r),/Invalid or repeated/],
   ['blank Arabic name',rows=>rows.map((r,i)=>i===0?{...r,name_ar:'  '}:r),/Invalid or repeated/],
+  ['Arabic name control character',rows=>rows.map((r,i)=>i===0?{...r,name_ar:'قسم\nجديد'}:r),/Invalid or repeated/],
+  ['English name control character',rows=>rows.map((r,i)=>i===0?{...r,name_en:'Category\u007fNew'}:r),/Invalid or repeated/],
   ['missing English name',rows=>rows.map((r,i)=>i===0?{...r,name_en:null}:r),/Invalid or repeated/],
   ['blank English name',rows=>rows.map((r,i)=>i===0?{...r,name_en:''}:r),/Invalid or repeated/],
   ['oversized',rows=>rows.concat({id:'extra',slug:'extra'}),/exceeds requested limit/]
