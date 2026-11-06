@@ -68,6 +68,7 @@ let sellerSessionEpoch=0;
 const sellerSessionActive=(epoch,authToken,ownerId,storeId)=>epoch===sellerSessionEpoch&&!!token&&token===authToken&&user?.id===ownerId&&(storeId===undefined||store?.id===storeId);
 const supportedSellerLanguages=new Set(['auto','ar','en']);
 let sellerLanguage='auto';
+let sellerDraftPreviewVisible=false;
 try{const saved=localStorage.getItem('msb_seller_lang');if(supportedSellerLanguages.has(saved))sellerLanguage=saved;}catch(e){}
 function sellerLocale(){return sellerLanguage==='auto'?((navigator.language||'en').toLowerCase().startsWith('ar')?'ar':'en'):sellerLanguage}
 function tr(key){return translations[sellerLocale()][key]||translations.ar[key]||key}
@@ -82,7 +83,7 @@ function renderSellerLanguage(){
  if(store){$('storeStatus').textContent=tr('storePrefix')+' '+store.name+' · '+tr(store.status==='approved'?'approved':store.status==='pending'?'pending':'suspended');}
  else if(user){$('storeStatus').textContent=tr('noStore');}
  if(categories.length)renderSellerCategories();
- if(!$('productPreview').classList.contains('hidden'))showSellerDraftPreview();
+ if(sellerDraftPreviewVisible)showSellerDraftPreview();
  if(Array.isArray(cachedSellerProducts))renderSellerProducts(cachedSellerProducts);
  if($('refreshInventory').disabled&&store?.status==='approved')$('refreshInventory').textContent=tr('refreshingInventory');
 }
@@ -392,6 +393,7 @@ function sellerDraftPreviewData(fields,locale){
  return {title:locale==='ar'?titleAr:titleEn,other:locale==='ar'?titleEn:titleAr,price:price.toFixed(2),stock,description:String(locale==='ar'?fields.descAr||'':fields.descEn||'').trim().slice(0,3000),category:locale==='ar'?fields.categoryAr:fields.categoryEn};
 }
 function showSellerDraftPreview(){
+ sellerDraftPreviewVisible=true;
  const category=categories.find(c=>c.id===$('category').value);
  const data=sellerDraftPreviewData({titleAr:$('titleAr').value,titleEn:$('titleEn').value,price:$('price').value,stock:$('stock').value,descAr:$('descAr').value,descEn:$('descEn').value,categoryValid:!!category,categoryAr:category?.name_ar,categoryEn:category?.name_en},sellerLocale());
  const target=$('productPreview');target.replaceChildren();target.classList.remove('hidden');
@@ -427,6 +429,6 @@ $('productForm').onsubmit=async e=>{
  }catch(err){message(err.message)}
  finally{btn.disabled=false}
 };
-$('logout').onclick=()=>{$('productPreview').replaceChildren();$('productPreview').classList.add('hidden');$('productForm').reset();sellerSessionEpoch++;token='';user=null;store=null;categories=[];$('stockSummary').replaceChildren();$('products').replaceChildren();$('storeStatus').textContent='';$('category').replaceChildren();cachedSellerProducts=null;exportInventorySession=null;$('inventoryPages').classList.add('hidden');$('exportInventory').disabled=true;$('inventorySearch').disabled=true;$('inventoryFilter').disabled=true;$('inventorySort').disabled=true;$('inventoryCount').textContent='';$('accountPanel').classList.add('hidden');$('authPanel').classList.remove('hidden');$('password').value='';message(tr('logoutDone'))};
+$('logout').onclick=()=>{$('productPreview').replaceChildren();$('productPreview').classList.add('hidden');$('productForm').reset();sellerSessionEpoch++;token='';user=null;store=null;categories=[];$('stockSummary').replaceChildren();$('products').replaceChildren();$('storeStatus').textContent='';$('category').replaceChildren();cachedSellerProducts=null;exportInventorySession=null;sellerDraftPreviewVisible=false;$('productPreview').classList.add('hidden');$('productPreview').replaceChildren();$('inventoryPages').classList.add('hidden');$('exportInventory').disabled=true;$('inventorySearch').disabled=true;$('inventoryFilter').disabled=true;$('inventorySort').disabled=true;$('inventoryCount').textContent='';$('accountPanel').classList.add('hidden');$('authPanel').classList.remove('hidden');$('password').value='';message(tr('logoutDone'))};
 renderSellerLanguage();
 </script></body></html>
