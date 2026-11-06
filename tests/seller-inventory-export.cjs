@@ -21,7 +21,7 @@ const bidiFormula=vm.runInContext("inventoryCsvCell('\\u202e+cmd')",context);
 assert.equal(bidiFormula,'"\'\u202e+cmd"','bidi control must not bypass formula escaping');
 for(const [prefix,label] of [['\\u061c','Arabic letter mark'],['\\u00ad','soft hyphen'],['\\u034f','combining grapheme joiner'],['\\u180e','Mongolian vowel separator'],['\\ufe0f','variation selector']]){
  const cell=vm.runInContext("inventoryCsvCell('"+prefix+"=1+1')",context);
- assert.equal(cell,'"'+"'" +'+JSON.parse('"'+prefix+'"')+'=1+1"',label+' must not bypass formula escaping');
+ assert.equal(cell, '"' + String.fromCharCode(39) + JSON.parse('"' + prefix + '"') + '=1+1"', label + ' must not bypass formula escaping');
 }
 assert.equal(csv.trim().split('\r\n').length,3);
 assert.ok(html.includes("$('exportInventory').disabled=true"),'export disabled on invalidation and signout');
