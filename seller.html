@@ -13,7 +13,7 @@ label{display:block;font-size:14px;margin:10px 0}input,textarea,select{display:b
 button{border:0;border-radius:9px;background:var(--green);color:#fff;padding:12px 17px;font:inherit;cursor:pointer;margin:5px 0}button.secondary{background:#e9efeb;color:var(--green)}button:disabled{opacity:.55;cursor:wait}
 #msg{white-space:pre-wrap;line-height:1.7;margin-top:10px}.muted{color:#66766d;font-size:13px;line-height:1.7}.badge{display:inline-block;padding:4px 9px;border-radius:20px;background:#f6efdF;color:#745a24;font-size:12px}
 .notice{padding:12px;background:#fff6e0;border:1px solid #d9bc7b;border-radius:10px;line-height:1.8;margin:12px 0}.product{border:1px solid var(--line);border-radius:10px;padding:12px;margin:9px 0}.product strong{display:block}.inventory-summary{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}.inventory-summary span{background:#edf4ef;border:1px solid #d2e2d8;padding:9px 12px;border-radius:10px;font-size:13px;color:#145b46}.stock-controls{display:flex;align-items:end;flex-wrap:wrap;gap:10px;margin-top:10px}.stock-controls label{margin:0;flex:1;min-width:160px}.stock-controls button{margin:0}.empty{padding:18px;text-align:center;color:#66766d;background:#f8faf8;border-radius:10px}
-.hidden{display:none!important}a{color:var(--green)}@media(max-width:500px){.panel{padding:15px}}
+.draft-preview-image{display:block;width:min(100%,260px);max-height:320px;object-fit:contain;border-radius:10px;margin:12px 0;border:1px solid var(--line)}.hidden{display:none!important}a{color:var(--green)}@media(max-width:500px){.panel{padding:15px}}
 </style></head>
 <body>
 <header><div class="header-row"><div><h1>Maison She Bride</h1><p data-i18n="header">بوابة التاجر وإدارة المنتجات</p></div><label class="language-switch"><span data-i18n="languageLabel">اللغة</span><select id="language" aria-label="Language"><option value="auto">🌐 Auto</option><option value="ar">العربية</option><option value="en">English</option></select></label></div></header>
@@ -392,20 +392,30 @@ function sellerDraftPreviewData(fields,locale){
  if(!titleAr||!titleEn||titleAr.length>160||titleEn.length>160||!Number.isFinite(price)||price<=0||!Number.isSafeInteger(stock)||stock<0||stock>1000000||!fields.categoryValid)return null;
  return {title:locale==='ar'?titleAr:titleEn,other:locale==='ar'?titleEn:titleAr,price:price.toFixed(2),stock,description:String(locale==='ar'?fields.descAr||'':fields.descEn||'').trim().slice(0,3000),category:locale==='ar'?fields.categoryAr:fields.categoryEn};
 }
+let sellerPreviewImageUrl=null;
+function releaseSellerPreviewImage(){if(sellerPreviewImageUrl){URL.revokeObjectURL(sellerPreviewImageUrl);sellerPreviewImageUrl=null;}}
 function showSellerDraftPreview(){
  sellerDraftPreviewVisible=true;
  const category=categories.find(c=>c.id===$('category').value);
  const data=sellerDraftPreviewData({titleAr:$('titleAr').value,titleEn:$('titleEn').value,price:$('price').value,stock:$('stock').value,descAr:$('descAr').value,descEn:$('descEn').value,categoryValid:!!category,categoryAr:category?.name_ar,categoryEn:category?.name_en},sellerLocale());
+ releaseSellerPreviewImage();
  const target=$('productPreview');target.replaceChildren();target.classList.remove('hidden');$('hideProductPreview').classList.remove('hidden');
  const heading=document.createElement('strong');heading.textContent=tr(data?'previewHeading':'previewInvalid');target.append(heading);
  if(!data)return;
+ const photo=$('photo').files?.[0];
+ if(photo&&photo.size>0&&photo.size<=5*1024*1024&&['image/jpeg','image/png','image/webp','image/avif'].includes(photo.type)){
+  try{
+   sellerPreviewImageUrl=URL.createObjectURL(photo);
+   const img=document.createElement('img');img.className='draft-preview-image';img.alt=data.title;img.src=sellerPreviewImageUrl;target.append(img);
+  }catch(error){releaseSellerPreviewImage();}
+ }
  for(const value of [data.title+' / '+data.other,data.category,data.price+' USD · '+tr('stockText')+': '+data.stock,data.description]){
   if(!value)continue;
   const line=document.createElement('p');line.textContent=value;target.append(line);
  }
 }
 $('previewProduct').addEventListener('click',showSellerDraftPreview);
-$('hideProductPreview').addEventListener('click',()=>{sellerDraftPreviewVisible=false;$('productPreview').replaceChildren();$('productPreview').classList.add('hidden');$('hideProductPreview').classList.add('hidden');});
+$('hideProductPreview').addEventListener('click',()=>{sellerDraftPreviewVisible=false;releaseSellerPreviewImage();$('productPreview').replaceChildren();$('productPreview').classList.add('hidden');$('hideProductPreview').classList.add('hidden');});
 // Keep an open preview synchronized with edits; never show a stale price or stock.
 $('productForm').addEventListener('input',()=>{if(!$('productPreview').classList.contains('hidden'))showSellerDraftPreview()});
 $('productForm').addEventListener('change',()=>{if(!$('productPreview').classList.contains('hidden'))showSellerDraftPreview()});
