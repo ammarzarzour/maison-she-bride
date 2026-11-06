@@ -160,7 +160,7 @@ async function run() {
   console.log('PASS catalog rejects empty and whitespace-only product identifiers');
   // Identifiers with hidden controls or surrounding spaces must not be used as
   // cart keys, even when the database response otherwise looks valid.
-  for (const id of [' product-1', 'product-1 ', 'product\\n1', 'product\\t1', 'product\\u007f1']) {
+  for (const id of [' product-1', 'product-1 ', 'product\n1', 'product\t1', 'product\u007f1']) {
     const w={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
     vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
       window:w,AbortController,setTimeout,clearTimeout,
