@@ -1,0 +1,29 @@
+const fs=require('node:fs');
+const vm=require('node:vm');
+const assert=require('node:assert/strict');
+const html=fs.readFileSync('seller.html','utf8');
+const source=html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+assert.ok(source,'seller script exists');
+const from=source.indexOf('function sellerDraftPreviewData(');
+const to=source.indexOf('function showSellerDraftPreview()',from);
+assert.ok(from>=0&&to>from,'local-only preview builder exists');
+const context=vm.createContext({});
+vm.runInContext(source.slice(from,to),context);
+const fields={titleAr:' فستان عروس ',titleEn:' Bridal dress ',price:'125.50',stock:'3',categoryValid:true,categoryAr:'فساتين',categoryEn:'Dresses',descAr:'وصف',descEn:'Description'};
+const preview=(data,lang)=>vm.runInContext('sellerDraftPreviewData('+JSON.stringify(data)+','+JSON.stringify(lang)+')',context);
+assert.equal(preview(fields,'ar').title,'فستان عروس');
+assert.equal(preview(fields,'en').title,'Bridal dress');
+assert.equal(preview(fields,'en').category,'Dresses');
+assert.equal(preview(fields,'ar').price,'125.50');
+assert.equal(preview(fields,'ar').stock,3);
+for(const bad of [{price:'0'},{price:'Infinity'},{stock:'-1'},{stock:'1.2'},{stock:'1000001'},{titleAr:'  '},{categoryValid:false}]){
+ assert.equal(preview({...fields,...bad},'ar'),null,JSON.stringify(bad));
+}
+assert.ok(html.includes('id="previewProduct"'));
+assert.ok(html.includes('id="productPreview"'));
+assert.ok(source.includes("target.replaceChildren()"),'preview must render as DOM text');
+assert.ok(source.includes('line.textContent=value'),'untrusted draft fields must never use HTML');
+assert.ok(!source.slice(from,source.indexOf("$('productForm').onsubmit",from)).includes('request('),'preview must not write to API');
+assert.ok(!source.slice(from,source.indexOf("$('productForm').onsubmit",from)).includes('fetch('),'preview must not upload');
+assert.ok(source.includes("if(!$('productPreview').classList.contains('hidden'))showSellerDraftPreview();"),'preview must follow locale');
+console.log('PASS bilingual local-only seller draft preview validation and safe rendering');
