@@ -56,4 +56,11 @@ assert.ok(importHandler.indexOf("window.confirm(tr('importOverwriteConfirm'))")<
 assert.ok(importHandler.includes("generation!==sellerDraftImportGeneration||!sellerSessionActive(epoch,authToken,ownerId)"),'recheck session after confirmation');
 assert.ok(source.includes('"importOverwriteConfirm":"Importing will replace the current fields and selected image. Continue?"'));
 assert.ok(source.includes('"importCancelled":"تم إلغاء الاستيراد، وبقيت الحقول الحالية كما هي."'));
+// Category-only edits are unsaved work too, while untouched defaults are not.
+assert.ok(source.includes("let sellerDraftCategoryEdited=false"));
+assert.ok(source.includes("$('category').addEventListener('change',()=>{sellerDraftCategoryEdited=true;})"));
+assert.ok(importHandler.includes("sellerDraftCategoryEdited||Boolean($('photo').files?.length)"));
+assert.ok(importHandler.includes("$('stock').defaultValue"));
+assert.ok(importHandler.includes("sellerDraftCategoryEdited=false"),'successful import resets dirty state');
+assert.ok(clear.includes("sellerDraftCategoryEdited=false"),'clearing resets dirty state');
 console.log('PASS local bilingual JSON draft import validation');
