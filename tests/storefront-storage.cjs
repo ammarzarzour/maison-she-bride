@@ -150,4 +150,21 @@ assert.equal(tabs.cart().dress,2,'foreign storage area ignored');
 tabs.saved.set('msb_cart','{"__proto__":4,"dress":1}');
 tabs.window.handlers.storage({key:'msb_cart',storageArea:tabs.localStorage});
 assert.deepEqual(tabs.cart(),{dress:1},'cross-tab cart remains prototype safe');
+// Favorites must follow changes from other tabs without accepting malformed or oversized data.
+const favoriteTabs=setup({msb_cart:'{}',msb_favorites:'[]'});
+favoriteTabs.loadProducts();
+favoriteTabs.saved.set('msb_favorites','["dress"]');
+favoriteTabs.window.handlers.storage({key:'msb_favorites',storageArea:favoriteTabs.localStorage});
+assert.equal(vm.runInContext("favorites.has('dress')",favoriteTabs.context),true);
+assert.match(favoriteTabs.node('savedToggle').textContent,/\\(1\\)/);
+favoriteTabs.saved.set('msb_favorites','not json');
+favoriteTabs.window.handlers.storage({key:'msb_favorites',storageArea:favoriteTabs.localStorage});
+assert.equal(vm.runInContext('favorites.size',favoriteTabs.context),0,'invalid cross-tab favorites cleared');
+favoriteTabs.saved.set('msb_favorites','["dress"]');
+favoriteTabs.window.handlers.storage({key:'msb_favorites',storageArea:{}});
+assert.equal(vm.runInContext('favorites.size',favoriteTabs.context),0,'foreign storage ignored');
+favoriteTabs.saved.set('msb_favorites','["dress",'+JSON.stringify('x'.repeat(66000))+']');
+favoriteTabs.window.handlers.storage({key:'msb_favorites',storageArea:favoriteTabs.localStorage});
+assert.equal(vm.runInContext('favorites.size',favoriteTabs.context),0,'oversized favorites rejected');
+
 console.log('PASS corrupt cart payloads, stock reconciliation, prototype safety and unavailable browser storage');
