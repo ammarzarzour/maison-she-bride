@@ -54,14 +54,15 @@ function setup(initial, blockedWrites = false, blockedReads = false) {
       saved.set(key, String(value));
     }
   };
-  const context = vm.createContext({document, localStorage, navigator: {language: 'ar-SY'}, Intl, URL});
+  const window = {handlers:{},addEventListener(name,fn){this.handlers[name]=fn;}};
+  const context = vm.createContext({document, localStorage, window, navigator: {language: 'ar-SY'}, Intl, URL});
   vm.runInContext(script, context, {filename: 'index.html#storage'});
   const cart = () => JSON.parse(vm.runInContext('JSON.stringify(cart)', context));
   const loadProducts = () => vm.runInContext(
     "items=[{id:'dress',cat:'bridal',ar:'فستان',en:'Dress',usd:30,stock:2,icon:'✦'}];catalogReady=true;reconcileCart();render()",
     context
   );
-  return {node, saved, context, cart, loadProducts};
+  return {node, saved, context, cart, loadProducts, window, localStorage};
 }
 
 for (const bad of ['null', '[]', '5', '"invalid"', '{bad json', '{"dress":-1}']) {
@@ -133,4 +134,20 @@ assert.ok(copyHandler.includes('preview.focus()'),'focuses summary');
 assert.ok(copyHandler.includes('preview.select()'),'selects summary for manual copy');
 assert.ok(copyHandler.includes("t().quoteCopyFailed"),'translated failure message');
 assert.ok(!copyHandler.includes('fetch(')&&!copyHandler.includes('request('),'no network request in copy flow');
+// Cross-tab cart events must read validated storage, respect stock and ignore unrelated changes.
+const tabs=setup({msb_cart:'{}'});
+tabs.loadProducts();
+assert.equal(typeof tabs.window.handlers.storage,'function');
+tabs.saved.set('msb_cart','{"dress":99}');
+tabs.window.handlers.storage({key:'msb_cart',storageArea:tabs.localStorage});
+assert.equal(tabs.cart().dress,2,'cross-tab cart capped to live stock');
+assert.equal(tabs.node('cartCount').textContent,2);
+tabs.saved.set('msb_cart','{"dress":1}');
+tabs.window.handlers.storage({key:'msb_favorites',storageArea:tabs.localStorage});
+assert.equal(tabs.cart().dress,2,'unrelated storage event ignored');
+tabs.window.handlers.storage({key:'msb_cart',storageArea:{}});
+assert.equal(tabs.cart().dress,2,'foreign storage area ignored');
+tabs.saved.set('msb_cart','{"__proto__":4,"dress":1}');
+tabs.window.handlers.storage({key:'msb_cart',storageArea:tabs.localStorage});
+assert.deepEqual(tabs.cart(),{dress:1},'cross-tab cart remains prototype safe');
 console.log('PASS corrupt cart payloads, stock reconciliation, prototype safety and unavailable browser storage');
