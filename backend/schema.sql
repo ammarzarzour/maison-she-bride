@@ -66,10 +66,12 @@ create policy "Owners can read their products" on public.products for select to 
 create policy "Owners can insert draft products" on public.products for insert to authenticated with check (
  status='draft' and exists(select 1 from public.stores s where s.id=store_id and s.owner_id=(select auth.uid()) and s.status='approved')
 );
+-- Restrict both the existing row and its replacement to drafts. Publishing
+-- requires a separately reviewed trusted workflow, not browser UPDATE.
 create policy "Owners can update their products" on public.products for update to authenticated using (
- exists(select 1 from public.stores s where s.id=store_id and s.owner_id=(select auth.uid()) and s.status='approved')
+ status='draft' and exists(select 1 from public.stores s where s.id=store_id and s.owner_id=(select auth.uid()) and s.status='approved')
 ) with check (
- exists(select 1 from public.stores s where s.id=store_id and s.owner_id=(select auth.uid()) and s.status='approved')
+ status='draft' and exists(select 1 from public.stores s where s.id=store_id and s.owner_id=(select auth.uid()) and s.status='approved')
 );
 create policy "Buyers can read their orders" on public.orders for select to authenticated using(buyer_id=(select auth.uid()));
 create policy "Buyers can read their order items" on public.order_items for select to authenticated using (
