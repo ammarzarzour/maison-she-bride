@@ -46,7 +46,16 @@ function readCart(){
 function reconcileCart(){if(!catalogReady)return;const next=Object.create(null);for(const [id,qty] of Object.entries(cart)){const p=items.find(p=>p.id===id);if(p&&Number.isInteger(qty)&&qty>0&&maxQty(p)>0)next[id]=Math.min(qty,maxQty(p))}cart=next;persistLocal('msb_cart',JSON.stringify(cart))}
 
 let availability='all';let filter='all',cart=readCart(),savedOnly=false,sortBy='featured';let catalogPage=0,catalogPageCount=1;const catalogPageSize=24;
-let favorites=new Set();try{const saved=JSON.parse(localStorage.getItem('msb_favorites')||'[]');if(Array.isArray(saved))favorites=new Set(saved.filter(x=>typeof x==='string'&&x.length<100).slice(0,500))}catch(e){}
+function readFavorites(){
+ try{
+  const raw=localStorage.getItem('msb_favorites')||'[]';
+  if(raw.length>65536)return new Set();
+  const saved=JSON.parse(raw);
+  if(!Array.isArray(saved))return new Set();
+  return new Set(saved.slice(0,500).filter(id=>typeof id==='string'&&id.length>0&&id.length<100));
+ }catch{return new Set()}
+}
+let favorites=readFavorites();
 function saveFavorites(){persistLocal('msb_favorites',JSON.stringify([...favorites]))}
 const rates={USD:1,SYP:120,SAR:3.75,AED:3.67}; // Illustrative rates ONLY, not market rates.
 const supportedLanguages=new Set(['auto','ar','en']);
@@ -193,7 +202,13 @@ async function refreshCatalog(){
 // Keep open tabs consistent with cart changes made elsewhere in this browser.
 // Never treat a storage event as an order or a server-side stock reservation.
 if(typeof window!=='undefined'&&typeof window.addEventListener==='function')window.addEventListener('storage',event=>{
- if(event.storageArea!==localStorage||event.key!=='msb_cart')return;
+ if(event.storageArea!==localStorage)return;
+ if(event.key==='msb_favorites'){
+  favorites=readFavorites();
+  render();
+  return;
+ }
+ if(event.key!=='msb_cart')return;
  cart=readCart();
  if(catalogReady)reconcileCart();
  renderCart();
