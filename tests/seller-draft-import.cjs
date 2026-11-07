@@ -47,4 +47,13 @@ assert.ok(editGuards.includes("addEventListener('input'"));
 assert.ok(editGuards.includes("addEventListener('change'"));
 assert.ok(editGuards.includes("event.target!==$('importProductDraft')"));
 assert.ok(editGuards.includes('++sellerDraftImportGeneration'));
+// Importing must not silently replace a seller's unfinished form or selected image.
+const importHandler=source.slice(source.indexOf("$('importProductDraft').addEventListener"),source.indexOf("$('downloadProductDraft').addEventListener"));
+assert.ok(importHandler.includes("window.confirm(tr('importOverwriteConfirm'))"));
+assert.ok(importHandler.includes("message(tr('importCancelled'));return"));
+assert.ok(importHandler.includes("Boolean($('photo').files?.length)"));
+assert.ok(importHandler.indexOf("window.confirm(tr('importOverwriteConfirm'))")<importHandler.indexOf("for(const [id,key]"));
+assert.ok(importHandler.includes("generation!==sellerDraftImportGeneration||!sellerSessionActive(epoch,authToken,ownerId)"),'recheck session after confirmation');
+assert.ok(source.includes('"importOverwriteConfirm":"Importing will replace the current fields and selected image. Continue?"'));
+assert.ok(source.includes('"importCancelled":"تم إلغاء الاستيراد، وبقيت الحقول الحالية كما هي."'));
 console.log('PASS local bilingual JSON draft import validation');
