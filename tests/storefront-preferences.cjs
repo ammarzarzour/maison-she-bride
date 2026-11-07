@@ -73,4 +73,16 @@ assert.equal(live.node('checkoutNotice').textContent, vm.runInContext('t().loadE
 live.node('language').onchange({target: {value: 'en'}});
 assert.equal(live.node('checkoutNotice').textContent, vm.runInContext('t().loadError', live.context));
 
+// Pending catalog reads must not be mistaken for an empty catalog after language changes.
+const pending = createStore({msb_lang: 'ar'}, 'ar-SY');
+vm.runInContext('catalogReady=false;catalogError=false;catalogLoading=true;items=[];render()', pending.context);
+assert.equal(pending.node('results').textContent, vm.runInContext('t().loading', pending.context));
+assert.equal(pending.node('noResults').textContent, vm.runInContext('t().loading', pending.context));
+pending.node('language').onchange({target: {value: 'en'}});
+assert.equal(pending.node('results').textContent, 'Refreshing products...');
+assert.equal(pending.node('noResults').textContent, 'Refreshing products...');
+assert.equal(pending.node('checkoutNotice').textContent, 'Refreshing products...');
+vm.runInContext('catalogLoading=false;catalogError=true;render()', pending.context);
+assert.equal(pending.node('results').textContent, vm.runInContext('t().loadError', pending.context));
+
 console.log('PASS invalid language/currency preferences fall back safely; manual selections persist; AR/EN and currencies render');
