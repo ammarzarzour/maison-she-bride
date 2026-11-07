@@ -100,7 +100,7 @@ async function pagedProducts(){
     if(!Array.isArray(row.product_images)||row.product_images.length>30)return {configured:true,rows:[],error:'Invalid product images'};
     const imagePositions=new Set();
     for(const img of row.product_images){
-     if(!img||typeof img.image_url!=='string'||/[\u0000-\u001f\u007f]/.test(img.image_url)||img.image_url!==img.image_url.trim()||/[\\\\\s]/.test(img.image_url)||!/^https:\/\//i.test(img.image_url)||!imagePosition(img.position??0))return {configured:true,rows:[],error:'Invalid product image URL or position'};
+     if(!img||typeof img.image_url!=='string'||/[\u0000-\u001f\u007f]/.test(img.image_url)||img.image_url!==img.image_url.trim()||/[\\\\\s\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]/.test(img.image_url)||!/^https:\/\//i.test(img.image_url)||!imagePosition(img.position??0))return {configured:true,rows:[],error:'Invalid product image URL or position'};
      const position=Number(img.position??0);
      if(imagePositions.has(position))return {configured:true,rows:[],error:'Duplicate product image position'};
      imagePositions.add(position);
