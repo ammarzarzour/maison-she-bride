@@ -32,6 +32,11 @@ async function run(images, expectedError) {
   [{image_url:'data:image/png;base64,AA==',position:0}],
   [{image_url:'https://user:pass@example.com/a.jpg',position:0}],
   [{image_url:'https://',position:0}],
+  // Reject browser requests to private or local networks, including normalized IPv4.
+  ...['localhost','shop.localhost','printer.local','server.internal',
+      '127.0.0.1','127.1','10.2.3.4','172.16.0.1','192.168.1.10',
+      '169.254.1.1','100.64.0.1','0.0.0.0','224.0.0.1',
+      '[::1]','[fe80::1]'].map(host=>[{image_url:'https://'+host+'/a.jpg',position:0}]),
   [{image_url:'https://example.com/a b.jpg',position:0}],
   [{image_url:'https://example.com/a\\\\b.jpg',position:0}],
   [{image_url:'https://example.com/a\u00a0b.jpg',position:0}],
