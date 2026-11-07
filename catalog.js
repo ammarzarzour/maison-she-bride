@@ -41,7 +41,10 @@ function publicImageHost(host){
    // Documentation-only and other special-use networks must never be image origins.
    (n[0]===192&&n[1]===0&&n[2]===2)||
    (n[0]===198&&n[1]===51&&n[2]===100)||
-   (n[0]===203&&n[1]===0&&n[2]===113));
+   (n[0]===203&&n[1]===0&&n[2]===113)||
+   // Deprecated 6to4 relay anycast and special-use AS112 DNS ranges.
+   (n[0]===192&&n[1]===88&&n[2]===99)||
+   (n[0]===192&&n[1]===175&&n[2]===48));
  }
  return true;
 }
