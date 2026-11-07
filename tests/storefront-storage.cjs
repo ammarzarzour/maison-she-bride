@@ -8,6 +8,7 @@ assert.ok(script?.includes('function readCart()'), 'missing cart storage validat
 
 function setup(initial, blockedWrites = false, blockedReads = false) {
   const saved = new Map(Object.entries(initial));
+  let storageWrites = 0;
   const nodes = new Map();
   let activeElement = null;
   function node(id) {
@@ -52,6 +53,7 @@ function setup(initial, blockedWrites = false, blockedReads = false) {
     setItem(key, value) {
       if (blockedWrites) throw new Error('Storage denied');
       saved.set(key, String(value));
+      storageWrites++;
     }
   };
   const window = {handlers:{},addEventListener(name,fn){this.handlers[name]=fn;}};
@@ -62,7 +64,7 @@ function setup(initial, blockedWrites = false, blockedReads = false) {
     "items=[{id:'dress',cat:'bridal',ar:'فستان',en:'Dress',usd:30,stock:2,icon:'✦'}];catalogReady=true;reconcileCart();render()",
     context
   );
-  return {node, saved, context, cart, loadProducts, window, localStorage};
+  return {node, saved, context, cart, loadProducts, window, localStorage, getStorageWrites:()=>storageWrites};
 }
 
 for (const bad of ['null', '[]', '5', '"invalid"', '{bad json', '{"dress":-1}']) {
@@ -150,6 +152,21 @@ assert.equal(tabs.cart().dress,2,'foreign storage area ignored');
 tabs.saved.set('msb_cart','{"__proto__":4,"dress":1}');
 tabs.window.handlers.storage({key:'msb_cart',storageArea:tabs.localStorage});
 assert.deepEqual(tabs.cart(),{dress:1},'cross-tab cart remains prototype safe');
+// Replaying a cart storage event must not write the same value back to storage.
+// Otherwise two open tabs can trigger an endless storage-event feedback loop.
+const stableCart=setup({msb_cart:'{"dress":1}'});
+stableCart.loadProducts();
+const writesBefore=stableCart.getStorageWrites();
+stableCart.window.handlers.storage({key:'msb_cart',storageArea:stableCart.localStorage});
+assert.equal(stableCart.getStorageWrites(),writesBefore,'unchanged cross-tab cart must not be rewritten');
+stableCart.saved.set('msb_cart','{"dress":99}');
+stableCart.window.handlers.storage({key:'msb_cart',storageArea:stableCart.localStorage});
+assert.equal(stableCart.cart().dress,2,'cross-tab cart still respects stock');
+assert.deepEqual(JSON.parse(stableCart.saved.get('msb_cart')),{dress:2},'stock cap persisted once');
+const cappedWrites=stableCart.getStorageWrites();
+stableCart.window.handlers.storage({key:'msb_cart',storageArea:stableCart.localStorage});
+assert.equal(stableCart.getStorageWrites(),cappedWrites,'repeated capped event does not rewrite cart');
+
 // Favorites must follow changes from other tabs without accepting malformed or oversized data.
 const favoriteTabs=setup({msb_cart:'{}',msb_favorites:'[]'});
 favoriteTabs.loadProducts();
