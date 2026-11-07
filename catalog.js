@@ -25,6 +25,22 @@ const maxPages=10; // Safety bound: do not issue unbounded requests.
 const decimalPrice=value=>typeof value==='number'?Number.isFinite(value):typeof value==='string'&&/^\d+(?:\.\d+)?$/.test(value);
 const decimalStock=value=>typeof value==='number'?Number.isSafeInteger(value):typeof value==='string'&&/^\d+$/.test(value);
 // Image positions use the same canonical non-negative integer representation as stock.
+// Avoid causing visitors' browsers to fetch product images from loopback, LAN,
+// link-local or other non-public endpoints. URL.hostname normalizes numeric IPv4.
+function publicImageHost(host){
+ const h=host.toLowerCase().replace(/\\.$/,'');
+ if(h==='localhost'||h.endsWith('.localhost')||h.endsWith('.local')||h.endsWith('.internal'))return false;
+ if(h.startsWith('[')&&h.endsWith(']'))return false; // No IPv6 literals in public image URLs.
+ if(/^\\d+\\.\\d+\\.\\d+\\.\\d+$/.test(h)){
+  const n=h.split('.').map(Number);
+  return !(n[0]===0||n[0]===10||n[0]===127||n[0]>=224||
+   (n[0]===100&&n[1]>=64&&n[1]<=127)||
+   (n[0]===169&&n[1]===254)||(n[0]===172&&n[1]>=16&&n[1]<=31)||
+   (n[0]===192&&n[1]===168)||(n[0]===192&&n[1]===0)||
+   (n[0]===198&&(n[1]===18||n[1]===19)));
+ }
+ return true;
+}
 const imagePosition=value=>typeof value==='number'?(Number.isSafeInteger(value)&&value>=0):typeof value==='string'&&/^(?:0|[1-9]\d*)$/.test(value)&&Number.isSafeInteger(Number(value));
 // Retry only transient read failures; never retry malformed JSON, invalid catalog data,
 // or permanent HTTP errors. The bounded delay avoids tight loops on rate limits.
@@ -104,7 +120,7 @@ async function pagedProducts(){
      const position=Number(img.position??0);
      if(imagePositions.has(position))return {configured:true,rows:[],error:'Duplicate product image position'};
      imagePositions.add(position);
-     try{const parsed=new URL(img.image_url);if(parsed.protocol!=='https:'||!parsed.hostname||parsed.username||parsed.password)return {configured:true,rows:[],error:'Invalid product image URL'};}
+     try{const parsed=new URL(img.image_url);if(parsed.protocol!=='https:'||!parsed.hostname||parsed.username||parsed.password||!publicImageHost(parsed.hostname))return {configured:true,rows:[],error:'Invalid product image URL'};}
      catch{return {configured:true,rows:[],error:'Invalid product image URL'};}
     }
    }
