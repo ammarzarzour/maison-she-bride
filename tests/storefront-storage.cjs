@@ -95,4 +95,17 @@ const unavailable = setup({}, true, true);
 unavailable.loadProducts();
 assert.equal(unavailable.node('cartCount').textContent, 0);
 assert.match(unavailable.node('products').innerHTML, /data-add="dress"/);
+// Removing an entire cart row must not depend on checkout or any network request.
+const removal = setup({msb_cart: '{"dress":2}'});
+removal.loadProducts();
+assert.match(removal.node('cartItems').innerHTML, /data-remove="dress"/);
+assert.match(removal.node('cartItems').innerHTML, /إزالة من السلة/);
+removal.node('cartItems').handlers.click({target: {
+  closest(selector) { return selector === '[data-remove]' ? {dataset: {remove: 'dress'}} : null; }
+}});
+assert.deepEqual(removal.cart(), {});
+assert.deepEqual(JSON.parse(removal.saved.get('msb_cart')), {});
+assert.equal(removal.node('cartCount').textContent, 0);
+vm.runInContext("langSetting='en';cart.dress=1;renderCart()", removal.context);
+assert.match(removal.node('cartItems').innerHTML, /Remove from cart/);
 console.log('PASS corrupt cart payloads, stock reconciliation, prototype safety and unavailable browser storage');
