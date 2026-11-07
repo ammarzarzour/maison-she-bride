@@ -41,4 +41,10 @@ for(const fragment of ["++sellerDraftImportGeneration","$('productForm').reset()
 assert.ok(!clear.includes('fetch(')&&!clear.includes('request('),'clear is local only');
 assert.ok(source.includes('"clearDraft":"Clear local draft fields"'));
 assert.ok(source.includes('"clearDraft":"مسح حقول المسودة المحلية"'));
+// User edits made during an asynchronous file read must win over the stale file.
+const editGuards=source.slice(source.indexOf('let sellerDraftImportGeneration=0;'),source.indexOf("$('importProductDraft').addEventListener"));
+assert.ok(editGuards.includes("addEventListener('input'"));
+assert.ok(editGuards.includes("addEventListener('change'"));
+assert.ok(editGuards.includes("event.target!==$('importProductDraft')"));
+assert.ok(editGuards.includes('++sellerDraftImportGeneration'));
 console.log('PASS local bilingual JSON draft import validation');
