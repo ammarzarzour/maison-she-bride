@@ -31,6 +31,13 @@ function setup(initial, blockedWrites = false, blockedReads = false) {
       addEventListener(name, fn) { this.handlers[name] = fn; },
       scrollIntoView() {},
       focus() { activeElement = element; },
+      // Match the cart's rerendered action buttons for keyboard focus recovery.
+      querySelectorAll(selector) {
+        if(id!=='cartItems'||selector!=='[data-plus],[data-minus],[data-remove]')return [];
+        return [...this.innerHTML.matchAll(/data-(plus|minus|remove)="([^"]+)"/g)].map(match=>({
+          dataset:{[match[1]]:match[2]},focus(){activeElement=this}
+        }));
+      },
       isConnected: true
     };
     nodes.set(id, element);
