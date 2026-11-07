@@ -192,7 +192,7 @@ async function refreshCatalog(){
 }
 // Keep open tabs consistent with cart changes made elsewhere in this browser.
 // Never treat a storage event as an order or a server-side stock reservation.
-window.addEventListener('storage',event=>{
+if(typeof window!=='undefined'&&typeof window.addEventListener==='function')window.addEventListener('storage',event=>{
  if(event.storageArea!==localStorage||event.key!=='msb_cart')return;
  cart=readCart();
  if(catalogReady)reconcileCart();
