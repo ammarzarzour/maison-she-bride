@@ -22,7 +22,11 @@ const categoryLabel=(slug,language)=>categoryNames.get(slug)?.[language]||tr[lan
 const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const safeImage=value=>{try{const u=new URL(value);return u.protocol==='https:'?escapeHTML(u.href):''}catch{return ''}};
 const maxQty=p=>Math.max(0,Math.min(99,Math.floor(Number(p?.stock)||0)));
-const persistLocal=(key,value)=>{try{localStorage.setItem(key,value);return true}catch{return false}};
+const persistLocal=(key,value)=>{try{
+ // Avoid storage-event feedback loops between tabs when cart contents are unchanged.
+ if(key==='msb_cart'&&localStorage.getItem(key)===value)return true;
+ localStorage.setItem(key,value);return true
+ }catch{return false}};
 function readCart(){
  let saved,raw;
  try{
