@@ -481,7 +481,8 @@ $('downloadProductDraft').addEventListener('click',()=>{
   anchor=document.createElement('a');anchor.href=url;anchor.download='maison-she-bride-draft.json';anchor.style.display='none';
   document.body.append(anchor);anchor.click();message(tr('draftDownloadSuccess'));
  }catch(error){message(tr('draftDownloadFailed'));}
- finally{if(anchor)anchor.remove();if(url)URL.revokeObjectURL(url);}
+ // Keep the object URL alive briefly: some mobile browsers begin the download asynchronously.
+ finally{if(anchor)anchor.remove();if(url)setTimeout(()=>URL.revokeObjectURL(url),30000);}
 });
 $('clearProductDraft').addEventListener('click',()=>{
  ++sellerDraftImportGeneration; // A pending local file read must not refill a cleared form.
