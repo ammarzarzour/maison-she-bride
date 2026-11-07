@@ -29,7 +29,7 @@ const decimalStock=value=>typeof value==='number'?Number.isSafeInteger(value):ty
 // link-local or other non-public endpoints. URL.hostname normalizes numeric IPv4.
 function publicImageHost(host){
  const h=host.toLowerCase().replace(/\.$/,'');
- if(h==='localhost'||h.endsWith('.localhost')||h.endsWith('.local')||h.endsWith('.internal'))return false;
+ if(!h.includes('.')||h==='localhost'||['.localhost','.local','.internal','.test','.invalid','.example'].some(suffix=>h.endsWith(suffix)))return false; // Exclude intranet and reserved DNS names.
  if(h.startsWith('[')&&h.endsWith(']'))return false; // No IPv6 literals in public image URLs.
  if(/^\d+\.\d+\.\d+\.\d+$/.test(h)){
   const n=h.split('.').map(Number);
