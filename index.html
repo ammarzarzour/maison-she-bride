@@ -24,12 +24,22 @@ const safeImage=value=>{try{const u=new URL(value);return u.protocol==='https:'?
 const maxQty=p=>Math.max(0,Math.min(99,Math.floor(Number(p?.stock)||0)));
 const persistLocal=(key,value)=>{try{localStorage.setItem(key,value);return true}catch{return false}};
 function readCart(){
- let saved;
- try{saved=JSON.parse(localStorage.getItem('msb_cart')||'{}')}catch{return Object.create(null)}
+ let saved,raw;
+ try{
+  raw=localStorage.getItem('msb_cart')||'{}';
+  // Browser storage is untrusted; bound parsing and reconciliation work.
+  if(raw.length>16384)return Object.create(null);
+  saved=JSON.parse(raw);
+ }catch{return Object.create(null)}
  if(!saved||typeof saved!=='object'||Array.isArray(saved))return Object.create(null);
  const clean=Object.create(null);
+ let count=0;
  for(const [id,qty] of Object.entries(saved)){
-  if(id.length<=128&&!['__proto__','constructor','prototype'].includes(id)&&Number.isSafeInteger(qty)&&qty>0)clean[id]=Math.min(qty,99);
+  if(count>=100)break;
+  if(id.length>0&&id.length<=128&&!['__proto__','constructor','prototype'].includes(id)&&Number.isSafeInteger(qty)&&qty>0){
+   clean[id]=Math.min(qty,99);
+   count++;
+  }
  }
  return clean;
 }
