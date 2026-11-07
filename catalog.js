@@ -28,10 +28,10 @@ const decimalStock=value=>typeof value==='number'?Number.isSafeInteger(value):ty
 // Avoid causing visitors' browsers to fetch product images from loopback, LAN,
 // link-local or other non-public endpoints. URL.hostname normalizes numeric IPv4.
 function publicImageHost(host){
- const h=host.toLowerCase().replace(/\\.$/,'');
+ const h=host.toLowerCase().replace(/\.$/,'');
  if(h==='localhost'||h.endsWith('.localhost')||h.endsWith('.local')||h.endsWith('.internal'))return false;
  if(h.startsWith('[')&&h.endsWith(']'))return false; // No IPv6 literals in public image URLs.
- if(/^\\d+\\.\\d+\\.\\d+\\.\\d+$/.test(h)){
+ if(/^\d+\.\d+\.\d+\.\d+$/.test(h)){
   const n=h.split('.').map(Number);
   return !(n[0]===0||n[0]===10||n[0]===127||n[0]>=224||
    (n[0]===100&&n[1]>=64&&n[1]<=127)||
