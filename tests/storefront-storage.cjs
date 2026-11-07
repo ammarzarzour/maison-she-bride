@@ -71,6 +71,15 @@ for (const bad of ['null', '[]', '5', '"invalid"', '{bad json', '{"dress":-1}'])
   assert.equal(app.node('cartCount').textContent, 0);
 }
 
+// Corrupted or adversarial browser storage must not trigger unbounded cart work.
+const oversizedCart=setup({msb_cart: JSON.stringify({dress:1,padding:'x'.repeat(17000)})});
+assert.deepEqual(oversizedCart.cart(), {}, 'oversized stored payload rejected');
+const manyEntries=Object.fromEntries(Array.from({length:150},(_,i)=>['item'+i,1]));
+const boundedCart=setup({msb_cart: JSON.stringify(manyEntries)});
+assert.equal(Object.keys(boundedCart.cart()).length,100,'at most 100 cart lines restored');
+const emptyIdCart=setup({msb_cart:'{"":2,"dress":1}'});
+assert.deepEqual(emptyIdCart.cart(),{dress:1},'empty item identifiers rejected');
+
 const dirty = setup({msb_cart: JSON.stringify({
   dress: 99999, missing: 3, zero: 0, negative: -5, fraction: 2.5,
   absurd: Number.MAX_SAFE_INTEGER + 1, __proto__: 5
