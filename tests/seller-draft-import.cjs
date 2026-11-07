@@ -32,4 +32,13 @@ assert.ok(source.includes('sellerSessionActive(epoch,authToken,ownerId)'),'sessi
 assert.ok(source.includes("$('photo').value=''"),'import does not retain old photo');
 assert.ok(source.includes("++sellerDraftImportGeneration"),'logout invalidates pending import');
 assert.ok(!parseCode.includes('fetch(')&&!parseCode.includes('request('),'no network');
+// Clearing the local form must invalidate asynchronous imports and release preview assets.
+assert.ok(html.includes('id="clearProductDraft"'));
+const clear=source.slice(source.indexOf("$('clearProductDraft').addEventListener"),source.indexOf("$('previewProduct').addEventListener"));
+for(const fragment of ["++sellerDraftImportGeneration","$('productForm').reset()","$('photo').value=''","$('importProductDraft').value=''","releaseSellerPreviewImage()","$('productPreview').replaceChildren()","message(tr('draftCleared'))"]){
+ assert.ok(clear.includes(fragment),fragment);
+}
+assert.ok(!clear.includes('fetch(')&&!clear.includes('request('),'clear is local only');
+assert.ok(source.includes('"clearDraft":"Clear local draft fields"'));
+assert.ok(source.includes('"clearDraft":"مسح حقول المسودة المحلية"'));
 console.log('PASS local bilingual JSON draft import validation');
