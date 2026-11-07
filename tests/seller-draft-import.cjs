@@ -63,4 +63,9 @@ assert.ok(importHandler.includes("sellerDraftCategoryEdited||Boolean($('photo').
 assert.ok(importHandler.includes("$('stock').defaultValue"));
 assert.ok(importHandler.includes("sellerDraftCategoryEdited=false"),'successful import resets dirty state');
 assert.ok(clear.includes("sellerDraftCategoryEdited=false"),'clearing resets dirty state');
+// The download must retain its blob URL long enough for asynchronous mobile downloads.
+const downloadHandler=source.slice(source.indexOf("$('downloadProductDraft').addEventListener"),source.indexOf("$('clearProductDraft').addEventListener"));
+assert.ok(downloadHandler.includes("anchor.click()"),'download is initiated');
+assert.ok(downloadHandler.includes("setTimeout(()=>URL.revokeObjectURL(url),30000)"),'download URL cleanup deferred');
+assert.ok(!downloadHandler.includes("if(url)URL.revokeObjectURL(url)"),'URL not revoked synchronously');
 console.log('PASS local bilingual JSON draft import validation');
