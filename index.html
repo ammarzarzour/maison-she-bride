@@ -159,7 +159,22 @@ $('cartItems').addEventListener('click',e=>{
  preview.focus();
  preview.select();
  $('checkoutMessage').textContent=t().quoteCopyFailed;
-}};render();
+}};
+// Keep open tabs consistent with cart changes made elsewhere in this browser.
+// Never treat a storage event as an order or a server-side stock reservation.
+if(typeof window!=='undefined'&&typeof window.addEventListener==='function')window.addEventListener('storage',event=>{
+ if(event.storageArea!==localStorage)return;
+ if(event.key==='msb_favorites'){
+  favorites=readFavorites();
+  render();
+  return;
+ }
+ if(event.key!=='msb_cart')return;
+ cart=readCart();
+ if(catalogReady)reconcileCart();
+ renderCart();
+});
+render();
 </script><script>window.MSB_SUPABASE={url:'https://cymwmswpseevemxtugdb.supabase.co',publishableKey:'sb_publishable_OevT9B8LeDvgIzOWtktYTA__LpPRQBE'};</script>
 <script src="catalog.js?v=5"></script>
 <script>
@@ -199,20 +214,6 @@ async function refreshCatalog(){
  }catch(e){catalogLoadFailed();}
  finally{catalogLoading=false;$('refreshCatalog').disabled=false;}
 }
-// Keep open tabs consistent with cart changes made elsewhere in this browser.
-// Never treat a storage event as an order or a server-side stock reservation.
-if(typeof window!=='undefined'&&typeof window.addEventListener==='function')window.addEventListener('storage',event=>{
- if(event.storageArea!==localStorage)return;
- if(event.key==='msb_favorites'){
-  favorites=readFavorites();
-  render();
-  return;
- }
- if(event.key!=='msb_cart')return;
- cart=readCart();
- if(catalogReady)reconcileCart();
- renderCart();
-});
 $('refreshCatalog').addEventListener('click',refreshCatalog);
 refreshCatalog();
 </script></body></html>
