@@ -438,6 +438,8 @@ function sellerParseDraftImport(record,availableCategories){
  return valid;
 }
 let sellerDraftImportGeneration=0;
+let sellerDraftCategoryEdited=false;
+$('category').addEventListener('change',()=>{sellerDraftCategoryEdited=true;});
 // Editing the draft while a file is being read takes precedence over stale import results.
 $('productForm').addEventListener('input',event=>{
  if(event.target!==$('importProductDraft'))++sellerDraftImportGeneration;
@@ -456,11 +458,12 @@ $('importProductDraft').addEventListener('change',async()=>{
   const draft=sellerParseDraftImport(JSON.parse(raw),categories);
   if(!draft)throw Error('invalid');
   // Never silently overwrite a seller's unfinished local work or selected photo.
-  const hasCurrentDraft=['titleAr','titleEn','descAr','descEn','price'].some(id=>$(id).value.trim()!=='')||$('stock').value!=='0'||Boolean($('photo').files?.length);
+  const hasCurrentDraft=['titleAr','titleEn','descAr','descEn','price'].some(id=>$(id).value.trim()!=='')||$('stock').value!==$('stock').defaultValue||sellerDraftCategoryEdited||Boolean($('photo').files?.length);
   if(hasCurrentDraft&&!window.confirm(tr('importOverwriteConfirm'))){message(tr('importCancelled'));return;}
   if(generation!==sellerDraftImportGeneration||!sellerSessionActive(epoch,authToken,ownerId))return;
   for(const [id,key] of [['titleAr','title_ar'],['titleEn','title_en'],['descAr','description_ar'],['descEn','description_en'],['price','price_usd'],['stock','stock']])$(id).value=String(draft[key]);
   $('category').value=draft.category_id;
+  sellerDraftCategoryEdited=false;
   $('photo').value='';
   if(sellerDraftPreviewVisible)showSellerDraftPreview();
   message(tr('importDraftSuccess'));
@@ -483,6 +486,7 @@ $('downloadProductDraft').addEventListener('click',()=>{
 $('clearProductDraft').addEventListener('click',()=>{
  ++sellerDraftImportGeneration; // A pending local file read must not refill a cleared form.
  $('productForm').reset();
+ sellerDraftCategoryEdited=false;
  $('photo').value='';
  $('importProductDraft').value='';
  sellerDraftPreviewVisible=false;
