@@ -108,4 +108,11 @@ assert.deepEqual(JSON.parse(removal.saved.get('msb_cart')), {});
 assert.equal(removal.node('cartCount').textContent, 0);
 vm.runInContext("langSetting='en';cart.dress=1;renderCart()", removal.context);
 assert.match(removal.node('cartItems').innerHTML, /Remove from cart/);
+// Clipboard failures must leave a copyable, local-only cart summary.
+const copyHandler=script.slice(script.indexOf("$('copyQuote').onclick=async()=>"),script.indexOf(';render(',script.indexOf("$('copyQuote').onclick=async()=>"));
+assert.ok(copyHandler.includes("const preview=$('quotePreview')"),'fallback uses local readonly summary');
+assert.ok(copyHandler.includes('preview.focus()'),'focuses summary');
+assert.ok(copyHandler.includes('preview.select()'),'selects summary for manual copy');
+assert.ok(copyHandler.includes("t().quoteCopyFailed"),'translated failure message');
+assert.ok(!copyHandler.includes('fetch(')&&!copyHandler.includes('request('),'no network request in copy flow');
 console.log('PASS corrupt cart payloads, stock reconciliation, prototype safety and unavailable browser storage');
