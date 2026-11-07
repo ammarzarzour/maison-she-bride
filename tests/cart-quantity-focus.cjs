@@ -14,8 +14,8 @@ function node(id){
   addEventListener(type,fn){this.handlers[type]=fn},scrollIntoView(){},focus(){focused=this},
   _html:'',set innerHTML(value){this._html=value},get innerHTML(){return this._html},
   querySelectorAll(selector){
-   if(id!=='cartItems'||selector!=='[data-plus],[data-minus]')return [];
-   return [...this._html.matchAll(/data-(plus|minus)="([^"]+)"/g)].map((match)=>{
+   if(id!=='cartItems'||selector!=='[data-plus],[data-minus],[data-remove]')return [];
+   return [...this._html.matchAll(/data-(plus|minus|remove)="([^"]+)"/g)].map((match)=>{
     const control={dataset:{[match[1]]:match[2]},focus(){focused=control}};
     return control;
    });
@@ -31,6 +31,7 @@ vm.runInContext("items=[{id:'dress',cat:'bridal',ar:'فستان',en:'Dress',usd:
 const cart=node('cartItems');
 assert.match(cart.innerHTML,/aria-label="Increase quantity of Dress"/);
 assert.match(cart.innerHTML,/aria-label="Decrease quantity of Dress"/);
+assert.match(cart.innerHTML,/aria-label="Remove from cart Dress"/);
 assert.match(cart.innerHTML,/aria-label="Quantity 1"/);
 assert.match(cart.innerHTML,/type="button"/);
 const target=(kind,id)=>({closest:selector=>selector==='[data-'+kind+']'?{dataset:{[kind]:id}}:null});
@@ -47,6 +48,10 @@ cart.handlers.click({target:target('minus','dress')});
 assert.equal(focused,node('closeCart'),'focus falls back to close button when the last row is removed');
 assert.match(cart.innerHTML,/Your cart is empty/);
 assert.equal(node('copyQuote').disabled,true,'no quote for empty cart');
+vm.runInContext("cart={dress:2};renderCart()",context);
+cart.handlers.click({target:target('remove','dress')});
+assert.match(cart.innerHTML,/Your cart is empty/);
+assert.equal(focused,node('closeCart'),'remove button restores focus safely');
 focused=null;
 cart.handlers.click({target:target('plus','unknown')});
 assert.equal(focused,null,'unknown product cannot steal focus');
