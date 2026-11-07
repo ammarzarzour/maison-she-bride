@@ -35,6 +35,7 @@ async function run(images, expectedError) {
   [{image_url:'https://example.com/a b.jpg',position:0}],
   [{image_url:'https://example.com/a\\\\b.jpg',position:0}],
   [{image_url:'https://example.com/a\u00a0b.jpg',position:0}],
+  ...['\u200b','\u200e','\u202e','\u2060','\ufeff'].map(mark=>[{image_url:'https://example.com/a'+mark+'b.jpg',position:0}]),
   [{image_url:'https://example.com/a.jpg',position:-1}],
   [{image_url:'https://example.com/a.jpg',position:'oops'}],
   [{image_url:'https://example.com/a.jpg',position:''}],
