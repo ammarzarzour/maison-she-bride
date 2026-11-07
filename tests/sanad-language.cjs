@@ -71,3 +71,17 @@ assert.equal(blocked.document.documentElement.dir,'ltr');
 assert.equal(blocked.node('services').children.length,6);
 
 console.log('PASS Sanad device/browser language, persisted override, invalid values, blocked storage and service search');
+const searchDemo=setup('ar-SY');
+function findServices(q){searchDemo.node('serviceSearch').value=q;searchDemo.node('serviceSearch').listeners.input();return searchDemo.node('services').children}
+assert.equal(findServices('إِدَارَة الهُوِيَّة').length,1);
+assert.equal(findServices('accounts الهوية').length,1);
+searchDemo.change('en');
+assert.equal(searchDemo.node('services').children.length,1,'search survives language switch');
+assert.equal(searchDemo.node('services').children[0].children[0].textContent,'Identity & accounts');
+assert.equal(findServices('  verification   identity ').length,1);
+assert.equal(findServices('مواعيد documents').length,0,'all terms must match the same service');
+assert.equal(findServices('المواعيد').length,1);
+searchDemo.node('services').children[0].children[2].listeners.click();
+assert.equal(searchDemo.node('demoService').value,'3','filtered service keeps its original request type');
+assert.equal(findServices('  ').length,6);
+console.log('PASS normalized bilingual multiword service search and correct service action');
