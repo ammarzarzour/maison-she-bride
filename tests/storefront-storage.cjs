@@ -156,7 +156,7 @@ favoriteTabs.loadProducts();
 favoriteTabs.saved.set('msb_favorites','["dress"]');
 favoriteTabs.window.handlers.storage({key:'msb_favorites',storageArea:favoriteTabs.localStorage});
 assert.equal(vm.runInContext("favorites.has('dress')",favoriteTabs.context),true);
-assert.match(favoriteTabs.node('savedToggle').textContent,/\\(1\\)/);
+assert.match(favoriteTabs.node('savedToggle').textContent,/\(1\)/);
 favoriteTabs.saved.set('msb_favorites','not json');
 favoriteTabs.window.handlers.storage({key:'msb_favorites',storageArea:favoriteTabs.localStorage});
 assert.equal(vm.runInContext('favorites.size',favoriteTabs.context),0,'invalid cross-tab favorites cleared');
