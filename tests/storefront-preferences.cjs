@@ -58,4 +58,19 @@ assert.equal(english.document.documentElement.dir, 'ltr');
 assert.equal(english.node('language').value, 'auto');
 assert.equal(english.node('currency').value, 'USD');
 assert.match(english.node('products').innerHTML, /USD/);
+// The live catalog notice must remain truthful after toggling the language.
+const live = createStore({msb_lang: 'ar', msb_currency: 'USD'}, 'en-GB');
+assert.match(live.node('checkoutNotice').textContent, /قاعدة البيانات الحقيقية/);
+assert.match(live.node('demoNotice').textContent, /الشراء غير مفعّل/);
+live.node('language').onchange({target: {value: 'en'}});
+assert.match(live.node('checkoutNotice').textContent, /live database/);
+assert.match(live.node('checkoutNotice').textContent, /not enabled/);
+assert.match(live.node('demoNotice').textContent, /purchases disabled/);
+live.node('language').onchange({target: {value: 'ar'}});
+assert.match(live.node('checkoutNotice').textContent, /الدفع غير مفعّلين/);
+vm.runInContext('catalogReady=false;catalogError=true;render()', live.context);
+assert.equal(live.node('checkoutNotice').textContent, vm.runInContext('t().loadError', live.context));
+live.node('language').onchange({target: {value: 'en'}});
+assert.equal(live.node('checkoutNotice').textContent, vm.runInContext('t().loadError', live.context));
+
 console.log('PASS invalid language/currency preferences fall back safely; manual selections persist; AR/EN and currencies render');
