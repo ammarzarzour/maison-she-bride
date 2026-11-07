@@ -19,6 +19,7 @@ function node(id){
   value:'',textContent:'',innerHTML:'',disabled:false,
   options:id==='sortProducts'?[{},{},{},{}]:[],
   classList:{add(){},remove(){},toggle(){}},
+  focused:false,selected:false,focus(){this.focused=true},select(){this.selected=true},
   handlers:{},addEventListener(k,fn){this.handlers[k]=fn},
   setAttribute(){},scrollIntoView(){}
  };
@@ -64,6 +65,8 @@ async function run(){
  await node('copyQuote').onclick();
  assert.match(node('checkoutMessage').textContent,/تعذّر النسخ/);
  assert.ok(node('quotePreview').value.length>0,'manual selection remains possible');
+ assert.equal(node('quotePreview').focused,true,'fallback focuses summary');
+ assert.equal(node('quotePreview').selected,true,'fallback selects text for manual copy');
 
  vm.runInContext("catalogReady=false;render()",context);
  assert.equal(node('copyQuote').disabled,true,'no quote on temporary catalog outage');
