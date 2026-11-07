@@ -438,6 +438,13 @@ function sellerParseDraftImport(record,availableCategories){
  return valid;
 }
 let sellerDraftImportGeneration=0;
+// Editing the draft while a file is being read takes precedence over stale import results.
+$('productForm').addEventListener('input',event=>{
+ if(event.target!==$('importProductDraft'))++sellerDraftImportGeneration;
+});
+$('productForm').addEventListener('change',event=>{
+ if(event.target!==$('importProductDraft'))++sellerDraftImportGeneration;
+});
 $('importProductDraft').addEventListener('change',async()=>{
  const file=$('importProductDraft').files?.[0],generation=++sellerDraftImportGeneration;
  const epoch=sellerSessionEpoch,authToken=token,ownerId=user?.id;
