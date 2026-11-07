@@ -36,6 +36,7 @@ async function run(images, expectedError) {
   ...['localhost','shop.localhost','printer.local','server.internal',
       '127.0.0.1','127.1','printer','intranet','printer.test','server.invalid','shop.example','10.2.3.4','172.16.0.1','192.168.1.10',
       '169.254.1.1','100.64.0.1','0.0.0.0','224.0.0.1',
+      '192.0.2.1','198.51.100.12','203.0.113.8',
       '[::1]','[fe80::1]'].map(host=>[{image_url:'https://'+host+'/a.jpg',position:0}]),
   [{image_url:'https://example.com/a b.jpg',position:0}],
   [{image_url:'https://example.com/a\\\\b.jpg',position:0}],
