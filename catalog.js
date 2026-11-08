@@ -70,9 +70,9 @@ async function get(table,query){
     signal:controller.signal,cache:'no-store'
    });
    fetching=false;
-   // A partial HTTP body must not be accepted as a complete catalog page.
-   // Treat HTTP 206 as a hard failure even when Response.ok is true.
-   if(response.status===206)throw new Error('Partial catalog response (206)');
+   // Only a complete HTTP 200 response is valid for catalog reads.
+   // Other successful statuses (202/204/206/207) can indicate missing or partial data.
+   if(typeof response.status==='number'&&response.status>=200&&response.status<300&&response.status!==200)throw new Error('Unexpected catalog response ('+response.status+')');
    if(!response.ok){
     retry=retryableStatuses.has(response.status);
     throw new Error('Catalog request failed ('+response.status+')');
