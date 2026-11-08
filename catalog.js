@@ -144,9 +144,11 @@ async function pagedProducts(){
    }
    // Embedded image rows have no guaranteed order in the API response.
    // Sort by validated position for a consistent gallery on every refresh.
-   if(Array.isArray(row.product_images))row.product_images=[...row.product_images].sort((a,b)=>Number(a.position??0)-Number(b.position??0));
+   const displayRow=Array.isArray(row.product_images)
+    ? {...row,product_images:[...row.product_images].sort((a,b)=>Number(a.position??0)-Number(b.position??0))}
+    : row;
    seen.add(row.id);
-   all.push(row);
+   all.push(displayRow);
   }
   if(result.rows.length<pageSize)return {configured:true,rows:all,error:null};
  }
