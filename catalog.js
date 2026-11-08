@@ -67,7 +67,7 @@ async function get(table,query){
   try{
    const response=await fetch(endpoint,{
     headers:{apikey:key,Authorization:'Bearer '+key,Accept:'application/json'},
-    signal:controller.signal,cache:'no-store'
+    signal:controller.signal,cache:'no-store',redirect:'error'
    });
    fetching=false;
    // Only a complete HTTP 200 response is valid for catalog reads.
