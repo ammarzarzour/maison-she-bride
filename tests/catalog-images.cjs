@@ -22,6 +22,18 @@ async function run(images, expectedError) {
 }
 (async()=>{
  await run(valid.product_images,false);
+ // Nested image records may arrive out of order from Supabase; verify the
+ // adapter sorts by position without changing the original API response.
+ {
+  const images=[{image_url:'https://example.com/third.jpg',position:3},{image_url:'https://example.com/first.jpg',position:0},{image_url:'https://example.com/second.jpg',position:1}];
+  const window={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+  const context=vm.createContext({window,URL,AbortController,setTimeout,clearTimeout,fetch:async()=>({ok:true,json:async()=>[{...valid,product_images:images}]})});
+  vm.runInContext(script,context);
+  const result=await window.MSB_CATALOG.products();
+  assert.equal(result.error,null);
+  assert.deepEqual(Array.from(result.rows[0].product_images,img=>img.position),[0,1,3]);
+  assert.deepEqual(images.map(img=>img.position),[3,0,1],'API source array is not reordered');
+ }
  await run([{image_url:'https://example.com/dress.jpg',position:'2'}],false);
  await run([{image_url:'https://example.com/dress.jpg',position:0}],false);
  await run([],false);
