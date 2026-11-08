@@ -49,7 +49,7 @@ async function run(images, expectedError) {
   [{image_url:'https://',position:0}],
   // Reject browser requests to private or local networks, including normalized IPv4.
   ...['localhost','shop.localhost','printer.local','server.internal',
-      '127.0.0.1','127.1','localhost.localdomain','app.localdomain','router.home','nas.lan','host.arpa','hidden.onion','printer','intranet','printer.test','server.invalid','shop.example','10.2.3.4','172.16.0.1','192.168.1.10',
+      '127.0.0.1','127.1','localhost.localdomain','app.localdomain','router.home','nas.lan','host.arpa','hidden.onion','printer','intranet','printer.test','server.invalid','shop.example','resolver.alt','service.sub.alt','10.2.3.4','172.16.0.1','192.168.1.10',
       '169.254.1.1','100.64.0.1','0.0.0.0','224.0.0.1',
       '192.0.2.1','198.51.100.12','203.0.113.8',
       '192.88.99.1','192.175.48.1',
