@@ -30,6 +30,7 @@ async function load(image_url) {
     'https://images.example.com/\tdress.jpg',
     'https://images.example.com/\ndress.jpg',
     'https://images.example.com/dress.jpg\r',
+    'https://images.example.com/'+ 'a'.repeat(2100),
     'https://images.example.com/dress.jpg\u007f'
   ]) {
     const result=await load(url);
