@@ -26,6 +26,8 @@ async function check(config,expected){
   {url,publishableKey:'sb_publishable_test='},
   {url,publishableKey:'sb_publishable_test/extra'},
   {url,publishableKey:'sb_secret_test'},
+  {url,publishableKey:'sb_publishable_'+ 'x'.repeat(4096)},
+  {url,publishableKey:jwt('anon')+'x'.repeat(4096)},
   {url,publishableKey:'sb_publishable_'},
   {url,publishableKey:'sb_publishable_test with spaces'},
   {url,publishableKey:'sb_publishable_test\n'},
