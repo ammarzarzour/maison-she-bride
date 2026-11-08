@@ -19,10 +19,17 @@ async function check(config,expected){
   {},{url,publishableKey:'sb_secret_sensitive'},
   {url,publishableKey:jwt('service_role')},
   {url,publishableKey:jwt('authenticated')},
+  {url,publishableKey:jwt('supabase_admin')},
+  {url,publishableKey:'sb_secret_test'},
+  {url,publishableKey:'sb_publishable_'},
+  {url,publishableKey:'sb_publishable_test with spaces'},
+  {url,publishableKey:'sb_publishable_test\n'},
   {url:'http://example.supabase.co',publishableKey:'sb_publishable_test'},
   {url:'https://example.supabase.co.evil.org',publishableKey:'sb_publishable_test'},
   {url:'https://user@example.supabase.co',publishableKey:'sb_publishable_test'},
-  {url:'https://example.supabase.co/path',publishableKey:'sb_publishable_test'}
+  {url:'https://example.supabase.co/path',publishableKey:'sb_publishable_test'},
+  {url:'https://example.supabase.co:443',publishableKey:'sb_publishable_test'},
+  {url:'https://example.supabase.co?x=1',publishableKey:'sb_publishable_test'}
  ])await check(config,false);
  await check({url,publishableKey:'sb_publishable_test'},true);
  await check({url,publishableKey:jwt('anon')},true);
