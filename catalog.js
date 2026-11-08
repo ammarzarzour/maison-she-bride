@@ -31,7 +31,7 @@ const decimalStock=value=>typeof value==='number'?Number.isSafeInteger(value):ty
 // link-local or other non-public endpoints. URL.hostname normalizes numeric IPv4.
 function publicImageHost(host){
  const h=host.toLowerCase().replace(/\.$/,'');
- if(!h.includes('.')||h==='localhost'||['.localhost','.local','.internal','.test','.invalid','.example','.arpa','.onion','.home','.lan'].some(suffix=>h.endsWith(suffix)))return false; // Exclude intranet and reserved DNS names.
+ if(!h.includes('.')||(h==='localhost'||h==='localhost.localdomain')||['.localhost','.localdomain','.local','.internal','.test','.invalid','.example','.arpa','.onion','.home','.lan'].some(suffix=>h.endsWith(suffix)))return false; // Exclude intranet and reserved DNS names.
  if(h.startsWith('[')&&h.endsWith(']'))return false; // No IPv6 literals in public image URLs.
  if(/^\d+\.\d+\.\d+\.\d+$/.test(h)){
   const n=h.split('.').map(Number);
