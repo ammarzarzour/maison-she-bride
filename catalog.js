@@ -139,6 +139,9 @@ async function pagedProducts(){
      catch{return {configured:true,rows:[],error:'Invalid product image URL'};}
     }
    }
+   // Embedded image rows have no guaranteed order in the API response.
+   // Sort by validated position for a consistent gallery on every refresh.
+   if(Array.isArray(row.product_images))row.product_images=[...row.product_images].sort((a,b)=>Number(a.position??0)-Number(b.position??0));
    seen.add(row.id);
    all.push(row);
   }
