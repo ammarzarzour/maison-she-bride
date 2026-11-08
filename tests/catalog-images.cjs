@@ -27,12 +27,15 @@ async function run(images, expectedError) {
  {
   const images=[{image_url:'https://example.com/third.jpg',position:3},{image_url:'https://example.com/first.jpg',position:0},{image_url:'https://example.com/second.jpg',position:1}];
   const window={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
-  const context=vm.createContext({window,URL,AbortController,setTimeout,clearTimeout,fetch:async()=>({ok:true,json:async()=>[{...valid,product_images:images}]})});
+  const sourceRow={...valid,product_images:images};
+  const context=vm.createContext({window,URL,AbortController,setTimeout,clearTimeout,fetch:async()=>({ok:true,json:async()=>[sourceRow]})});
   vm.runInContext(script,context);
   const result=await window.MSB_CATALOG.products();
   assert.equal(result.error,null);
   assert.deepEqual(Array.from(result.rows[0].product_images,img=>img.position),[0,1,3]);
   assert.deepEqual(images.map(img=>img.position),[3,0,1],'API source array is not reordered');
+  assert.equal(sourceRow.product_images,images,'original API row retains its image array');
+  assert.notEqual(result.rows[0],sourceRow,'display sorting must not mutate the API row');
  }
  await run([{image_url:'https://example.com/dress.jpg',position:'2'}],false);
  await run([{image_url:'https://example.com/dress.jpg',position:0}],false);
