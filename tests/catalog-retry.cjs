@@ -18,6 +18,7 @@ async function scenario(steps,expectedAttempts,expectedError=false){
   if(step==='json-typeerror')return {ok:true,json:async()=>{throw new TypeError('Malformed response body')}};
   if(step==='invalid-json')return {ok:true,json:async()=>{throw new SyntaxError('Bad JSON')}};
   if(step==='not-array')return {ok:true,json:async()=>({rows:[]})};
+  if(step==='partial')return {ok:true,status:206,json:async()=>[validRow]};
   if(typeof step==='number')return {ok:false,status:step};
   return {ok:true,json:async()=>[validRow]};
  };
@@ -41,6 +42,8 @@ async function scenario(steps,expectedAttempts,expectedError=false){
 }
 (async()=>{
  await scenario(['ok'],1);
+ // HTTP 206 has ok=true but represents incomplete data; fail closed, no retry.
+ await scenario(['partial','ok'],1,true);
  await scenario([503,'ok'],2);
  await scenario([429,502,'ok'],3);
  await scenario(['network','ok'],2);
