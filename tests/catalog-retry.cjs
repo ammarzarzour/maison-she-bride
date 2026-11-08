@@ -9,6 +9,7 @@ async function scenario(steps,expectedAttempts,expectedError=false){
  const validRow={id:'test-1',slug:'bridal',name_ar:'فساتين',name_en:'Dresses'};
  const fetch=async (url,opts)=>{
   assert.equal(opts.cache,'no-store');
+  assert.equal(opts.redirect,'error','catalog requests must not follow redirects');
   assert.equal(opts.headers.apikey,window.MSB_SUPABASE.publishableKey);
   assert.ok(url.includes('/rest/v1/categories?'));
   requests.push(url);
