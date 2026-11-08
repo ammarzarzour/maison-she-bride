@@ -27,4 +27,22 @@ assert.match(sellerInsert[0], /\bwith check\s*\(\s*status\s*=\s*'draft'/i);
 assert.match(sellerInsert[0], /owner_id\s*=\s*\(select auth\.uid\(\)\)/i);
 assert.match(sellerInsert[0], /s\.status\s*=\s*'approved'/i);
 assert.doesNotMatch(schema, /create\s+policy\s+[^;]*\bon\s+public\.products\s+for\s+(?:delete|all)\b/i, 'browser product delete or broad ALL policies must remain disabled');
-console.log('Seller draft and no-order-write policy checks passed');
+
+// RLS is the last line of defense for every browser-accessible table.
+// Keep it enabled even when a table currently has no write policies.
+for (const table of ['stores', 'categories', 'products', 'orders', 'order_items']) {
+  assert.match(
+    schema,
+    new RegExp('alter\\s+table\\s+public\\.' + table + '\\s+enable\\s+row\\s+level\\s+security\\s*;', 'i'),
+    'RLS must stay enabled on public.' + table
+  );
+  assert.doesNotMatch(
+    schema,
+    new RegExp('alter\\s+table\\s+public\\.' + table + '\\s+disable\\s+row\\s+level\\s+security\\s*;', 'i'),
+    'RLS must never be disabled on public.' + table
+  );
+}
+// Store approval and removal require a separately reviewed trusted workflow.
+assert.doesNotMatch(schema, /create\s+policy\s+[^;]*\bon\s+public\.stores\s+for\s+(?:update|delete|all)\b/i, 'browser store approval/deletion must remain disabled');
+
+console.log('Seller draft, RLS and no-order-write policy checks passed');
