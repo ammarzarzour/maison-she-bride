@@ -124,11 +124,14 @@ async function pagedProducts(){
    if(row.product_images!==null&&row.product_images!==undefined){
     if(!Array.isArray(row.product_images)||row.product_images.length>30)return {configured:true,rows:[],error:'Invalid product images'};
     const imagePositions=new Set();
+    const imageUrls=new Set();
     for(const img of row.product_images){
      if(!img||typeof img.image_url!=='string'||img.image_url.length>2048||/[\u0000-\u001f\u007f]/.test(img.image_url)||img.image_url!==img.image_url.trim()||/[\\\\\s\u034f\u061c\u180e\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]/.test(img.image_url)||!/^https:\/\//i.test(img.image_url)||!imagePosition(img.position??0))return {configured:true,rows:[],error:'Invalid product image URL or position'};
      const position=Number(img.position??0);
      if(imagePositions.has(position))return {configured:true,rows:[],error:'Duplicate product image position'};
      imagePositions.add(position);
+     if(imageUrls.has(img.image_url))return {configured:true,rows:[],error:'Duplicate product image URL'};
+     imageUrls.add(img.image_url);
      try{const parsed=new URL(img.image_url);if(parsed.protocol!=='https:'||!parsed.hostname||parsed.username||parsed.password||parsed.port&&!['443'].includes(parsed.port)||!publicImageHost(parsed.hostname))return {configured:true,rows:[],error:'Invalid product image URL'};}
      catch{return {configured:true,rows:[],error:'Invalid product image URL'};}
     }
