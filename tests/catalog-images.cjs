@@ -38,6 +38,9 @@ async function run(images, expectedError) {
       '169.254.1.1','100.64.0.1','0.0.0.0','224.0.0.1',
       '192.0.2.1','198.51.100.12','203.0.113.8',
       '192.88.99.1','192.175.48.1',
+      // Additional special-use IPv4 ranges and noncanonical browser URL spellings.
+      '192.0.0.9','198.18.0.1','198.19.255.254','255.255.255.255',
+      '0x7f000001','0177.0.0.1','2130706433','127.0.0.1.',
       '[::1]','[fe80::1]'].map(host=>[{image_url:'https://'+host+'/a.jpg',position:0}]),
   [{image_url:'https://example.com/a b.jpg',position:0}],
   [{image_url:'https://example.com/a\\\\b.jpg',position:0}],
