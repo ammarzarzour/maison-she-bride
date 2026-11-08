@@ -47,6 +47,9 @@ async function run(images, expectedError) {
   [{image_url:'https://example.com/a\u00a0b.jpg',position:0}],
   ...['\u034f','\u061c','\u180e','\u200b','\u200e','\u202e','\u2060','\ufeff'].map(mark=>[{image_url:'https://example.com/a'+mark+'b.jpg',position:0}]),
   [{image_url:'https://example.com/a.jpg',position:0},{image_url:'https://example.com/a.jpg',position:1}],
+  // URL parsing normalizes hostname case, default HTTPS port, and ignores fragments for image identity.
+  [{image_url:'https://EXAMPLE.com/a.jpg#one',position:0},{image_url:'https://example.com/a.jpg#two',position:1}],
+  [{image_url:'https://example.com:443/a.jpg',position:0},{image_url:'https://example.com/a.jpg',position:1}],
   [{image_url:'https://example.com/a.jpg',position:-1}],
   [{image_url:'https://example.com/a.jpg',position:'oops'}],
   [{image_url:'https://example.com/a.jpg',position:''}],
