@@ -129,7 +129,7 @@ async function pagedProducts(){
      const position=Number(img.position??0);
      if(imagePositions.has(position))return {configured:true,rows:[],error:'Duplicate product image position'};
      imagePositions.add(position);
-     try{const parsed=new URL(img.image_url);if(parsed.protocol!=='https:'||!parsed.hostname||parsed.username||parsed.password||!publicImageHost(parsed.hostname))return {configured:true,rows:[],error:'Invalid product image URL'};}
+     try{const parsed=new URL(img.image_url);if(parsed.protocol!=='https:'||!parsed.hostname||parsed.username||parsed.password||parsed.port&&!['443'].includes(parsed.port)||!publicImageHost(parsed.hostname))return {configured:true,rows:[],error:'Invalid product image URL'};}
      catch{return {configured:true,rows:[],error:'Invalid product image URL'};}
     }
    }
