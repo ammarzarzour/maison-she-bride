@@ -19,7 +19,7 @@ assert.ok(html.includes("const page=sellerPageSlice(visible,sellerDisplayPage)")
 assert.ok(html.includes("$('inventoryPages').setAttribute('aria-label',sellerLocale()==='ar'?'صفحات الجرد':'Inventory pages')"),'pagination landmark must follow selected language');
 assert.ok(html.includes('aria-label="صفحات الجرد"'),'initial Arabic landmark must be localized');
 assert.ok(html.includes("showStockSummary(rows);"),'summary should use all rows');
-assert.ok(html.includes("buildInventoryCsv(cachedSellerProducts)"),'CSV should use all rows');
+assert.ok(html.includes("buildInventoryCsv(sortSellerInventory(filterSellerInventory(cachedSellerProducts"),'CSV should include every row matching active filters, across all display pages');
 for(const field of ['inventorySearch','inventoryFilter','inventorySort'])assert.ok(html.includes("$('"+field+"').addEventListener"),'missing filter handler');
 assert.ok(html.includes("sellerDisplayPage=0;\n cachedSellerProducts=all;"),'successful inventory reload resets page');
-console.log('PASS seller inventory paging and complete export');
+console.log('PASS seller inventory paging and filtered full-result export');
