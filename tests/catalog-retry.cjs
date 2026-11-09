@@ -19,6 +19,7 @@ async function scenario(steps,expectedAttempts,expectedError=false){
   if(step==='json-typeerror')return {ok:true,json:async()=>{throw new TypeError('Malformed response body')}};
   if(step==='invalid-json')return {ok:true,json:async()=>{throw new SyntaxError('Bad JSON')}};
   if(step==='not-array')return {ok:true,json:async()=>({rows:[]})};
+  if(step==='inconsistent-error')return {ok:true,status:503,json:async()=>[validRow]};
   if(typeof step==='string'&&step.startsWith('success-'))return {ok:true,status:Number(step.slice(8)),json:async()=>[validRow]};
   if(typeof step==='number')return {ok:false,status:step};
   return {ok:true,json:async()=>[validRow]};
@@ -44,7 +45,8 @@ async function scenario(steps,expectedAttempts,expectedError=false){
 (async()=>{
  await scenario(['ok'],1);
  // Other 2xx statuses can be incomplete or asynchronous: never treat them as a full catalog.
- for(const status of [201,202,204,205,206,207])await scenario(['success-'+status,'ok'],1,true);
+ for(const status of [0,201,202,204,205,206,207,301,304])await scenario(['success-'+status,'ok'],1,true);
+ await scenario(['inconsistent-error','ok'],1,true);
  await scenario([503,'ok'],2);
  await scenario([429,502,'ok'],3);
  await scenario(['network','ok'],2);
