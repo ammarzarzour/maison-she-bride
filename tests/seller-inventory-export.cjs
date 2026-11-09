@@ -45,7 +45,7 @@ const outFiltered=vm.runInContext("filterSellerInventory(inventory,'','out')",co
 assert.equal(outFiltered.length,1,'out-of-stock CSV filter must include only zero-stock products');
 assert.equal(filtered[0].stock,29,'CSV should use selected descending stock order');
 const filteredCsv=vm.runInContext("buildInventoryCsv(sortSellerInventory(filterSellerInventory(inventory,'فستان','published'),'stockDesc','ar'))",context);
-assert.equal(filteredCsv.trim().split('\\r\\n').length,30,'CSV must contain header and all 29 filtered rows');
+assert.equal(filteredCsv.trim().split('\r\n').length,30,'CSV must contain header and all 29 filtered rows');
 assert.ok(!filteredCsv.includes('"item-0"'),'CSV must omit excluded draft products');
 assert.ok(filteredCsv.indexOf('"item-29"')<filteredCsv.indexOf('"item-1"'),'CSV row order must match selected sort');
 
