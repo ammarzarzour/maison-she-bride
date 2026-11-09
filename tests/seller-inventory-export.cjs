@@ -26,6 +26,9 @@ for(const [prefix,label] of [['\\u061c','Arabic letter mark'],['\\u00ad','soft h
 assert.equal(csv.trim().split('\r\n').length,3);
 assert.ok(html.includes("$('exportInventory').disabled=true"),'export disabled on invalidation and signout');
 assert.ok(html.includes("$('exportInventory').disabled=false"),'export enabled only after complete load');
+assert.ok(html.includes("buildInventoryCsv(sortSellerInventory(filterSellerInventory(cachedSellerProducts,$('inventorySearch').value,$('inventoryFilter').value||'all'),$('inventorySort').value||'newest',sellerLocale()))"),'CSV export must respect the current search, stock filter and sort without changing server data');
+assert.ok(html.includes('Export filtered inventory CSV'),'English export label must describe filtered results');
+assert.ok(html.includes('تصدير نتائج الجرد المصفّاة CSV'),'Arabic export label must describe filtered results');
 assert.ok(html.includes("store.status!=='approved'"),'authenticated approved store guard required');
 assert.ok(html.includes('exportInventorySession={epoch,authToken,ownerId,storeId}'),'export snapshot must be bound to session and store');
 assert.ok(html.includes('sellerSessionActive(exportInventorySession.epoch,exportInventorySession.authToken,exportInventorySession.ownerId,exportInventorySession.storeId)'),'export must reject changed account or session');
