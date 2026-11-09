@@ -46,4 +46,4 @@ assert.equal(find('missing','all'),'');
 assert.ok(/showStockSummary\(rows\);\s*const visible=sortSellerInventory\(filterSellerInventory\(rows,/.test(html),'summary must use full inventory before filtering and sorting');
 assert.ok(html.includes("buildInventoryCsv(sortSellerInventory(filterSellerInventory(cachedSellerProducts"),'export must reflect the current inventory filters and sort');
 assert.ok(html.includes("$('inventorySearch').disabled=true"),'filter disabled during invalidation');
-console.log('PASS bilingual seller inventory filters and full export separation');
+console.log('PASS bilingual seller inventory filters and full-result filtered export');

@@ -31,7 +31,7 @@ assert.equal(csv.trim().split('\r\n').length,3);
 const filterStart=script.indexOf('function normalizeSellerSearch(');
 const filterEnd=script.indexOf('const SELLER_DISPLAY_PAGE_SIZE=',filterStart);
 assert.ok(filterStart>=0&&filterEnd>filterStart,'seller filter and sorting functions missing');
-vm.runInContext(script.slice(filterStart,filterEnd).replace(/^.*\\$\\('inventory(?:Search|Filter|Sort)'\\)\\.addEventListener.*$/gm,''),context);
+vm.runInContext(script.slice(filterStart,filterEnd).replace(/^.*\$\('inventory(?:Search|Filter|Sort)'\)\.addEventListener.*$/gm,''),context);
 const inventory=Array.from({length:30},(_,i)=>({
  id:'item-'+i,title_ar:i===0?'فستان أحمر':'فستان',title_en:i===0?'Red Dress':'Dress',
  price_usd:10,stock:i===0?0:i,status:i===0?'draft':'published'

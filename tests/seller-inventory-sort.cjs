@@ -25,4 +25,4 @@ assert.ok(html.includes("$('inventorySort').disabled=true"),'sorting disabled du
 assert.ok(html.includes("$('inventorySort').disabled=false"),'sorting enabled only after full inventory load');
 assert.ok(html.includes("sortSellerInventory(filterSellerInventory("),'sort must apply after filters');
 assert.ok(html.includes("buildInventoryCsv(sortSellerInventory(filterSellerInventory(cachedSellerProducts"),'CSV export must reflect the current filters and sort while leaving source inventory unchanged');
-console.log('PASS seller inventory stock/name sorting and full CSV separation');
+console.log('PASS seller inventory stock/name sorting and filtered CSV order');
