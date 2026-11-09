@@ -24,5 +24,5 @@ assert.ok(html.includes('id="inventorySort" disabled'));
 assert.ok(html.includes("$('inventorySort').disabled=true"),'sorting disabled during refresh or logout');
 assert.ok(html.includes("$('inventorySort').disabled=false"),'sorting enabled only after full inventory load');
 assert.ok(html.includes("sortSellerInventory(filterSellerInventory("),'sort must apply after filters');
-assert.ok(html.includes("const csv=buildInventoryCsv(cachedSellerProducts)"),'CSV must still export complete inventory');
+assert.ok(html.includes("buildInventoryCsv(sortSellerInventory(filterSellerInventory(cachedSellerProducts"),'CSV export must reflect the current filters and sort while leaving source inventory unchanged');
 console.log('PASS seller inventory stock/name sorting and full CSV separation');
