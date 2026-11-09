@@ -39,6 +39,10 @@ const inventory=Array.from({length:30},(_,i)=>({
 context.inventory=inventory;
 const filtered=vm.runInContext("sortSellerInventory(filterSellerInventory(inventory,'فستان','published'),'stockDesc','ar')",context);
 assert.equal(filtered.length,29,'filtered export should include every matching product beyond display page one');
+const accentFiltered=vm.runInContext("filterSellerInventory(inventory,'فستان احمر','all')",context);
+assert.equal(accentFiltered.length,1,'Arabic hamza normalization should match inventory search');
+const outFiltered=vm.runInContext("filterSellerInventory(inventory,'','out')",context);
+assert.equal(outFiltered.length,1,'out-of-stock CSV filter must include only zero-stock products');
 assert.equal(filtered[0].stock,29,'CSV should use selected descending stock order');
 const filteredCsv=vm.runInContext("buildInventoryCsv(sortSellerInventory(filterSellerInventory(inventory,'فستان','published'),'stockDesc','ar'))",context);
 assert.equal(filteredCsv.trim().split('\\r\\n').length,30,'CSV must contain header and all 29 filtered rows');
