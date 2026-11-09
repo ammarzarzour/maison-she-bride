@@ -72,7 +72,7 @@ async function get(table,query){
    fetching=false;
    // Only a complete HTTP 200 response is valid for catalog reads.
    // Other successful statuses (202/204/206/207) can indicate missing or partial data.
-   if(typeof response.status==='number'&&response.status>=200&&response.status<300&&response.status!==200)throw new Error('Unexpected catalog response ('+response.status+')');
+   if(typeof response.status==='number'&&response.status!==200&&(!retryableStatuses.has(response.status)||response.ok))throw new Error('Unexpected catalog response ('+response.status+')');
    if(!response.ok){
     retry=retryableStatuses.has(response.status);
     throw new Error('Catalog request failed ('+response.status+')');
