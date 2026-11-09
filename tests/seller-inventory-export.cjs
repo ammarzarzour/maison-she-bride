@@ -24,6 +24,27 @@ for(const [prefix,label] of [['\\u061c','Arabic letter mark'],['\\u00ad','soft h
  assert.equal(cell, '"' + String.fromCharCode(39) + JSON.parse('"' + prefix + '"') + '=1+1"', label + ' must not bypass formula escaping');
 }
 assert.equal(csv.trim().split('\r\n').length,3);
+
+// Exercise the same filtering and sorting functions used by both the visible
+// inventory and its CSV export. Export must include all matching pages, not
+// only the 25 rows currently displayed.
+const filterStart=script.indexOf('function normalizeSellerSearch(');
+const filterEnd=script.indexOf('const SELLER_DISPLAY_PAGE_SIZE=',filterStart);
+assert.ok(filterStart>=0&&filterEnd>filterStart,'seller filter and sorting functions missing');
+vm.runInContext(script.slice(filterStart,filterEnd).replace(/^.*\\$\\('inventory(?:Search|Filter|Sort)'\\)\\.addEventListener.*$/gm,''),context);
+const inventory=Array.from({length:30},(_,i)=>({
+ id:'item-'+i,title_ar:i===0?'فستان أحمر':'فستان',title_en:i===0?'Red Dress':'Dress',
+ price_usd:10,stock:i===0?0:i,status:i===0?'draft':'published'
+}));
+context.inventory=inventory;
+const filtered=vm.runInContext("sortSellerInventory(filterSellerInventory(inventory,'فستان','published'),'stockDesc','ar')",context);
+assert.equal(filtered.length,29,'filtered export should include every matching product beyond display page one');
+assert.equal(filtered[0].stock,29,'CSV should use selected descending stock order');
+const filteredCsv=vm.runInContext("buildInventoryCsv(sortSellerInventory(filterSellerInventory(inventory,'فستان','published'),'stockDesc','ar'))",context);
+assert.equal(filteredCsv.trim().split('\\r\\n').length,30,'CSV must contain header and all 29 filtered rows');
+assert.ok(!filteredCsv.includes('"item-0"'),'CSV must omit excluded draft products');
+assert.ok(filteredCsv.indexOf('"item-29"')<filteredCsv.indexOf('"item-1"'),'CSV row order must match selected sort');
+
 assert.ok(html.includes("$('exportInventory').disabled=true"),'export disabled on invalidation and signout');
 assert.ok(html.includes("$('exportInventory').disabled=false"),'export enabled only after complete load');
 assert.ok(html.includes("buildInventoryCsv(sortSellerInventory(filterSellerInventory(cachedSellerProducts,$('inventorySearch').value,$('inventoryFilter').value||'all'),$('inventorySort').value||'newest',sellerLocale()))"),'CSV export must respect the current search, stock filter and sort without changing server data');
