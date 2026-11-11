@@ -80,3 +80,13 @@ $('requestRows').children[0].children[3].children[0].children[0].click();
 assert.equal(rows().length,2,'updating a reference must persist unique records only');
 assert.equal(rows()[0].state,'review');
 assert.equal(rows()[1].state,'draft','other reference unchanged');
+
+memory.clear();
+handlers.storage({key:null,storageArea:localStorage});
+assert.equal($('totalCount').textContent,0,'clear from another tab removes stale demo rows');
+assert.equal(document.documentElement.dir,'rtl','cleared language returns to browser language');
+memory.set('sanad_preview_requests_v1',JSON.stringify([{id:'DEMO-FOREIGN',service:0,state:'draft'}]));
+handlers.storage({key:'sanad_preview_requests_v1',storageArea:{}});
+assert.equal($('totalCount').textContent,0,'foreign storage event ignored');
+handlers.storage({key:'sanad_preview_requests_v1',storageArea:localStorage});
+assert.equal($('totalCount').textContent,1,'same storage updates visible rows');

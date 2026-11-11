@@ -133,8 +133,8 @@
   $('searchRequests').addEventListener('input',render);
   $('statusFilter').addEventListener('change',render);
   $('refresh').addEventListener('click',render);
-  window.addEventListener('storage',event=>{if(event.key===REQUESTS_KEY||event.key===LANG_KEY){
-    if(event.key===LANG_KEY){try{langPreference=localStorage.getItem(LANG_KEY)||'auto';if(!['auto','ar','en'].includes(langPreference))langPreference='auto';}catch{langPreference='auto';}}
+  window.addEventListener('storage',event=>{if(event.storageArea&&event.storageArea!==localStorage)return;if(event.key===null||event.key===REQUESTS_KEY||event.key===LANG_KEY){
+    if(event.key===null||event.key===LANG_KEY){try{langPreference=localStorage.getItem(LANG_KEY)||'auto';if(!['auto','ar','en'].includes(langPreference))langPreference='auto';}catch{langPreference='auto';}}
     render();
   }});
   window.addEventListener('focus',render);
