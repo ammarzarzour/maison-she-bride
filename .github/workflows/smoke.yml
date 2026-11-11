@@ -14,6 +14,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Verify standalone Sanad package
+        run: node scripts/build-sanad.cjs --check
       - name: Ensure every regression test is registered in CI
         run: node tests/ci-coverage.cjs
       - name: Validate storefront, seller and admin pages

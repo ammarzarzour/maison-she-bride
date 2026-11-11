@@ -64,14 +64,10 @@ assert.match(sanad, /id="serviceSearch"/, 'Sanad must expose service search');
 assert.match(sanad, /filtered=t\.services\.filter/, 'Sanad search must filter services');
 console.log('PASS Sanad bilingual service search');
 
-for (const [route, destination] of [
-  ['sanad/index.html', '../sanad-preview.html'],
-  ['sanad/admin.html', '../sanad-admin-preview.html']
-]) {
-  const shortcut = fs.readFileSync(route, 'utf8');
-  assert.match(shortcut, /<meta name="viewport"/, route + ': mobile viewport is required');
-  assert.ok(shortcut.includes('content="0; url=' + destination + '"'), route + ': redirect target differs');
-  assert.ok(shortcut.includes('href="' + destination + '"'), route + ': fallback link is missing');
-  assert.match(shortcut, /غير رسمية|تجريبي/, route + ': show the demo-only disclaimer');
+for(const file of ['sanad/index.html','sanad/admin.html']){
+ const html=fs.readFileSync(file,'utf8');
+ assert.match(html,/<meta name="viewport"/);
+ assert.doesNotMatch(html,/http-equiv="refresh"/,'Sanad routes must render without leaving the standalone directory');
+ for(const [,src]of html.matchAll(/src="([^"?]+)(?:\?[^"]*)?"/g))assert.ok(fs.existsSync(require('node:path').join('sanad',src)),'Missing independent script '+src);
 }
-console.log('PASS Sanad preview and dashboard shortcut routes');
+console.log('PASS standalone Sanad routes');
