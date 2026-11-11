@@ -186,5 +186,11 @@
     renderDemo();
     $('demoMessage').textContent = '';
   });
+  if(typeof window.addEventListener==='function')window.addEventListener('storage',event=>{
+    if(event.storageArea!==localStorage||!(event.key===STORAGE_KEY||event.key===null))return;
+    requests=load();
+    renderDemo();
+    $('demoMessage').textContent='';
+  });
   renderDemo();
 })();

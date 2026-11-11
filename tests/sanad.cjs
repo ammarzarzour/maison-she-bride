@@ -46,7 +46,7 @@ const localStorage = {
   getItem(key){return state.get(key)||null;},
   setItem(key,value){state.set(key,String(value));}
 };
-const window = {confirm:()=>true};
+const window = {confirm:()=>true,handlers:{},addEventListener(type,fn){this.handlers[type]=fn;}};
 vm.runInNewContext(script,{document,localStorage,window,Date,Math});
 const $=getElementById;
 const rows=()=>JSON.parse(state.get('sanad_preview_requests_v1')||'[]');
@@ -164,3 +164,21 @@ assert.equal(afterDelete.length,4,'deleting one request must not delete another'
 assert.equal(new Set(afterDelete.map(row=>row.id)).size,4);
 
 console.log('PASS Sanad fictional request creation, local storage, workflow, filter, translation and clearing');
+
+state.set('sanad_preview_requests_v1',JSON.stringify([{id:'DEMO-SYNCED',service:2,state:'review'}]));
+window.handlers.storage({key:'unrelated',storageArea:localStorage});
+assert.equal($('demoList').children[0].className,'empty-demo','unrelated event ignored');
+$('demoFilter').value='all';
+window.handlers.storage({key:'sanad_preview_requests_v1',storageArea:{}});
+assert.equal($('demoList').children[0].className,'empty-demo','foreign storage ignored');
+window.handlers.storage({key:'sanad_preview_requests_v1',storageArea:localStorage});
+assert.equal($('demoList').children.length,1);
+assert.match($('demoList').children[0].children[0].textContent,/DEMO-SYNCED/);
+$('demoList').children[0].children[2].children[0].click();
+assert.equal(rows()[0].state,'done','advance uses synchronized request');
+state.clear();
+window.handlers.storage({key:null,storageArea:localStorage});
+assert.equal($('demoList').children[0].className,'empty-demo','storage clear removes stale requests');
+state.set('sanad_preview_requests_v1','bad json');
+window.handlers.storage({key:'sanad_preview_requests_v1',storageArea:localStorage});
+assert.equal($('demoList').children[0].className,'empty-demo','malformed storage does not break view');
