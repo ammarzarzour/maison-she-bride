@@ -56,9 +56,11 @@
         .slice(0,25).map(r=>({id:r.id,service:r.service,state:r.state}));
     } catch {return [];}
   }
+  let messageKey=null;
+  function showMessage(key){messageKey=key;$('message').textContent=copy()[key];}
   function write(rows){
     try{localStorage.setItem(REQUESTS_KEY,JSON.stringify(rows));return true;}
-    catch{$('message').textContent=copy().storage;return false;}
+    catch{showMessage('storage');return false;}
   }
   function option(value,label){
     const o=document.createElement('option');o.value=value;o.textContent=label;return o;
@@ -81,10 +83,11 @@
       if(stage<0||stage>=STATES.length-1)return;
       rows[index].state=STATES[stage+1];
     }
-    if(write(rows)){$('message').textContent=action==='remove'?t.removed:t.advanced;render();}
+    if(write(rows)){showMessage(action==='remove'?'removed':'advanced');render();}
   }
   function render(){
     const t=copy(),l=lang()==='ar'?0:1;
+    if(messageKey)$('message').textContent=t[messageKey];
     document.documentElement.lang=lang();
     document.documentElement.dir=l===0?'rtl':'ltr';
     $('language').value=langPreference;

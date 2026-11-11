@@ -90,3 +90,10 @@ handlers.storage({key:'sanad_preview_requests_v1',storageArea:{}});
 assert.equal($('totalCount').textContent,0,'foreign storage event ignored');
 handlers.storage({key:'sanad_preview_requests_v1',storageArea:localStorage});
 assert.equal($('totalCount').textContent,1,'same storage updates visible rows');
+
+$('requestRows').children[0].children[3].children[0].children[0].click();
+assert.match($('message').textContent,/محلياً/);
+$('language').listeners.change({target:{value:'en'}});
+assert.match($('message').textContent,/Stage changed locally/,'visible feedback follows selected language');
+$('language').listeners.change({target:{value:'ar'}});
+assert.match($('message').textContent,/محلياً/,'feedback switches back without losing result');
