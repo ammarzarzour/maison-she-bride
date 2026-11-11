@@ -185,3 +185,11 @@ favoriteTabs.window.handlers.storage({key:'msb_favorites',storageArea:favoriteTa
 assert.equal(vm.runInContext('favorites.size',favoriteTabs.context),0,'oversized favorites rejected');
 
 console.log('PASS corrupt cart payloads, stock reconciliation, prototype safety and unavailable browser storage');
+
+const clearedTabs=setup({msb_cart:'{"dress":1}',msb_favorites:'["dress"]'});
+clearedTabs.loadProducts();
+clearedTabs.saved.clear();
+clearedTabs.window.handlers.storage({key:null,storageArea:clearedTabs.localStorage});
+assert.deepEqual(clearedTabs.cart(),{},'clearing storage in another tab clears cart display');
+assert.equal(vm.runInContext('favorites.size',clearedTabs.context),0,'clearing storage clears favorites display');
+assert.equal(clearedTabs.node('cartCount').textContent,0);

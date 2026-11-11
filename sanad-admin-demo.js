@@ -50,8 +50,9 @@
     try {
       const parsed = JSON.parse(localStorage.getItem(REQUESTS_KEY)||'[]');
       if(!Array.isArray(parsed))return [];
+      const seen=new Set();
       return parsed.filter(r=>r&&typeof r.id==='string'&&/^DEMO-[A-Z0-9]{6,16}$/.test(r.id)&&
-        Number.isInteger(r.service)&&r.service>=0&&r.service<SERVICES.length&&STATES.includes(r.state))
+        Number.isInteger(r.service)&&r.service>=0&&r.service<SERVICES.length&&STATES.includes(r.state)&&!seen.has(r.id)&&(seen.add(r.id),true))
         .slice(0,25).map(r=>({id:r.id,service:r.service,state:r.state}));
     } catch {return [];}
   }

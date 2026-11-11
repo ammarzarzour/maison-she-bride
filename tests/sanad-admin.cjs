@@ -67,3 +67,16 @@ assert.equal($('totalCount').textContent,3);
 assert.equal($('draftCount').textContent,1);
 assert.match($('footer').textContent,/prototype/);
 console.log('PASS Sanad bilingual browser-only demo dashboard, filters, status updates, deletion and storage sync');
+
+memory.set('sanad_preview_requests_v1',JSON.stringify([
+ {id:'DEMO-UNIQUE',service:0,state:'draft'},
+ {id:'DEMO-UNIQUE',service:1,state:'review'},
+ {id:'DEMO-SECOND',service:2,state:'draft'}
+]));
+$('statusFilter').value='all';$('searchRequests').value='';
+handlers.storage({key:'sanad_preview_requests_v1'});
+assert.equal($('totalCount').textContent,2,'duplicate IDs must not appear twice');
+$('requestRows').children[0].children[3].children[0].children[0].click();
+assert.equal(rows().length,2,'updating a reference must persist unique records only');
+assert.equal(rows()[0].state,'review');
+assert.equal(rows()[1].state,'draft','other reference unchanged');
