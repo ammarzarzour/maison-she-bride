@@ -1,0 +1,9 @@
+# Order request handler — not deployed
+
+orders-http.cjs exports a standard Web Request/Response handler for POST /orders and a Supabase verifier using auth.getUser(accessToken). The verifier obtains identity from the Auth server; it does not trust decoded request claims, user_metadata, buyer IDs, prices, or totals supplied by the client. Anonymous Supabase users are refused by this initial endpoint. A fixed origin allowlist controls browser CORS (not a replacement for authentication).
+
+Request: Authorization Bearer access token, Idempotency-Key UUID retained across retries, Content-Type application/json, body containing only items with product_id and quantity. New orders return 201; idempotent replay returns 200. Responses contain only order_id and replayed. Expected validation/conflict errors use stable codes; private SQL/network messages are not returned. Body size is limited to 16 KiB.
+
+This change DOES NOT deploy a server or activate customer orders. Before deployment, create a server-only Supabase client (session persistence and auto refresh disabled), wire createSupabaseTokenVerifier(client) and createPostgresOrderStore(pool) into createOrdersHandler, provide the explicit storefront origin, provision the reviewed DB role/connection and retry table, and add hosting-level timeouts, rate limiting, TLS and operational error monitoring without logging tokens or request bodies. GitHub Pages cannot run this backend. A request key must stay stable after a network failure because COMMIT may have succeeded.
+
+Live Supabase authentication is not tested with personal accounts. Unit tests simulate Auth responses. PostgreSQL integration uses synthetic users and a test-only identity verifier. Production permission review and deployed browser end-to-end tests remain outstanding. Payments remain off and FX integration stays deferred.

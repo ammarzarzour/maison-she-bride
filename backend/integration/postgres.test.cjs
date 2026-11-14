@@ -127,3 +127,22 @@ test('committed concurrent store suspension is observed after lock wait',async()
   if(pending) await pending;
  }
 });
+
+test('request handler creates and replays a real database order with verified test identity',async()=>{
+ const {createOrdersHandler}=require('../orders-http.cjs');
+ // Test-only verifier. Production must use Supabase getUser, not this fixture.
+ const handler=createOrdersHandler({store,verifyAccessToken:async token=>{
+  assert.equal(token,'synthetic-test-token');return {id:buyer};
+ }});
+ const make=()=>new Request('https://orders.example/orders',{method:'POST',headers:{
+  Authorization:'Bearer synthetic-test-token','Content-Type':'application/json','Idempotency-Key':key
+ },body:JSON.stringify({items:items(2)})});
+ const first=await handler(make());assert.equal(first.status,201);
+ const created=await first.json();
+ const second=await handler(make());assert.equal(second.status,200);
+ assert.deepEqual(await second.json(),{order_id:created.order_id,replayed:true});
+ const unauthorized=await handler(new Request('https://orders.example/orders',{method:'POST',
+  headers:{'Content-Type':'application/json','Idempotency-Key':key},body:JSON.stringify({items:items()})}));
+ assert.equal(unauthorized.status,401);
+ assert.deepEqual(await state(),{orders:1,items:1,requests:1,stock:3});
+});
