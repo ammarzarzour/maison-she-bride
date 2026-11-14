@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "decision_date": "2026-11-14",
+  "source": "https://www.sp-today.com/",
+  "rate_side": "sell",
+  "base_currencies": [
+    "USD",
+    "SAR",
+    "AED"
+  ],
+  "quote_currency": "SYP",
+  "quote_denomination": "new",
+  "conversion": "foreign_amount * sell_rate_in_new_syp_per_foreign_unit",
+  "display_source": true,
+  "display_source_updated_at": true,
+  "warn_when_stale": true,
+  "integration_status": "pending",
+  "payments_enabled": false,
+  "notes": [
+    "Approved pricing-source decision; this file does not activate a live feed.",
+    "Do not substitute old-pound rates or demo constants for new-pound rates.",
+    "API credentials must remain server-side; automatic refresh and freshness threshold still require implementation."
+  ]
+}
