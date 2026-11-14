@@ -1,0 +1,33 @@
+name: PostgreSQL order integration
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  postgres-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: msb_order_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d msb_order_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/integration/package-lock.json
+      - run: npm ci --ignore-scripts --prefix backend/integration
+      - run: node --test backend/integration/postgres.test.cjs
+        env:
+          ORDER_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/msb_order_test
