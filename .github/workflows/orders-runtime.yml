@@ -1,0 +1,17 @@
+name: Orders runtime tests
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/runtime/package-lock.json
+      - run: npm ci --ignore-scripts --prefix backend/runtime
+      - run: node --test backend/runtime/server.test.cjs
+      - run: node -e "require('./backend/runtime/start.cjs')"

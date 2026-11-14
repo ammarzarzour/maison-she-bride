@@ -146,3 +146,22 @@ test('request handler creates and replays a real database order with verified te
  assert.equal(unauthorized.status,401);
  assert.deepEqual(await state(),{orders:1,items:1,requests:1,stock:3});
 });
+
+test('real HTTP server commits one PostgreSQL order and safely replays the retry',async t=>{
+ const {createOrdersHandler}=require('../orders-http.cjs');
+ const {createOrderServer}=require('../runtime/server.cjs');
+ const handler=createOrdersHandler({store,verifyAccessToken:async token=>{
+  assert.equal(token,'synthetic-http-token');return {id:buyer};
+ }});
+ const server=createOrderServer({enabled:true,handler});
+ t.after(()=>new Promise(resolve=>server.close(resolve)));
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ const url='http://127.0.0.1:'+server.address().port+'/orders';
+ const options={method:'POST',headers:{Authorization:'Bearer synthetic-http-token',
+  'Content-Type':'application/json','Idempotency-Key':key},body:JSON.stringify({items:items(2)})};
+ const first=await fetch(url,options);assert.equal(first.status,201);
+ const created=await first.json();
+ const retry=await fetch(url,options);assert.equal(retry.status,200);
+ assert.deepEqual(await retry.json(),{order_id:created.order_id,replayed:true});
+ assert.deepEqual(await state(),{orders:1,items:1,requests:1,stock:3});
+});
