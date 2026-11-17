@@ -73,6 +73,15 @@ test('network-capable scripts and missing assets are rejected', t => {
   assert.notEqual(run(dir, '--check').status, 0);
 });
 
+test('network APIs remain forbidden in the isolated demo package', t => {
+  for (const code of ['fetch("/api")', 'new XMLHttpRequest()', 'new WebSocket("wss://example.invalid")']) {
+    const dir = fixture(t);
+    writeFileSync(join(dir, 'sanad', 'sanad-admin-demo.js'), code);
+    const result = run(dir, '--check');
+    assert.notEqual(result.status, 0, code);
+  }
+});
+
 test('build destination cannot escape the repository or overwrite its root', t => {
   const dir = fixture(t);
   assert.notEqual(run(dir, join(dir, '..', 'outside-sanad')).status, 0);
