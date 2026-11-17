@@ -7,7 +7,13 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const source = join(root, 'sanad');
 const files = ['index.html', 'admin.html', 'sanad-demo.js', 'sanad-admin-demo.js'];
-const destination = resolve(process.argv[2] || join(root, 'dist', 'sanad-syria'));
+const args = process.argv.slice(2);
+const check = args.includes('--check');
+const destinations = args.filter(arg => arg !== '--check');
+if (destinations.length > 1 || args.some(arg => arg.startsWith('--') && arg !== '--check')) {
+  throw new Error('Usage: node scripts/build-sanad-standalone.mjs [destination] [--check]');
+}
+const destination = resolve(destinations[0] || join(root, 'dist', 'sanad-syria'));
 if (destination === source || destination === root || !destination.startsWith(root + sep)) {
   throw new Error('Destination must be a separate directory inside the repository');
 }
@@ -25,11 +31,11 @@ for (const name of files) {
       }
     }
   }
-  if (name.endsWith('.js') && /\b(?:fetch\s*\(|XMLHttpRequest|WebSocket)\b/.test(text)) {
+  if (name.endsWith('.js') && /\b(?:fetch\s*\(|XMLHttpRequest\b|WebSocket\b)/.test(text)) {
     throw new Error('Network behavior found in static preview: ' + name);
   }
 }
-if (process.argv.includes('--check')) {
+if (check) {
   console.log('Sanad standalone asset validation passed (' + files.length + ' files)');
 } else {
   rmSync(destination, { recursive: true, force: true });
