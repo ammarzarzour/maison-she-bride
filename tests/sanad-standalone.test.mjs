@@ -37,8 +37,24 @@ test('portable preview builds only the approved four assets', t => {
 
 test('check mode does not create output', t => {
   const dir = fixture(t);
-  assert.equal(run(dir, '--check').status, 0);
+  const result = run(dir, '--check');
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /validation passed/);
   assert.equal(existsSync(join(dir, 'dist')), false);
+});
+
+test('check mode also accepts a destination before the flag without writing output', t => {
+  const dir = fixture(t);
+  const output = join(dir, 'dist', 'other-preview');
+  const result = run(dir, output, '--check');
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(existsSync(join(dir, 'dist')), false);
+});
+
+test('unknown command flags and multiple destinations are rejected', t => {
+  const dir = fixture(t);
+  assert.notEqual(run(dir, '--not-a-flag').status, 0);
+  assert.notEqual(run(dir, join(dir, 'dist', 'a'), join(dir, 'dist', 'b')).status, 0);
 });
 
 test('external and parent-relative assets are rejected', t => {
