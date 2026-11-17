@@ -1,0 +1,41 @@
+name: Validate standalone Sanad Syria preview
+on:
+  push:
+    paths:
+      - 'sanad/**'
+      - 'scripts/build-sanad-standalone.mjs'
+      - '.github/workflows/sanad-standalone.yml'
+  pull_request:
+    paths:
+      - 'sanad/**'
+      - 'scripts/build-sanad-standalone.mjs'
+      - '.github/workflows/sanad-standalone.yml'
+  workflow_dispatch:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Sanad isolation
+        run: node scripts/build-sanad-standalone.mjs --check
+      - name: Build portable preview
+        run: node scripts/build-sanad-standalone.mjs
+      - name: Verify exact portable assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(find dist/sanad-syria -type f | wc -l)" -eq 4
+          for file in index.html admin.html sanad-demo.js sanad-admin-demo.js; do
+            cmp "sanad/$file" "dist/sanad-syria/$file"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sanad-syria-standalone-preview
+          path: dist/sanad-syria/
+          if-no-files-found: error
+          retention-days: 14
