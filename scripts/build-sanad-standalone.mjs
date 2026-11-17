@@ -31,7 +31,7 @@ for (const name of files) {
       }
     }
   }
-  if (name.endsWith('.js') && /\b(?:fetch\s*\(|XMLHttpRequest|WebSocket)\b/.test(text)) {
+  if (name.endsWith('.js') && /\b(?:fetch\s*\(|XMLHttpRequest\b|WebSocket\b)/.test(text)) {
     throw new Error('Network behavior found in static preview: ' + name);
   }
 }
