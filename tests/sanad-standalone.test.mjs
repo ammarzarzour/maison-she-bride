@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, cpSync, existsSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, cpSync, existsSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -121,4 +121,27 @@ test('build can refresh its own four-file output', t => {
   const result = run(dir);
   assert.equal(result.status, 0, result.stderr);
   assert.match(readFileSync(join(dir, 'dist', 'sanad-syria', 'index.html'), 'utf8'), /updated/);
+});
+
+
+test('build rejects symlinked dist directory without modifying source files', t => {
+  const dir = fixture(t);
+  const outputRoot = join(dir, 'dist');
+  symlinkSync(join(dir, 'sanad'), outputRoot, 'dir');
+  const original = readFileSync(join(dir, 'sanad', 'index.html'), 'utf8');
+  const result = run(dir);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Symlinked build output directory/);
+  assert.equal(readFileSync(join(dir, 'sanad', 'index.html'), 'utf8'), original);
+  assert.equal(existsSync(join(dir, 'sanad', 'sanad-syria')), false);
+});
+
+test('build rejects symlinked nested output ancestors', t => {
+  const dir = fixture(t);
+  mkdirSync(join(dir, 'dist'));
+  symlinkSync(join(dir, 'sanad'), join(dir, 'dist', 'redirect'), 'dir');
+  const result = run(dir, join(dir, 'dist', 'redirect', 'release'));
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Symlinked build output directory/);
+  assert.equal(existsSync(join(dir, 'sanad', 'release')), false);
 });
