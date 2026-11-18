@@ -94,3 +94,31 @@ test('build destination cannot escape the repository or overwrite its root', t =
   assert.equal(existsSync(join(source, 'index.html')), true);
   assert.equal(existsSync(nested), false);
 });
+
+test('build refuses unrelated repository directories and preserves their contents', t => {
+  const dir = fixture(t);
+  const backend = join(dir, 'backend');
+  mkdirSync(backend);
+  writeFileSync(join(backend, 'keep.txt'), 'protected');
+  assert.notEqual(run(dir, backend).status, 0);
+  assert.equal(readFileSync(join(backend, 'keep.txt'), 'utf8'), 'protected');
+});
+
+test('build never deletes unrelated files in an existing dist target', t => {
+  const dir = fixture(t);
+  const output = join(dir, 'dist', 'sanad-syria');
+  mkdirSync(output, { recursive: true });
+  writeFileSync(join(output, 'keep.txt'), 'protected');
+  assert.notEqual(run(dir).status, 0);
+  assert.equal(readFileSync(join(output, 'keep.txt'), 'utf8'), 'protected');
+  assert.equal(existsSync(join(output, 'index.html')), false);
+});
+
+test('build can refresh its own four-file output', t => {
+  const dir = fixture(t);
+  assert.equal(run(dir).status, 0);
+  writeFileSync(join(dir, 'sanad', 'index.html'), '<script src="./sanad-demo.js"></script><p>updated</p>');
+  const result = run(dir);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(readFileSync(join(dir, 'dist', 'sanad-syria', 'index.html'), 'utf8'), /updated/);
+});
