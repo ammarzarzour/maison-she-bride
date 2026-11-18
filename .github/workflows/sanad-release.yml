@@ -1,0 +1,52 @@
+name: Sanad Syria standalone preview artifact
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'sanad/**'
+      - 'scripts/build-sanad-standalone.mjs'
+      - '.github/workflows/sanad-release.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package-sanad:
+    name: Validate and package isolated Sanad preview
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate static assets and reject external dependencies
+        run: node scripts/build-sanad-standalone.mjs --check
+      - name: Build isolated static preview
+        run: node scripts/build-sanad-standalone.mjs
+      - name: Verify exact allowlisted output and source fidelity
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readdir, readFile } from 'node:fs/promises';
+          const expected = ['admin.html', 'index.html', 'sanad-admin-demo.js', 'sanad-demo.js'];
+          assert.deepEqual((await readdir('dist/sanad-syria')).sort(), expected);
+          for (const file of expected) {
+            const [source, output] = await Promise.all([
+              readFile('sanad/' + file),
+              readFile('dist/sanad-syria/' + file),
+            ]);
+            assert.deepEqual(output, source, 'Bundled file differs: ' + file);
+          }
+          NODE
+      - name: Upload portable preview artifact (not a deployment)
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanad-syria-static-preview
+          path: dist/sanad-syria/
+          if-no-files-found: error
+          retention-days: 14
