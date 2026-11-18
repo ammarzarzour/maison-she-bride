@@ -13,8 +13,9 @@ const destinations = args.filter(arg => arg !== '--check');
 if (destinations.length > 1 || args.some(arg => arg.startsWith('--') && arg !== '--check')) {
   throw new Error('Usage: node scripts/build-sanad-standalone.mjs [destination] [--check]');
 }
-const destination = resolve(destinations[0] || join(root, 'dist', 'sanad-syria'));
-if (destination === source || destination.startsWith(source + sep) || destination === root || !destination.startsWith(root + sep)) {
+const outputRoot = join(root, 'dist');
+const destination = resolve(destinations[0] || join(outputRoot, 'sanad-syria'));
+if (!destination.startsWith(outputRoot + sep)) {
   throw new Error('Destination must be a separate directory inside the repository');
 }
 const paths = new Set(files);
@@ -38,7 +39,14 @@ for (const name of files) {
 if (check) {
   console.log('Sanad standalone asset validation passed (' + files.length + ' files)');
 } else {
-  rmSync(destination, { recursive: true, force: true });
+  // Never recursively remove a caller-selected directory: unrelated files may live there.
+  if (existsSync(destination)) {
+    const { readdirSync, lstatSync } = await import('node:fs');
+    if (lstatSync(destination).isSymbolicLink() || !lstatSync(destination).isDirectory() ||
+        readdirSync(destination).some(name => !paths.has(name) || !lstatSync(join(destination, name)).isFile())) {
+      throw new Error('Destination contains files outside the approved Sanad release');
+    }
+  }
   mkdirSync(destination, { recursive: true });
   for (const name of files) cpSync(join(source, name), join(destination, name));
   console.log('Built portable Sanad preview at ' + relative(root, destination));
