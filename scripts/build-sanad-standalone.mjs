@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Build a portable, self-contained Sanad Syria preview without Maison She Bride assets.
 // This is a static demonstration only; it does not provide authentication or a backend.
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, lstatSync, mkdirSync, readFileSync } from 'node:fs';
 import { resolve, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
@@ -17,6 +17,18 @@ const outputRoot = join(root, 'dist');
 const destination = resolve(destinations[0] || join(outputRoot, 'sanad-syria'));
 if (!destination.startsWith(outputRoot + sep)) {
   throw new Error('Destination must be a separate directory inside the repository');
+}
+// Reject symlinked output ancestors: a lexical dist/ path may otherwise resolve
+// into the source tree or outside the repository when copied to disk.
+let outputParent = outputRoot;
+while (true) {
+  if (existsSync(outputParent) && lstatSync(outputParent).isSymbolicLink()) {
+    throw new Error('Symlinked build output directory is forbidden');
+  }
+  if (outputParent === destination) break;
+  const remaining = relative(outputParent, destination).split(sep);
+  if (remaining.length === 0 || !remaining[0] || remaining[0] === '..') break;
+  outputParent = join(outputParent, remaining[0]);
 }
 const paths = new Set(files);
 for (const name of files) {
