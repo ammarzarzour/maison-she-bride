@@ -86,4 +86,11 @@ test('build destination cannot escape the repository or overwrite its root', t =
   const dir = fixture(t);
   assert.notEqual(run(dir, join(dir, '..', 'outside-sanad')).status, 0);
   assert.notEqual(run(dir, dir).status, 0);
+  // Never delete the standalone source directory or any of its descendants.
+  const source = join(dir, 'sanad');
+  const nested = join(source, 'nested-output');
+  assert.notEqual(run(dir, source).status, 0);
+  assert.notEqual(run(dir, nested).status, 0);
+  assert.equal(existsSync(join(source, 'index.html')), true);
+  assert.equal(existsSync(nested), false);
 });
