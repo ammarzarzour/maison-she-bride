@@ -26,6 +26,35 @@ jobs:
           node-version: '22'
       - name: Validate static assets and reject external dependencies
         run: node scripts/build-sanad-standalone.mjs --check
+      - name: Regression-test isolated build destination safeguards
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { mkdtempSync, mkdirSync, symlinkSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
+          import { tmpdir } from 'node:os';
+          import { join, resolve } from 'node:path';
+          import { spawnSync } from 'node:child_process';
+          const root = process.cwd();
+          const temp = mkdtempSync(join(tmpdir(), 'sanad-release-check-'));
+          const dist = join(root, 'dist');
+          const target = join(temp, 'protected');
+          mkdirSync(target);
+          const marker = join(target, 'marker.txt');
+          writeFileSync(marker, 'untouched');
+          const link = join(dist, 'ci-symlink-guard');
+          mkdirSync(dist, { recursive: true });
+          try {
+            symlinkSync(target, link, 'dir');
+            const result = spawnSync(process.execPath, [
+              'scripts/build-sanad-standalone.mjs', join(link, 'output')
+            ], { cwd: root, encoding: 'utf8' });
+            assert.notEqual(result.status, 0, 'Symlinked output ancestor must fail');
+            assert.equal(readFileSync(marker, 'utf8'), 'untouched');
+          } finally {
+            rmSync(link, { force: true });
+            rmSync(temp, { recursive: true, force: true });
+          }
+          NODE
       - name: Build isolated static preview
         run: node scripts/build-sanad-standalone.mjs
       - name: Verify exact allowlisted output and source fidelity
