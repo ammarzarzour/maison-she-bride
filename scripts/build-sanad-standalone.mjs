@@ -14,7 +14,7 @@ if (destinations.length > 1 || args.some(arg => arg.startsWith('--') && arg !== 
   throw new Error('Usage: node scripts/build-sanad-standalone.mjs [destination] [--check]');
 }
 const destination = resolve(destinations[0] || join(root, 'dist', 'sanad-syria'));
-if (destination === source || destination === root || !destination.startsWith(root + sep)) {
+if (destination === source || destination.startsWith(source + sep) || destination === root || !destination.startsWith(root + sep)) {
   throw new Error('Destination must be a separate directory inside the repository');
 }
 const paths = new Set(files);
