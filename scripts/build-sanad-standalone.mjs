@@ -31,9 +31,18 @@ while (true) {
   outputParent = join(outputParent, remaining[0]);
 }
 const paths = new Set(files);
+// Only regular, directly stored assets may enter the portable release.
+// Reject links before reading, so a symlink cannot pull files from outside Sanad.
+if (!lstatSync(source).isDirectory() || lstatSync(source).isSymbolicLink()) {
+  throw new Error('Sanad source directory must be a real directory');
+}
 for (const name of files) {
   const path = join(source, name);
   if (!existsSync(path)) throw new Error('Missing Sanad asset: ' + name);
+  const stat = lstatSync(path);
+  if (stat.isSymbolicLink() || !stat.isFile()) {
+    throw new Error('Sanad asset must be a regular file: ' + name);
+  }
   const text = readFileSync(path, 'utf8');
   if (name.endsWith('.html')) {
     for (const match of text.matchAll(/(?:src|href)\s*=\s*["']([^"']+)["']/gi)) {
