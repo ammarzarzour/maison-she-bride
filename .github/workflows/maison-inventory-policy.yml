@@ -1,0 +1,27 @@
+name: Maison inventory and rental preflight tests
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/inventory-policy.mjs'
+      - 'scripts/inventory-policy.test.mjs'
+      - '.github/workflows/maison-inventory-policy.yml'
+  pull_request:
+    paths:
+      - 'scripts/inventory-policy.mjs'
+      - 'scripts/inventory-policy.test.mjs'
+      - '.github/workflows/maison-inventory-policy.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-inventory-policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate offline stock and rental policy
+        run: node --test scripts/inventory-policy.test.mjs
