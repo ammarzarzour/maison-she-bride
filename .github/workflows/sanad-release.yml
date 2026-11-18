@@ -55,6 +55,37 @@ jobs:
             rmSync(temp, { recursive: true, force: true });
           }
           NODE
+      - name: Regression-test source asset symlink and directory rejection
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { mkdtempSync, readFileSync, rmSync, symlinkSync, mkdirSync, writeFileSync } from 'node:fs';
+          import { tmpdir } from 'node:os';
+          import { join } from 'node:path';
+          import { spawnSync } from 'node:child_process';
+          const asset = 'sanad/sanad-demo.js';
+          const original = readFileSync(asset);
+          const temp = mkdtempSync(join(tmpdir(), 'sanad-source-guard-'));
+          const external = join(temp, 'external.js');
+          writeFileSync(external, 'const external = true;');
+          const check = () => spawnSync(process.execPath,
+            ['scripts/build-sanad-standalone.mjs', '--check'],
+            { encoding: 'utf8' });
+          try {
+            rmSync(asset);
+            symlinkSync(external, asset);
+            assert.notEqual(check().status, 0, 'Symlinked source must fail');
+            rmSync(asset);
+            mkdirSync(asset);
+            assert.notEqual(check().status, 0, 'Directory source must fail');
+            assert.equal(readFileSync(external, 'utf8'), 'const external = true;');
+          } finally {
+            rmSync(asset, { recursive: true, force: true });
+            writeFileSync(asset, original);
+            rmSync(temp, { recursive: true, force: true });
+          }
+          assert.equal(check().status, 0, 'Restored source must pass');
+          NODE
       - name: Build isolated static preview
         run: node scripts/build-sanad-standalone.mjs
       - name: Verify exact allowlisted output and source fidelity
