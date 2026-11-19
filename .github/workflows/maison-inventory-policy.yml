@@ -5,11 +5,15 @@ on:
     paths:
       - 'scripts/inventory-policy.mjs'
       - 'scripts/inventory-policy.test.mjs'
+      - 'scripts/cart-policy.mjs'
+      - 'scripts/cart-policy.test.mjs'
       - '.github/workflows/maison-inventory-policy.yml'
   pull_request:
     paths:
       - 'scripts/inventory-policy.mjs'
       - 'scripts/inventory-policy.test.mjs'
+      - 'scripts/cart-policy.mjs'
+      - 'scripts/cart-policy.test.mjs'
       - '.github/workflows/maison-inventory-policy.yml'
   workflow_dispatch:
 permissions:
@@ -23,5 +27,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Validate offline stock and rental policy
-        run: node --test scripts/inventory-policy.test.mjs
+      - name: Validate offline stock, rental and cart policy
+        run: node --test scripts/inventory-policy.test.mjs scripts/cart-policy.test.mjs
