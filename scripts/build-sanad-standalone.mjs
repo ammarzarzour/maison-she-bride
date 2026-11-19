@@ -53,6 +53,13 @@ for (const name of files) {
       }
     }
   }
+  // Reject HTML URL-bearing surfaces not covered by src/href validation.
+  // A srcset candidate or a refresh directive can otherwise escape the portable preview.
+  if (name.endsWith('.html') &&
+      (/\\b(?:srcset|formaction|poster)\\s*=/i.test(text) ||
+       /<meta\\b[^>]*http-equiv\\s*=\\s*["']?refresh\\b/i.test(text))) {
+    throw new Error('Unreviewed HTML navigation or resource directive forbidden: ' + name);
+  }
   // Inline scripts and CSS in HTML must obey the same offline boundary as JS files.
   // This is a static preview safeguard, not a substitute for browser CSP or server controls.
   if ((name.endsWith('.js') || name.endsWith('.html')) &&
