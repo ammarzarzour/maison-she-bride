@@ -22,3 +22,10 @@ test('invalid dates, quantities and holds are rejected', () => {
   assert.throws(() => checkRentalAvailability({...base,holds:[{start:'2026-12-01',end:'2026-12-02',quantity:-1}]}),RangeError);
   assert.throws(() => checkRentalAvailability({...base,units:-1}),RangeError);
 });
+
+test('existing overbooked rental holds fail closed', () => {
+  const base={units:2,start:'2026-12-01',end:'2026-12-10'};
+  assert.throws(() => checkRentalAvailability({...base,holds:[{start:'2026-12-02',end:'2026-12-08',quantity:3}]}),RangeError);
+  assert.throws(() => checkRentalAvailability({...base,holds:[{start:'2026-12-02',end:'2026-12-08',quantity:2},{start:'2026-12-03',end:'2026-12-05',quantity:1}]}),RangeError);
+  assert.equal(checkRentalAvailability({...base,holds:[{start:'2026-12-02',end:'2026-12-05',quantity:2},{start:'2026-12-05',end:'2026-12-08',quantity:2}]}).eligible,false);
+});
