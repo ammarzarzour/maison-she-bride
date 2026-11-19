@@ -19,6 +19,12 @@ export function checkRentalAvailability({ units, requested = 1, start, end, hold
   }
   events.sort((a,b) => a[0].localeCompare(b[0]) || a[1]-b[1]);
   let occupied = 0, peak = 0;
-  for (const [,delta] of events) { occupied += delta; peak = Math.max(peak, occupied); }
+  for (const [,delta] of events) {
+    occupied += delta;
+    if (!Number.isSafeInteger(occupied) || occupied < 0 || occupied > units) {
+      throw new RangeError('Existing rental holds exceed available units');
+    }
+    peak = Math.max(peak, occupied);
+  }
   return Object.freeze({ eligible: peak + requested <= units, peakReserved: peak, availableAtPeak: Math.max(0, units - peak), authorized: false, persisted: false });
 }
