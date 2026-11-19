@@ -40,6 +40,9 @@ try {
     '<script>document.location.href = "https://example.com/escape"</script>',
     '<script>new Worker("https://example.com/worker.js")</script>',
     '<script>new SharedWorker("https://example.com/shared-worker.js")</script>',
+    '<script>location = "https://example.com/escape"</script>',
+    '<script>window.location = "https://example.com/escape"</script>',
+    '<script>document.location = "https://example.com/escape"</script>',
 
   ]) {
     writeFileSync(html, original.replace('</head>', payload + '</head>'));
@@ -49,7 +52,7 @@ try {
   }
   writeFileSync(html, original);
   assert.equal(check().status, 0, 'Restored preview must validate');
-  console.log('Sanad offline boundary: 22 assertions passed');
+  console.log('Sanad offline boundary: 25 assertions passed');
 } finally {
   rmSync(sandbox, { recursive: true, force: true });
 }
