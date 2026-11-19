@@ -145,3 +145,18 @@ test('build rejects symlinked nested output ancestors', t => {
   assert.match(result.stderr, /Symlinked build output directory/);
   assert.equal(existsSync(join(dir, 'sanad', 'release')), false);
 });
+
+test('unquoted src and href attributes cannot bypass portable asset checks', t => {
+  for (const html of [
+    '<script src=https://example.invalid/x.js></script>',
+    '<link href=../maison.css rel=stylesheet>',
+    '<script src=./sanad-demo.js></script>'
+  ]) {
+    const dir = fixture(t);
+    writeFileSync(join(dir, 'sanad', 'index.html'), html);
+    const result = run(dir, '--check');
+    assert.notEqual(result.status, 0, html);
+    assert.match(result.stderr, /Unquoted HTML resource attribute forbidden/);
+    assert.equal(existsSync(join(dir, 'dist')), false);
+  }
+});
