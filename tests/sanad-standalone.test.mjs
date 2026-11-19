@@ -82,6 +82,19 @@ test('network APIs remain forbidden in the isolated demo package', t => {
   }
 });
 
+test('SharedWorker is forbidden in both standalone JavaScript and inline HTML', t => {
+  for (const [name, content] of [
+    ['sanad-demo.js', 'new SharedWorker("https://example.invalid/worker.js")'],
+    ['admin.html', '<script>new SharedWorker("./sanad-demo.js")</script>']
+  ]) {
+    const dir = fixture(t);
+    writeFileSync(join(dir, 'sanad', name), content);
+    const result = run(dir, '--check');
+    assert.notEqual(result.status, 0, name + ' must not bypass offline boundary');
+    assert.match(result.stderr, /Unreviewed navigation or worker behavior/);
+  }
+});
+
 test('build destination cannot escape the repository or overwrite its root', t => {
   const dir = fixture(t);
   assert.notEqual(run(dir, join(dir, '..', 'outside-sanad')).status, 0);
