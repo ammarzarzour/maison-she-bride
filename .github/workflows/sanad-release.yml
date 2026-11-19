@@ -6,6 +6,7 @@ on:
     paths:
       - 'sanad/**'
       - 'scripts/build-sanad-standalone.mjs'
+      - 'scripts/sanad-offline-boundary.test.mjs'
       - '.github/workflows/sanad-release.yml'
   workflow_dispatch:
 
@@ -24,6 +25,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Regression-test HTML inline network and form isolation
+        run: node scripts/sanad-offline-boundary.test.mjs
       - name: Validate static assets and reject external dependencies
         run: node scripts/build-sanad-standalone.mjs --check
       - name: Regression-test isolated build destination safeguards
