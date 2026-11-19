@@ -39,6 +39,7 @@ try {
     '<script>location.assign("https://example.com/escape")</script>',
     '<script>document.location.href = "https://example.com/escape"</script>',
     '<script>new Worker("https://example.com/worker.js")</script>',
+    '<script>new SharedWorker("https://example.com/shared-worker.js")</script>',
 
   ]) {
     writeFileSync(html, original.replace('</head>', payload + '</head>'));
