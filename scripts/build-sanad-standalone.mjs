@@ -60,6 +60,11 @@ for (const name of files) {
       /\b(?:src|href)\s*=\s*(?!["'])[^ \t\r\n>]+/i.test(text)) {
     throw new Error('Unquoted HTML resource attribute forbidden: ' + name);
   }
+  // Embedded documents and base URL rewrites can load resources outside the
+  // approved portable assets even when ordinary src/href checks pass.
+  if (name.endsWith('.html') && /<(?:iframe|object|embed|base)\b/i.test(text)) {
+    throw new Error('Unreviewed embedded document or base URL forbidden: ' + name);
+  }
   // Reject HTML URL-bearing surfaces not covered by src/href validation.
   // A srcset candidate or a refresh directive can otherwise escape the portable preview.
   if (name.endsWith('.html') &&
