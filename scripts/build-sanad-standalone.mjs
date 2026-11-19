@@ -53,6 +53,13 @@ for (const name of files) {
       }
     }
   }
+  // Fail closed on unquoted src/href values: the quoted-URL validator above
+  // intentionally handles only quoted attributes, so unquoted URLs must not
+  // bypass the portable preview boundary.
+  if (name.endsWith('.html') &&
+      /\\b(?:src|href)\\s*=\\s*(?!["'])[^\\s>]+/i.test(text)) {
+    throw new Error('Unquoted HTML resource attribute forbidden: ' + name);
+  }
   // Reject HTML URL-bearing surfaces not covered by src/href validation.
   // A srcset candidate or a refresh directive can otherwise escape the portable preview.
   if (name.endsWith('.html') &&
