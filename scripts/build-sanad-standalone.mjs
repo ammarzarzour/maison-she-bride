@@ -78,6 +78,12 @@ for (const name of files) {
       /\b(?:fetch\s*\(|XMLHttpRequest\b|WebSocket\b|EventSource\s*\(|sendBeacon\s*\()/i.test(text)) {
     throw new Error('Network behavior found in static preview: ' + name);
   }
+  // A standalone preview must not open remote pages or spawn remote workers.
+  // Guard both HTML inline scripts and bundled JS; these are not backend controls.
+  if ((name.endsWith('.js') || name.endsWith('.html')) &&
+      /\b(?:window\s*\.\s*open\s*\(|(?:window\s*\.\s*|document\s*\.\s*)?location\s*\.\s*(?:assign|replace)\s*\(|(?:window\s*\.\s*|document\s*\.\s*)?location\s*\.\s*href\s*=|(?:new\s+Worker|importScripts)\s*\()/i.test(text)) {
+    throw new Error('Unreviewed navigation or worker behavior forbidden: ' + name);
+  }
   if (name.endsWith('.html') && /(?:@import\b|url\s*\(\s*['\"]?\s*(?:https?:|\/\/)|<form\b[^>]*\baction\s*=)/i.test(text)) {
     throw new Error('External CSS or form submission forbidden in static preview: ' + name);
   }
