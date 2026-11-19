@@ -5,12 +5,14 @@ on:
       - 'sanad/**'
       - 'scripts/build-sanad-standalone.mjs'
       - 'tests/sanad-standalone.test.mjs'
+      - 'scripts/sanad-offline-boundary.test.mjs'
       - '.github/workflows/sanad-standalone.yml'
   pull_request:
     paths:
       - 'sanad/**'
       - 'scripts/build-sanad-standalone.mjs'
       - 'tests/sanad-standalone.test.mjs'
+      - 'scripts/sanad-offline-boundary.test.mjs'
       - '.github/workflows/sanad-standalone.yml'
   workflow_dispatch:
 jobs:
@@ -25,6 +27,8 @@ jobs:
           node-version: '22'
       - name: Run Sanad standalone regression tests
         run: node --test tests/sanad-standalone.test.mjs
+      - name: Regression-test inline network, forms and resource boundaries
+        run: node scripts/sanad-offline-boundary.test.mjs
       - name: Validate Sanad isolation
         run: node scripts/build-sanad-standalone.mjs --check
       - name: Build portable preview
