@@ -53,8 +53,14 @@ for (const name of files) {
       }
     }
   }
-  if (name.endsWith('.js') && /\b(?:fetch\s*\(|XMLHttpRequest\b|WebSocket\b)/.test(text)) {
+  // Inline scripts and CSS in HTML must obey the same offline boundary as JS files.
+  // This is a static preview safeguard, not a substitute for browser CSP or server controls.
+  if ((name.endsWith('.js') || name.endsWith('.html')) &&
+      /\b(?:fetch\s*\(|XMLHttpRequest\b|WebSocket\b|EventSource\s*\(|sendBeacon\s*\()/i.test(text)) {
     throw new Error('Network behavior found in static preview: ' + name);
+  }
+  if (name.endsWith('.html') && /(?:@import\b|url\s*\(\s*['\"]?\s*(?:https?:|\/\/)|<form\b[^>]*\baction\s*=)/i.test(text)) {
+    throw new Error('External CSS or form submission forbidden in static preview: ' + name);
   }
 }
 if (check) {
