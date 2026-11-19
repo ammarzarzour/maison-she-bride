@@ -23,6 +23,11 @@ try {
     '<script>navigator.sendBeacon("/collect", "x")</script>',
     '<style>@import "https://example.com/a.css";</style>',
     '<form action="/submit"></form>',
+    '<img srcset="https://example.com/picture.jpg 2x">',
+    '<button formaction="https://example.com/submit">Send</button>',
+    '<video poster="https://example.com/poster.jpg"></video>',
+    '<meta http-equiv="refresh" content="0;url=https://example.com">',
+
   ]) {
     writeFileSync(html, original.replace('</head>', payload + '</head>'));
     const result = check();
@@ -31,7 +36,7 @@ try {
   }
   writeFileSync(html, original);
   assert.equal(check().status, 0, 'Restored preview must validate');
-  console.log('Sanad offline boundary: 6 assertions passed');
+  console.log('Sanad offline boundary: 10 assertions passed');
 } finally {
   rmSync(sandbox, { recursive: true, force: true });
 }
