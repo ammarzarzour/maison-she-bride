@@ -1,0 +1,34 @@
+name: Maison She Bride rental cart preflight tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/inventory-policy.mjs'
+      - 'scripts/rental-cart-policy.mjs'
+      - 'scripts/rental-cart-policy.test.mjs'
+      - '.github/workflows/rental-cart-policy.yml'
+  pull_request:
+    paths:
+      - 'scripts/inventory-policy.mjs'
+      - 'scripts/rental-cart-policy.mjs'
+      - 'scripts/rental-cart-policy.test.mjs'
+      - '.github/workflows/rental-cart-policy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rental-cart-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate module syntax
+        run: node --check scripts/rental-cart-policy.mjs
+      - name: Test rental availability and multi-item cart
+        run: node --test scripts/inventory-policy.test.mjs scripts/rental-cart-policy.test.mjs
