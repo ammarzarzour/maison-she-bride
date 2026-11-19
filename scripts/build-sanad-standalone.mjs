@@ -57,7 +57,7 @@ for (const name of files) {
   // intentionally handles only quoted attributes, so unquoted URLs must not
   // bypass the portable preview boundary.
   if (name.endsWith('.html') &&
-      /\\b(?:src|href)\\s*=\\s*(?!["'])[^\\s>]+/i.test(text)) {
+      /\b(?:src|href)\s*=\s*(?!["'])[^ \t\r\n>]+/i.test(text)) {
     throw new Error('Unquoted HTML resource attribute forbidden: ' + name);
   }
   // Reject HTML URL-bearing surfaces not covered by src/href validation.
