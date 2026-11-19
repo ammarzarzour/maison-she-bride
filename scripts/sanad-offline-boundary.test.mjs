@@ -31,6 +31,10 @@ try {
     '<script src = https://example.com/unquoted.js></script>',
     '<link href = "../maison/styles.css" rel="stylesheet">',
     '<img src = "/shared/logo.png">',
+    '<iframe src="https://example.com/embed"></iframe>',
+    '<object data="/private/document"></object>',
+    '<embed src="https://example.com/widget">',
+    '<base href="https://example.com/">',
 
   ]) {
     writeFileSync(html, original.replace('</head>', payload + '</head>'));
@@ -40,7 +44,7 @@ try {
   }
   writeFileSync(html, original);
   assert.equal(check().status, 0, 'Restored preview must validate');
-  console.log('Sanad offline boundary: 14 assertions passed');
+  console.log('Sanad offline boundary: 18 assertions passed');
 } finally {
   rmSync(sandbox, { recursive: true, force: true });
 }
