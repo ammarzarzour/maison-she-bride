@@ -33,8 +33,17 @@ while (true) {
 const paths = new Set(files);
 // Only regular, directly stored assets may enter the portable release.
 // Reject links before reading, so a symlink cannot pull files from outside Sanad.
-if (!lstatSync(source).isDirectory() || lstatSync(source).isSymbolicLink()) {
-  throw new Error('Sanad source directory must be a real directory');
+// Validate every source ancestor, not just the final sanad directory.
+// A linked repository parent can otherwise redirect reads to an unaudited tree.
+let sourceParent = source;
+while (true) {
+  const stat = lstatSync(sourceParent);
+  if (stat.isSymbolicLink() || !stat.isDirectory()) {
+    throw new Error('Sanad source path must contain real directories only');
+  }
+  const parent = resolve(sourceParent, '..');
+  if (parent === sourceParent) break;
+  sourceParent = parent;
 }
 for (const name of files) {
   const path = join(source, name);
