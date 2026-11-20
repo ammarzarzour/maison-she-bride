@@ -88,7 +88,7 @@ for (const name of files) {
   // Bracket property access can register persistent workers without matching
   // the dot-property guard above. Reject both forms in portable preview assets.
   if ((name.endsWith('.js') || name.endsWith('.html')) &&
-      /\b(?:serviceWorker\s*\[\s*['"]register['"]\s*\]|navigator\s*\[\s*['"]serviceWorker['"]\s*\]\s*\.\s*register)\s*\(/i.test(text)) {
+      /\b(?:serviceWorker\s*\[\s*['"]register['"]\s*\]|navigator\s*\[\s*['"]serviceWorker['"]\s*\]\s*(?:\.\s*register|\[\s*['"]register['"]\s*\]))\s*\(/i.test(text)) {
     throw new Error('Unreviewed navigation or worker behavior forbidden: ' + name);
   }
   if (name.endsWith('.html') && /(?:@import\b|url\s*\(\s*['\"]?\s*(?:https?:|\/\/)|<form\b[^>]*\baction\s*=)/i.test(text)) {
