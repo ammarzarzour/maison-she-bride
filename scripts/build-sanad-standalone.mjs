@@ -111,7 +111,13 @@ if (check) {
   if (existsSync(destination)) {
     const { readdirSync, lstatSync } = await import('node:fs');
     if (lstatSync(destination).isSymbolicLink() || !lstatSync(destination).isDirectory() ||
-        readdirSync(destination).some(name => !paths.has(name) || !lstatSync(join(destination, name)).isFile())) {
+        readdirSync(destination).some(name => {
+          if (!paths.has(name)) return true;
+          const entry = lstatSync(join(destination, name));
+          // Refuse hard-linked files: overwriting an approved filename could
+          // mutate an unrelated file outside the release directory.
+          return !entry.isFile() || entry.nlink !== 1;
+        })) {
       throw new Error('Destination contains files outside the approved Sanad release');
     }
   }
