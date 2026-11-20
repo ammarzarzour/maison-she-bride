@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, cpSync, existsSync, symlinkSync, renameSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, cpSync, existsSync, symlinkSync, renameSync, linkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -242,4 +242,20 @@ test('portable preview refuses symlinked allowlisted source assets before writin
   assert.match(result.stderr, /Sanad asset must be a regular file/);
   assert.equal(existsSync(join(dir, 'dist')), false);
   assert.equal(readFileSync(target, 'utf8'), '<script src="./sanad-demo.js"></script>');
+});
+
+
+test('build refuses hard-linked release files and preserves unrelated content', t => {
+  const dir = fixture(t);
+  const output = join(dir, 'dist', 'sanad-syria');
+  mkdirSync(output, { recursive: true });
+  const unrelated = join(dir, 'protected-outside-release.txt');
+  writeFileSync(unrelated, 'protected original');
+  linkSync(unrelated, join(output, 'index.html'));
+  const result = run(dir);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Destination contains files outside the approved Sanad release/);
+  assert.equal(readFileSync(unrelated, 'utf8'), 'protected original');
+  assert.equal(readFileSync(join(output, 'index.html'), 'utf8'), 'protected original');
+  assert.equal(existsSync(join(output, 'admin.html')), false);
 });
