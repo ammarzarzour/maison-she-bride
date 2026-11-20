@@ -203,3 +203,18 @@ test('bracket-based service worker registration is forbidden in portable assets'
     assert.equal(existsSync(join(dir, 'dist')), false);
   }
 });
+
+test('combined bracket notation cannot register persistent service workers', t => {
+  for (const [name, content] of [
+    ['sanad-demo.js', 'navigator["serviceWorker"]["register"]("./worker.js")'],
+    ['sanad-admin-demo.js', "navigator['serviceWorker'] [ 'register' ] ('./worker.js')"],
+    ['admin.html', '<script>navigator["serviceWorker"]["register"]("./worker.js")</script>']
+  ]) {
+    const dir = fixture(t);
+    writeFileSync(join(dir, 'sanad', name), content);
+    const result = run(dir, '--check');
+    assert.notEqual(result.status, 0, name + ' must not register a persistent worker');
+    assert.match(result.stderr, /Unreviewed navigation or worker behavior/);
+    assert.equal(existsSync(join(dir, 'dist')), false);
+  }
+});
