@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, cpSync, existsSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, cpSync, existsSync, symlinkSync, renameSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -217,4 +217,29 @@ test('combined bracket notation cannot register persistent service workers', t =
     assert.match(result.stderr, /Unreviewed navigation or worker behavior/);
     assert.equal(existsSync(join(dir, 'dist')), false);
   }
+});
+
+test('portable preview refuses a symlinked Sanad source directory without creating output', t => {
+  const dir = fixture(t);
+  const source = join(dir, 'sanad');
+  const actual = join(dir, 'sanad-real');
+  renameSync(source, actual);
+  symlinkSync(actual, source, 'dir');
+  const result = run(dir, '--check');
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Sanad source path must contain real directories only/);
+  assert.equal(existsSync(join(dir, 'dist')), false);
+});
+
+test('portable preview refuses symlinked allowlisted source assets before writing output', t => {
+  const dir = fixture(t);
+  const asset = join(dir, 'sanad', 'index.html');
+  const target = join(dir, 'original-index.html');
+  renameSync(asset, target);
+  symlinkSync(target, asset);
+  const result = run(dir);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Sanad asset must be a regular file/);
+  assert.equal(existsSync(join(dir, 'dist')), false);
+  assert.equal(readFileSync(target, 'utf8'), '<script src="./sanad-demo.js"></script>');
 });
