@@ -48,7 +48,7 @@ try {
     writeFileSync(html, original.replace('</head>', payload + '</head>'));
     const result = check();
     assert.notEqual(result.status, 0, 'Must reject injected network dependency: ' + payload);
-    assert.match(result.stderr, /forbidden|Network behavior|Unreviewed navigation or worker behavior/);
+    assert.match(result.stderr, /forbidden|Network behavior|Unreviewed navigation or worker behavior|Non-portable Sanad asset/);
   }
   writeFileSync(html, original);
   assert.equal(check().status, 0, 'Restored preview must validate');
