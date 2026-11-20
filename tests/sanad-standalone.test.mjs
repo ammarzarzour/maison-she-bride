@@ -173,3 +173,18 @@ test('unquoted src and href attributes cannot bypass portable asset checks', t =
     assert.equal(existsSync(join(dir, 'dist')), false);
   }
 });
+
+test('service worker registration is forbidden in JS and inline HTML', t => {
+  for (const [name, content] of [
+    ['sanad-demo.js', 'navigator.serviceWorker.register("./worker.js")'],
+    ['admin.html', '<script>navigator.serviceWorker.register("./worker.js")</script>'],
+    ['sanad-admin-demo.js', 'navigator.serviceWorker . register ("./worker.js")']
+  ]) {
+    const dir = fixture(t);
+    writeFileSync(join(dir, 'sanad', name), content);
+    const result = run(dir, '--check');
+    assert.notEqual(result.status, 0, name + ' must not register persistent workers');
+    assert.match(result.stderr, /Unreviewed navigation or worker behavior/);
+    assert.equal(existsSync(join(dir, 'dist')), false);
+  }
+});
