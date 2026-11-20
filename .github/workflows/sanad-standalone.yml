@@ -37,8 +37,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(find dist/sanad-syria -type f | wc -l)" -eq 4
+          # A portable artifact must contain only the four approved top-level files.
+          test "$(find dist/sanad-syria -mindepth 1 -type f | wc -l)" -eq 4
+          test "$(find dist/sanad-syria -mindepth 1 | wc -l)" -eq 4
           for file in index.html admin.html sanad-demo.js sanad-admin-demo.js; do
+            test -f "dist/sanad-syria/$file"
             cmp "sanad/$file" "dist/sanad-syria/$file"
           done
       - uses: actions/upload-artifact@v4
