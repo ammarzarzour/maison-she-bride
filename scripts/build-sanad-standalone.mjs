@@ -79,9 +79,10 @@ for (const name of files) {
     throw new Error('Network behavior found in static preview: ' + name);
   }
   // A standalone preview must not open remote pages or spawn remote workers.
+  // A service worker can persist beyond the preview and intercept later requests.
   // Guard both HTML inline scripts and bundled JS; these are not backend controls.
   if ((name.endsWith('.js') || name.endsWith('.html')) &&
-      /\b(?:window\s*\.\s*open\s*\(|(?:window\s*\.\s*|document\s*\.\s*)?location\s*\.\s*(?:assign|replace)\s*\(|(?:window\s*\.\s*|document\s*\.\s*)?location\s*\.\s*href\s*=|(?:(?:window|document)\s*\.\s*)?location\s*=\s*(?!=)|(?:new\s+(?:SharedWorker|Worker)|importScripts)\s*\()/i.test(text)) {
+      /\b(?:window\s*\.\s*open\s*\(|(?:window\s*\.\s*|document\s*\.\s*)?location\s*\.\s*(?:assign|replace)\s*\(|(?:window\s*\.\s*|document\s*\.\s*)?location\s*\.\s*href\s*=|(?:(?:window|document)\s*\.\s*)?location\s*=\s*(?!=)|(?:new\s+(?:SharedWorker|Worker)|importScripts)\s*\(|\bserviceWorker\s*\.\s*register\s*\()/i.test(text)) {
     throw new Error('Unreviewed navigation or worker behavior forbidden: ' + name);
   }
   if (name.endsWith('.html') && /(?:@import\b|url\s*\(\s*['\"]?\s*(?:https?:|\/\/)|<form\b[^>]*\baction\s*=)/i.test(text)) {
