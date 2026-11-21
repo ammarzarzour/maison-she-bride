@@ -62,3 +62,24 @@ test('closing never restores focus to an element inside the drawer', () => {
   assert.ok(events.includes('cartToggle:focus'));
   assert.ok(!events.includes('internal:focus'));
 });
+
+test('closing falls back to cart toggle if previous focus target was removed', () => {
+  const { openCart, elements, events } = harness('external');
+  openCart(true);
+  elements.get('external').isConnected = false;
+  events.length = 0;
+  openCart(false);
+  assert.ok(events.includes('cartToggle:focus'));
+  assert.ok(!events.includes('external:focus'));
+  assert.equal(elements.get('drawer').inert, true);
+});
+
+test('closing without a previous focus target still isolates the drawer', () => {
+  const { openCart, elements, events } = harness('missing');
+  openCart(true);
+  events.length = 0;
+  openCart(false);
+  assert.ok(events.includes('cartToggle:focus'));
+  assert.equal(elements.get('drawer').getAttribute('aria-hidden'), 'true');
+  assert.ok(events.indexOf('cartToggle:focus') < events.indexOf('drawer:set:aria-hidden:true'));
+});
