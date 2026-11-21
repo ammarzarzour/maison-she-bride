@@ -1,0 +1,26 @@
+name: Validate storefront cart accessibility
+on:
+  push:
+    paths:
+      - 'index.html'
+      - 'tests/cart-focus.test.mjs'
+      - '.github/workflows/cart-accessibility.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'tests/cart-focus.test.mjs'
+      - '.github/workflows/cart-accessibility.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cart-focus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run cart keyboard and assistive-technology isolation regressions
+        run: node --test tests/cart-focus.test.mjs
