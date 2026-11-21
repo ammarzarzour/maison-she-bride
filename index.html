@@ -112,14 +112,16 @@ function openCart(show){
  }else{
   const wasOpen=drawer.classList.contains('open');
   $('overlay').classList.remove('show');drawer.classList.remove('open');
-  drawer.inert=true;drawer.setAttribute('aria-hidden','true');
   $('cartToggle').setAttribute('aria-expanded','false');
+  // Restore focus before hiding the dialog from assistive technology.
+  // Otherwise a focused descendant briefly remains inside an inert/aria-hidden tree.
   if(wasOpen){
    const target=cartPreviousFocus;
    cartPreviousFocus=null;
-   if(target&&typeof target.focus==='function'&&target.isConnected!==false)target.focus();
+   if(target&&typeof target.focus==='function'&&target.isConnected!==false&&!drawer.contains(target))target.focus();
    else $('cartToggle').focus();
   }
+  drawer.inert=true;drawer.setAttribute('aria-hidden','true');
  }
 }
 function trapCartFocus(event){
