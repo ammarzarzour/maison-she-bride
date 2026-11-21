@@ -259,3 +259,19 @@ test('build refuses hard-linked release files and preserves unrelated content', 
   assert.equal(readFileSync(join(output, 'index.html'), 'utf8'), 'protected original');
   assert.equal(existsSync(join(output, 'admin.html')), false);
 });
+
+test('portable preview rejects CSS url resources even when relative or data URLs', t => {
+  for (const css of [
+    'background: url(../maison/logo.svg)',
+    'background-image: url("./missing.png")',
+    'background: url(data:image/svg+xml;base64,AAAA)',
+    'background: url(https://example.invalid/image.png)'
+  ]) {
+    const dir = fixture(t);
+    writeFileSync(join(dir, 'sanad', 'index.html'), '<style>' + css + '</style>');
+    const result = run(dir, '--check');
+    assert.notEqual(result.status, 0, css);
+    assert.match(result.stderr, /CSS URL resources forbidden/);
+    assert.equal(existsSync(join(dir, 'dist')), false);
+  }
+});
