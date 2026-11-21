@@ -100,6 +100,12 @@ for (const name of files) {
       /\b(?:serviceWorker\s*\[\s*['"]register['"]\s*\]|navigator\s*\[\s*['"]serviceWorker['"]\s*\]\s*(?:\.\s*register|\[\s*['"]register['"]\s*\]))\s*\(/i.test(text)) {
     throw new Error('Unreviewed navigation or worker behavior forbidden: ' + name);
   }
+  // No CSS url() resources are part of the four-file portable preview.
+  // Reject relative, absolute, data and remote CSS resources alike; otherwise
+  // an inline style could silently depend on assets outside the release.
+  if (name.endsWith('.html') && /\burl\s*\(/i.test(text)) {
+    throw new Error('CSS URL resources forbidden in standalone preview: ' + name);
+  }
   if (name.endsWith('.html') && /(?:@import\b|url\s*\(\s*['\"]?\s*(?:https?:|\/\/)|<form\b[^>]*\baction\s*=)/i.test(text)) {
     throw new Error('External CSS or form submission forbidden in static preview: ' + name);
   }
