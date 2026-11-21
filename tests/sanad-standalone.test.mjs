@@ -275,3 +275,19 @@ test('portable preview rejects CSS url resources even when relative or data URLs
     assert.equal(existsSync(join(dir, 'dist')), false);
   }
 });
+
+test('portable preview rejects anchor ping tracking beacons', t => {
+  for (const ping of [
+    'https://example.invalid/track',
+    './local-beacon',
+    'data:text/plain,beacon'
+  ]) {
+    const dir = fixture(t);
+    writeFileSync(join(dir, 'sanad', 'index.html'),
+      '<a href="./admin.html" ping="' + ping + '">Admin</a>');
+    const result = run(dir, '--check');
+    assert.notEqual(result.status, 0, ping);
+    assert.match(result.stderr, /Unreviewed HTML navigation or resource directive/);
+    assert.equal(existsSync(join(dir, 'dist')), false);
+  }
+});
