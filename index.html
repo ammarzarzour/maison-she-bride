@@ -6,7 +6,7 @@
 <div class="top" id="topline"></div><header class="header"><div class="headrow"><a class="brand" href="#">Maison <span>She Bride</span></a><input id="search" class="search" type="search" aria-label="Search"><div class="controls"><select id="language" aria-label="Language"><option value="auto">🌐 Auto</option><option value="ar">العربية</option><option value="en">English</option></select><select id="currency" aria-label="Currency"><option value="SYP">SYP</option><option value="USD">USD</option><option value="SAR">SAR</option><option value="AED">AED</option></select><button id="savedToggle" type="button" aria-pressed="false">♡</button><button id="cartToggle" aria-expanded="false" aria-controls="drawer" type="button">🛒 <span id="cartCount">0</span></button></div></div><nav class="nav" id="categories"></nav></header>
 <main class="wrap"><section class="hero"><div><h1 id="heroTitle"></h1><p id="heroDesc"></p><button class="btn" id="shopNow"></button></div><div class="symbol">✦</div></section><div class="sectionhead"><h2 id="productsTitle"></h2><span class="muted" id="results"></span><div class="producttools"><label for="availability" id="availabilityLabel"></label><select id="availability"><option value="all"></option><option value="available"></option><option value="soldOut"></option></select><button id="clearFilters" type="button" class="btn"></button><label for="sortProducts" id="sortLabel"></label><select id="sortProducts"><option value="featured"></option><option value="priceAsc"></option><option value="priceDesc"></option><option value="name"></option></select><button id="refreshCatalog" type="button" class="btn" style="padding:8px 12px"></button></div></div><div class="grid" id="products"></div><nav class="catalog-pages hidden" id="catalogPages" aria-label="Product pages"><button id="prevPage" type="button"></button><span id="pageStatus" role="status" aria-live="polite"></span><button id="nextPage" type="button"></button></nav><div class="empty hidden" id="noResults"></div></main>
 <footer class="footer"><strong>Maison She Bride</strong><div id="footText"></div><small id="demoNotice"></small></footer>
-<div class="overlay" id="overlay"></div><aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Shopping cart"><div style="display:flex;justify-content:space-between;align-items:center"><h2 id="cartTitle"></h2><button id="closeCart" class="btn" type="button">✕</button></div><div id="cartItems"></div><h3 id="cartTotal"></h3><div class="notice" id="checkoutNotice"></div><div id="checkoutForm" class="hidden" aria-hidden="true"></div><label id="quoteLabel" class="muted" for="quotePreview"></label><textarea class="field" id="quotePreview" readonly rows="6" dir="auto" aria-label="Demo cart summary"></textarea><button id="copyQuote" class="btn" type="button" disabled style="width:100%"></button><p class="muted" id="checkoutMessage" role="status"></p></aside>
+<div class="overlay" id="overlay"></div><aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Shopping cart" aria-hidden="true" inert><div style="display:flex;justify-content:space-between;align-items:center"><h2 id="cartTitle"></h2><button id="closeCart" class="btn" type="button">✕</button></div><div id="cartItems"></div><h3 id="cartTotal"></h3><div class="notice" id="checkoutNotice"></div><div id="checkoutForm" class="hidden" aria-hidden="true"></div><label id="quoteLabel" class="muted" for="quotePreview"></label><textarea class="field" id="quotePreview" readonly rows="6" dir="auto" aria-label="Demo cart summary"></textarea><button id="copyQuote" class="btn" type="button" disabled style="width:100%"></button><p class="muted" id="checkoutMessage" role="status"></p></aside>
 <script>
 'use strict';
 let items=[];
@@ -105,12 +105,14 @@ function openCart(show){
  const drawer=$('drawer');
  if(show){
   if(!drawer.classList.contains('open'))cartPreviousFocus=document.activeElement;
+  drawer.inert=false;drawer.removeAttribute('aria-hidden');
   $('overlay').classList.add('show');drawer.classList.add('open');
   $('cartToggle').setAttribute('aria-expanded','true');
   $('closeCart').focus();
  }else{
   const wasOpen=drawer.classList.contains('open');
   $('overlay').classList.remove('show');drawer.classList.remove('open');
+  drawer.inert=true;drawer.setAttribute('aria-hidden','true');
   $('cartToggle').setAttribute('aria-expanded','false');
   if(wasOpen){
    const target=cartPreviousFocus;
