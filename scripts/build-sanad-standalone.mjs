@@ -77,7 +77,7 @@ for (const name of files) {
   // Reject HTML URL-bearing surfaces not covered by src/href validation.
   // A srcset candidate or a refresh directive can otherwise escape the portable preview.
   if (name.endsWith('.html') &&
-      (/\b(?:srcset|formaction|poster)\s*=/i.test(text) ||
+      (/\b(?:srcset|formaction|poster|ping)\s*=/i.test(text) ||
        /<meta\b[^>]*http-equiv\s*=\s*["']?refresh\b/i.test(text))) {
     throw new Error('Unreviewed HTML navigation or resource directive forbidden: ' + name);
   }
