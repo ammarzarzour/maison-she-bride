@@ -76,3 +76,26 @@ test('closed cart does not intercept Tab', () => {
   assert.deepEqual(h.focused, []);
   assert.equal(h.wasPrevented(), false);
 });
+
+test('Escape closes only an open cart; closed cart does not change focus or state', () => {
+  const marker = "document.addEventListener('keydown',e=>";
+  const start = html.indexOf(marker);
+  assert.ok(start >= 0, 'global keyboard listener must exist');
+  const end = html.indexOf(";$('search').addEventListener", start);
+  assert.ok(end > start, 'keyboard listener must have a bounded source');
+  const listener = html.slice(start, end);
+  for (const open of [false, true]) {
+    let handler;
+    const calls = [];
+    const context = {
+      document: { addEventListener: (name, fn) => { if (name === 'keydown') handler = fn; } },
+      $: id => id === 'drawer' ? { classList: { contains: name => name === 'open' && open } } : null,
+      openCart: show => calls.push(['openCart', show]),
+      trapCartFocus: () => calls.push(['trapCartFocus'])
+    };
+    vm.runInNewContext(listener, context);
+    assert.equal(typeof handler, 'function');
+    handler({ key: 'Escape' });
+    assert.deepEqual(calls, open ? [['openCart', false]] : []);
+  }
+});
