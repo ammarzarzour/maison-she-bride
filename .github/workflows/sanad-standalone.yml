@@ -30,6 +30,10 @@ jobs:
         run: node --test tests/sanad-standalone.test.mjs
       - name: Regression-test inline network, forms and resource boundaries
         run: node scripts/sanad-offline-boundary.test.mjs
+      - name: Syntax-check standalone browser JavaScript
+        run: |
+          node --check sanad/sanad-demo.js
+          node --check sanad/sanad-admin-demo.js
       - name: Validate Sanad isolation
         run: node scripts/build-sanad-standalone.mjs --check
       - name: Build portable preview
