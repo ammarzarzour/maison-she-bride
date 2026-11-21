@@ -3,12 +3,12 @@ on:
   push:
     paths:
       - 'index.html'
-      - 'tests/cart-focus.test.mjs'
+      - 'tests/cart-*.test.mjs'
       - '.github/workflows/cart-accessibility.yml'
   pull_request:
     paths:
       - 'index.html'
-      - 'tests/cart-focus.test.mjs'
+      - 'tests/cart-*.test.mjs'
       - '.github/workflows/cart-accessibility.yml'
   workflow_dispatch:
 permissions:
@@ -23,4 +23,4 @@ jobs:
         with:
           node-version: '22'
       - name: Run cart keyboard and assistive-technology isolation regressions
-        run: node --test tests/cart-focus.test.mjs
+        run: node --test tests/cart-focus.test.mjs tests/cart-keyboard.test.mjs
