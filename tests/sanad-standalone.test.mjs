@@ -306,3 +306,18 @@ test('bracket-notation popup navigation is forbidden in portable Sanad assets', 
     assert.equal(existsSync(join(dir, 'dist')), false);
   }
 });
+
+test('dot-notation popup calls through globalThis and self are rejected', t => {
+  for (const [name, code] of [
+    ['sanad-demo.js', 'globalThis.open("https://example.invalid")'],
+    ['sanad-admin-demo.js', 'self . open ("./index.html")'],
+    ['admin.html', '<script>globalThis . open ("./index.html")</script>']
+  ]) {
+    const dir = fixture(t);
+    writeFileSync(join(dir, 'sanad', name), code);
+    const result = run(dir, '--check');
+    assert.notEqual(result.status, 0, name + ' must not open an unreviewed page');
+    assert.match(result.stderr, /Unreviewed navigation or worker behavior/);
+    assert.equal(existsSync(join(dir, 'dist')), false);
+  }
+});
