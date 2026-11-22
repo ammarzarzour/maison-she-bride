@@ -97,7 +97,7 @@ for (const name of files) {
   // Bracket access to window.open bypasses the dot-notation navigation guard.
   // Reject it in both bundled scripts and inline HTML before creating an artifact.
   if ((name.endsWith('.js') || name.endsWith('.html')) &&
-      /\\b(?:window|globalThis|self)\\s*\\[\\s*['\"]open['\"]\\s*\\]\\s*\\(/i.test(text)) {
+      /\b(?:window|globalThis|self)\s*\[\s*['"]open['"]\s*\]\s*\(/i.test(text)) {
     throw new Error('Unreviewed navigation or worker behavior forbidden: ' + name);
   }
   // Bracket property access can register persistent workers without matching
