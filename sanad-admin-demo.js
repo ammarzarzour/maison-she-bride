@@ -44,7 +44,7 @@
   let langPreference = 'auto';
   try { langPreference = localStorage.getItem(LANG_KEY)||'auto'; } catch {}
   if (!['auto','ar','en'].includes(langPreference)) langPreference='auto';
-  function lang(){return langPreference==='auto' ? (navigator.language.toLowerCase().startsWith('ar')?'ar':'en') : langPreference;}
+  function lang(){return langPreference==='auto' ? ((navigator.language || 'en').toLowerCase().startsWith('ar')?'ar':'en') : langPreference;}
   function copy(){return ui[lang()];}
   function read(){
     try {
