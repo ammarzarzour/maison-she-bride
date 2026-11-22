@@ -28,6 +28,7 @@ function setup(initial, blockedWrites = false, blockedReads = false) {
         }
       },
       setAttribute(name, value) { attrs[name] = value; },
+      removeAttribute(name) { delete attrs[name]; },
       getAttribute(name) { return attrs[name]; },
       addEventListener(name, fn) { this.handlers[name] = fn; },
       scrollIntoView() {},
