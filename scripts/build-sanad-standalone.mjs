@@ -94,6 +94,12 @@ for (const name of files) {
       /\b(?:window\s*\.\s*open\s*\(|(?:window\s*\.\s*|document\s*\.\s*)?location\s*\.\s*(?:assign|replace)\s*\(|(?:window\s*\.\s*|document\s*\.\s*)?location\s*\.\s*href\s*=|(?:(?:window|document)\s*\.\s*)?location\s*=\s*(?!=)|(?:new\s+(?:SharedWorker|Worker)|importScripts)\s*\(|\bserviceWorker\s*\.\s*register\s*\()/i.test(text)) {
     throw new Error('Unreviewed navigation or worker behavior forbidden: ' + name);
   }
+  // Bracket access to window.open bypasses the dot-notation navigation guard.
+  // Reject it in both bundled scripts and inline HTML before creating an artifact.
+  if ((name.endsWith('.js') || name.endsWith('.html')) &&
+      /\\b(?:window|globalThis|self)\\s*\\[\\s*['\"]open['\"]\\s*\\]\\s*\\(/i.test(text)) {
+    throw new Error('Unreviewed navigation or worker behavior forbidden: ' + name);
+  }
   // Bracket property access can register persistent workers without matching
   // the dot-property guard above. Reject both forms in portable preview assets.
   if ((name.endsWith('.js') || name.endsWith('.html')) &&
