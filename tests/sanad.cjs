@@ -110,7 +110,7 @@ const blockedStorage = {
   getItem:()=>null,
   setItem:()=>{throw new Error('Storage blocked');}
 };
-vm.runInNewContext(script,{document:blockedDocument,localStorage:blockedStorage,window:{confirm:()=>true},Date,Math});
+vm.runInNewContext(script,{document:blockedDocument,localStorage:blockedStorage,window:{confirm:()=>true,addEventListener(){}},Date,Math});
 const b=blockedGet;
 b('demoService').value='0';
 b('demoForm').listeners.submit({preventDefault(){}});
@@ -146,7 +146,7 @@ const collisionStorage = {
   setItem:(key,value)=>collisionState.set(key,String(value))
 };
 vm.runInNewContext(script,{
-  document:collisionDocument,localStorage:collisionStorage,window:{confirm:()=>true},
+  document:collisionDocument,localStorage:collisionStorage,window:{confirm:()=>true,addEventListener(){}},
   Date:{now:()=>1700000000000},Math:{random:()=>0.5}
 });
 const c=collisionGet;

@@ -23,10 +23,11 @@ function setup(device='ar-SY',saved=null,denyRead=false,denyWrite=false){
   getItem(key){if(denyRead)throw new Error('Storage read blocked');return values.get(key)??null},
   setItem(key,value){if(denyWrite)throw new Error('Storage write blocked');values.set(key,String(value))}
  };
- const context=vm.createContext({document,localStorage,navigator:{language:device}});
+ const window={listeners:{},events:[],addEventListener(type,fn){this.listeners[type]=fn},dispatchEvent(event){this.events.push(event.type)}};
+ const context=vm.createContext({document,localStorage,navigator:{language:device},window,Event:class{constructor(type){this.type=type}}});
  vm.runInContext(scripts[0],context,{filename:'sanad-preview.html#language'});
  function change(value){node('language').value=value;node('language').listeners.change({target:{value}})}
- return {document,node,values,change};
+ return {document,node,values,change,window};
 }
 
 const arabic=setup();
@@ -54,6 +55,11 @@ assert.equal(arabic.values.get('sanad_lang'),'auto');
 
 const savedEnglish=setup('ar-SY','en');
 assert.equal(savedEnglish.document.documentElement.dir,'ltr','saved manual language overrides device');
+// A language selection in another tab updates the public preview in place.
+savedEnglish.values.set('sanad_lang','ar');
+savedEnglish.window.listeners.storage({key:'sanad_lang'});
+assert.equal(savedEnglish.document.documentElement.dir,'rtl');
+assert.ok(savedEnglish.window.events.includes('sanad:language-change'));
 const savedArabic=setup('en-GB','ar');
 assert.equal(savedArabic.document.documentElement.dir,'rtl');
 const autoEnglish=setup('en-GB','auto');
