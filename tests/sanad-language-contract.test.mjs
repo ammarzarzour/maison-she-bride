@@ -53,3 +53,13 @@ test('auto language detection safely falls back when browser language is missing
     assert.match(script, /\.toLowerCase\(\)\.startsWith\(['"]ar['"]\)/);
   }
 });
+
+
+test('both standalone pages synchronize language preference across browser tabs', () => {
+  for (const script of [asset('index.html'), asset('sanad-admin-demo.js')]) {
+    assert.match(script, /addEventListener\(['"]storage['"]/);
+    assert.match(script, /event\.key\s*===?\s*['"]sanad_lang['"]|event\.key\s*!==?\s*['"]sanad_lang['"]|event\.key\s*===?\s*LANG_KEY/);
+    assert.match(script, /localStorage\.getItem\((?:['"]sanad_lang['"]|LANG_KEY)\)/);
+    assert.match(script, /render\(\)/);
+  }
+});
