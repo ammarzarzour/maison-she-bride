@@ -33,3 +33,15 @@ test('standalone pages identify themselves as previews, not production services'
   assert.match(asset('admin.html'), /تجريبية/);
   assert.match(asset('sanad-admin-demo.js'), /not secure administration/);
 });
+
+test('both standalone pages honor browser language in auto mode and persist manual selection', () => {
+  const publicScript = asset('index.html');
+  const adminScript = asset('sanad-admin-demo.js');
+  for (const script of [publicScript, adminScript]) {
+    assert.match(script, /navigator\.language/);
+    assert.match(script, /(?:pref|langPreference)\s*===\s*['"]auto['"]/);
+    assert.match(script, /localStorage\.getItem\(['"]sanad_lang['"]\)/);
+    assert.match(script, /localStorage\.setItem\(['"]sanad_lang['"]\s*,/);
+    assert.match(script, /addEventListener\(['"]change['"]/);
+  }
+});
