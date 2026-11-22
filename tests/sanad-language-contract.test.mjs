@@ -45,3 +45,11 @@ test('both standalone pages honor browser language in auto mode and persist manu
     assert.match(script, /addEventListener\(['"]change['"]/);
   }
 });
+
+
+test('auto language detection safely falls back when browser language is missing', () => {
+  for (const script of [asset('index.html'), asset('sanad-admin-demo.js')]) {
+    assert.match(script, /navigator\.language\s*\|\|\s*['"]en['"]/);
+    assert.match(script, /\.toLowerCase\(\)\.startsWith\(['"]ar['"]\)/);
+  }
+});
