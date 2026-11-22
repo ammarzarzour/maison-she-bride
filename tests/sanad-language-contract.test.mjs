@@ -63,3 +63,13 @@ test('both standalone pages synchronize language preference across browser tabs'
     assert.match(script, /render\(\)/);
   }
 });
+
+
+test('cross-tab language changes refresh both the public page and its fictional request controls', () => {
+  const publicPage = asset('index.html');
+  const demoScript = asset('sanad-demo.js');
+  assert.match(publicPage, /addEventListener\(['"]storage['"]/);
+  assert.match(publicPage, /render\(\);window\.dispatchEvent\(new Event\(['"]sanad:language-change['"]\)\)/);
+  assert.match(demoScript, /addEventListener\(['"]sanad:language-change['"]\s*,\s*\(\)\s*=>/);
+  assert.match(demoScript, /addEventListener\(['"]sanad:language-change['"][\s\S]*?renderDemo\(\)/);
+});
