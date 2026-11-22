@@ -12,7 +12,7 @@ function node(id){
   id,value:'',textContent:'',innerHTML:'',options:id==='sortProducts'?[{},{},{},{}]:id==='payment'?[{},{}]:[],
   isConnected:true,
   classList:{add:v=>classes.add(v),remove:v=>classes.delete(v),contains:v=>classes.has(v),toggle:(v,b)=>{if(b)classes.add(v);else classes.delete(v)}},
-  setAttribute:(k,v)=>{attrs[k]=v},getAttribute:k=>attrs[k],
+  setAttribute:(k,v)=>{attrs[k]=v},removeAttribute:k=>{delete attrs[k]},getAttribute:k=>attrs[k],
   addEventListener(){},scrollIntoView(){},focus(){active=el},
   getClientRects(){return [1]},
   contains(other){return other===el||id==='drawer'&&[node('closeCart'),node('cartMinus')].includes(other)},
