@@ -40,8 +40,8 @@ test('both standalone pages honor browser language in auto mode and persist manu
   for (const script of [publicScript, adminScript]) {
     assert.match(script, /navigator\.language/);
     assert.match(script, /(?:pref|langPreference)\s*===\s*['"]auto['"]/);
-    assert.match(script, /localStorage\.getItem\(['"]sanad_lang['"]\)/);
-    assert.match(script, /localStorage\.setItem\(['"]sanad_lang['"]\s*,/);
+    assert.match(script, /localStorage\.getItem\((?:['"]sanad_lang['"]|LANG_KEY)\)/);
+    assert.match(script, /localStorage\.setItem\((?:['"]sanad_lang['"]|LANG_KEY)\s*,/);
     assert.match(script, /addEventListener\(['"]change['"]/);
   }
 });
