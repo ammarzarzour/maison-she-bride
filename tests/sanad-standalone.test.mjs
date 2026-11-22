@@ -291,3 +291,18 @@ test('portable preview rejects anchor ping tracking beacons', t => {
     assert.equal(existsSync(join(dir, 'dist')), false);
   }
 });
+
+test('bracket-notation popup navigation is forbidden in portable Sanad assets', t => {
+  for (const [name, content] of [
+    ['sanad-demo.js', 'window["open"]("https://example.invalid")'],
+    ['sanad-admin-demo.js', "globalThis [ 'open' ] ('https://example.invalid')"],
+    ['admin.html', '<script>self["open"]("./index.html")</script>']
+  ]) {
+    const dir = fixture(t);
+    writeFileSync(join(dir, 'sanad', name), content);
+    const result = run(dir, '--check');
+    assert.notEqual(result.status, 0, name + ' must not open unreviewed pages');
+    assert.match(result.stderr, /Unreviewed navigation or worker behavior/);
+    assert.equal(existsSync(join(dir, 'dist')), false);
+  }
+});
