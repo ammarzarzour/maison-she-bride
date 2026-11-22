@@ -186,6 +186,11 @@
     renderDemo();
     $('demoMessage').textContent = '';
   });
+  // The page also updates its language when another tab changes the shared preference.
+  window.addEventListener('sanad:language-change', () => {
+    renderDemo();
+    $('demoMessage').textContent = '';
+  });
   if(typeof window.addEventListener==='function')window.addEventListener('storage',event=>{
     if(event.storageArea!==localStorage||!(event.key===STORAGE_KEY||event.key===null))return;
     requests=load();
