@@ -4,6 +4,7 @@
   const REQUESTS_KEY = 'sanad_preview_requests_v1';
   const LANG_KEY = 'sanad_lang';
   const STATES = ['draft','review','done'];
+  const MAX_STORAGE_CHARS = 16384; // Bound untrusted browser-only demo records before parsing.
   const SERVICES = [
     ['الهوية والحساب','Identity & accounts'],
     ['الوكالات والتفويض','Authorizations'],
@@ -48,7 +49,9 @@
   function copy(){return ui[lang()];}
   function read(){
     try {
-      const parsed = JSON.parse(localStorage.getItem(REQUESTS_KEY)||'[]');
+      const raw = localStorage.getItem(REQUESTS_KEY) || '[]';
+      if (typeof raw !== 'string' || raw.length > MAX_STORAGE_CHARS) return [];
+      const parsed = JSON.parse(raw);
       if(!Array.isArray(parsed))return [];
       const seen=new Set();
       return parsed.filter(r=>r&&typeof r.id==='string'&&/^DEMO-[A-Z0-9]{6,16}$/.test(r.id)&&
