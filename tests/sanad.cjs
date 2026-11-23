@@ -217,7 +217,7 @@ oldAdvance.click();
 assert.equal(rows().length,1,'stale action must not create or remove requests');
 assert.equal(rows()[0].state,'review','stale advance must preserve updated stage');
 assert.match($('demoMessage').textContent,/another tab/,'stale action shows English conflict feedback');
-assert.match($('demoList').children[0].children[1].textContent,/Under review/,'conflict refreshes visible status');
+assert.match($('demoList').children[0].children[1].textContent,/Simulated review/,'conflict refreshes visible status');
 const oldDelete=$('demoList').children[0].children[2].children[1];
 state.set(raceKey,JSON.stringify([raceDone]));
 oldDelete.click();
