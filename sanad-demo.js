@@ -31,6 +31,7 @@
       cleared: 'تم مسح الطلبات الوهمية من هذا المتصفح.',
       maximum: 'وصلت إلى حد 25 طلباً تجريبياً. احذف طلباً لإضافة آخر.',
       storage: 'تعذّر حفظ البيانات على الجهاز؛ ستبقى التجربة ضمن الصفحة المفتوحة فقط.',
+      conflict: 'تغيّر الطلب التجريبي أو حُذف في نافذة أخرى؛ تم تحديث القائمة. راجع الحالة قبل المحاولة مجدداً.',
       id: 'رمز تجريبي'
     },
     en: {
@@ -52,6 +53,7 @@
       cleared: 'Fictional requests cleared from this browser.',
       maximum: 'Demo limit is 25 requests. Delete one to add another.',
       storage: 'Browser storage unavailable: the demo will last only while this page is open.',
+      conflict: 'This demo request changed or was deleted in another tab. The list was refreshed; review it before retrying.',
       id: 'Demo reference'
     }
   };
@@ -70,20 +72,61 @@
     if (entries.some(([key]) => String(key) === value)) element.value = value;
     else element.value = String(entries[0][0]);
   };
+  function decode(raw) {
+    if (typeof raw !== 'string' || raw.length > MAX_STORAGE_CHARS) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    const seen = new Set();
+    const rows = parsed.filter(r => r && typeof r.id === 'string' && /^DEMO-[A-Z0-9]{6,16}$/.test(r.id) &&
+      Number.isInteger(r.service) && r.service >= 0 && r.service < services.length &&
+      states.includes(r.state) && !seen.has(r.id) && (seen.add(r.id), true))
+      .slice(0, MAX).map(r => ({id: r.id, service: r.service, state: r.state}));
+    return { rows, count: parsed.length };
+  }
   function load() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY) || '[]';
-      if (typeof raw !== 'string' || raw.length > MAX_STORAGE_CHARS) return [];
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) return [];
-      const seen = new Set();
-      return parsed.filter(r => r && typeof r.id === 'string' && /^DEMO-[A-Z0-9]{6,16}$/.test(r.id) &&
-        Number.isInteger(r.service) && r.service >= 0 && r.service < services.length &&
-        states.includes(r.state) && !seen.has(r.id) && (seen.add(r.id), true))
-        .slice(0, MAX).map(r => ({id: r.id, service: r.service, state: r.state}));
-    } catch { return []; }
+    try { return decode(localStorage.getItem(STORAGE_KEY) || '[]')?.rows || []; }
+    catch { return []; }
   }
   let requests = load();
+  let memoryOnly = false;
+  function sameRequest(actual, expected) {
+    return !!actual && !!expected && actual.id === expected.id &&
+      actual.service === expected.service && actual.state === expected.state;
+  }
+  // Re-read storage before an action. An old button cannot overwrite newer
+  // changes from another tab, or replace an invalid/corrupted register.
+  function latestForAction(expected) {
+    if (memoryOnly) {
+      const current = requests.find(r => r.id === expected.id);
+      return sameRequest(current, expected) ? {rows: requests, current} : null;
+    }
+    try {
+      const snapshot = decode(localStorage.getItem(STORAGE_KEY) || '[]');
+      if (!snapshot || snapshot.count !== snapshot.rows.length) return null;
+      const current = snapshot.rows.find(r => r.id === expected.id);
+      return sameRequest(current, expected) ? {rows: snapshot.rows, current} : null;
+    } catch { return null; }
+  }
+  function updateDemo(expected, action) {
+    const latest = latestForAction(expected);
+    if (!latest) {
+      requests = load();
+      renderDemo();
+      showMessage('conflict');
+      return;
+    }
+    requests = latest.rows;
+    if (action === 'advance') {
+      const index = states.indexOf(latest.current.state);
+      if (index < 0 || index >= states.length - 1) return;
+      latest.current.state = states[index + 1];
+    } else {
+      requests = requests.filter(r => r.id !== expected.id);
+    }
+    const saved = persist();
+    renderDemo();
+    if (saved) showMessage(action === 'advance' ? 'changed' : 'deleted');
+  }
   // Distinct references matter: the status and delete actions target requests by ID.
   // A per-page sequence prevents collisions even when the clock/random source repeats.
   let demoSequence = 0;
@@ -99,8 +142,10 @@
   function persist() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(requests));
+      memoryOnly = false;
       return true;
     } catch {
+      memoryOnly = true;
       $('demoMessage').textContent = text().storage;
       return false;
     }
@@ -147,19 +192,9 @@
       article.append(heading,status);
       const actions = document.createElement('div');
       actions.className = 'demo-actions';
-      if (request.state !== 'done') actions.append(button(t.advance, () => {
-        const index = states.indexOf(request.state);
-        if (index >= 0 && index < states.length-1) request.state = states[index+1];
-        const saved = persist();
-        renderDemo();
-        if (saved) showMessage('changed');
-      }));
-      actions.append(button(t.remove, () => {
-        requests = requests.filter(r => r.id !== request.id);
-        const saved = persist();
-        renderDemo();
-        if (saved) showMessage('deleted');
-      }, 'demo-danger'));
+      const displayed = {...request};
+      if (request.state !== 'done') actions.append(button(t.advance, () => updateDemo(displayed, 'advance')));
+      actions.append(button(t.remove, () => updateDemo(displayed, 'remove'), 'demo-danger'));
       article.append(actions);
       root.append(article);
     }
