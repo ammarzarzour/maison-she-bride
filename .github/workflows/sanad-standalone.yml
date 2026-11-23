@@ -28,6 +28,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Syntax-check standalone builder and regression harnesses
+        run: |
+          node --check scripts/build-sanad-standalone.mjs
+          node --check scripts/sanad-offline-boundary.test.mjs
+          node --check scripts/sanad-served-artifact.test.mjs
+          for test_file in tests/sanad-*.test.mjs; do
+            node --check "$test_file"
+          done
       - name: Run all Sanad regression tests (including newly added suites)
         run: node --test tests/sanad-*.test.mjs
       - name: Regression-test inline network, forms and resource boundaries
