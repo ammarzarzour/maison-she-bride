@@ -321,3 +321,19 @@ test('dot-notation popup calls through globalThis and self are rejected', t => {
     assert.equal(existsSync(join(dir, 'dist')), false);
   }
 });
+
+test('portable preview rejects hard-linked source assets before writing output', t => {
+  const dir = fixture(t);
+  const asset = join(dir, 'sanad', 'index.html');
+  const outside = join(dir, 'shared-index.html');
+  renameSync(asset, outside);
+  linkSync(outside, asset);
+  const original = readFileSync(outside, 'utf8');
+  for (const args of [['--check'], []]) {
+    const result = run(dir, ...args);
+    assert.notEqual(result.status, 0, 'hard-linked source must be rejected');
+    assert.match(result.stderr, /Sanad asset must be a regular file/);
+    assert.equal(existsSync(join(dir, 'dist')), false);
+  }
+  assert.equal(readFileSync(outside, 'utf8'), original);
+});
