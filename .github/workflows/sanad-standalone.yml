@@ -6,6 +6,7 @@ on:
       - 'scripts/build-sanad-standalone.mjs'
       - 'tests/sanad-*.test.mjs'
       - 'scripts/sanad-offline-boundary.test.mjs'
+      - 'scripts/sanad-served-artifact.test.mjs'
       - '.github/workflows/sanad-standalone.yml'
   pull_request:
     paths:
@@ -13,6 +14,7 @@ on:
       - 'scripts/build-sanad-standalone.mjs'
       - 'tests/sanad-*.test.mjs'
       - 'scripts/sanad-offline-boundary.test.mjs'
+      - 'scripts/sanad-served-artifact.test.mjs'
       - '.github/workflows/sanad-standalone.yml'
   workflow_dispatch:
 jobs:
@@ -38,6 +40,8 @@ jobs:
         run: node scripts/build-sanad-standalone.mjs --check
       - name: Build portable preview
         run: node scripts/build-sanad-standalone.mjs
+      - name: HTTP smoke-test isolated Sanad static release
+        run: node --test scripts/sanad-served-artifact.test.mjs
       - name: Verify exact portable assets
         shell: bash
         run: |

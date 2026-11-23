@@ -7,6 +7,8 @@ on:
       - 'sanad/**'
       - 'scripts/build-sanad-standalone.mjs'
       - 'scripts/sanad-offline-boundary.test.mjs'
+      - 'scripts/sanad-served-artifact.test.mjs'
+      - 'docs/sanad-standalone-deployment.md'
       - '.github/workflows/sanad-release.yml'
   workflow_dispatch:
 
@@ -127,6 +129,8 @@ jobs:
           NODE
       - name: Build isolated static preview
         run: node scripts/build-sanad-standalone.mjs
+      - name: Serve Sanad release on isolated local HTTP endpoint
+        run: node --test scripts/sanad-served-artifact.test.mjs
       - name: Verify exact allowlisted output and source fidelity
         run: |
           node --input-type=module <<'NODE'
