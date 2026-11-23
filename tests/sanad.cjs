@@ -199,3 +199,62 @@ state.set('sanad_preview_requests_v1',JSON.stringify(limitDemo));
 window.handlers.storage({key:'sanad_preview_requests_v1',storageArea:localStorage});
 assert.equal($('demoList').children.length,1,'bounded 16Ki-character register remains readable');
 assert.match($('demoList').children[0].children[0].textContent,/DEMO-LIMIT1/);
+
+
+// Public demo actions must not overwrite newer fictional records from another tab,
+// even when that tab's storage event has not yet reached this window.
+const raceKey='sanad_preview_requests_v1';
+const raceDraft={id:'DEMO-RACE01',service:1,state:'draft'};
+const raceReview={...raceDraft,state:'review'};
+const raceDone={...raceDraft,state:'done'};
+$('demoFilter').value='all';
+document.documentElement.lang='en';
+state.set(raceKey,JSON.stringify([raceDraft]));
+window.handlers.storage({key:raceKey,storageArea:localStorage});
+const oldAdvance=$('demoList').children[0].children[2].children[0];
+state.set(raceKey,JSON.stringify([raceReview]));
+oldAdvance.click();
+assert.equal(rows().length,1,'stale action must not create or remove requests');
+assert.equal(rows()[0].state,'review','stale advance must preserve updated stage');
+assert.match($('demoMessage').textContent,/another tab/,'stale action shows English conflict feedback');
+assert.match($('demoList').children[0].children[1].textContent,/Under review/,'conflict refreshes visible status');
+const oldDelete=$('demoList').children[0].children[2].children[1];
+state.set(raceKey,JSON.stringify([raceDone]));
+oldDelete.click();
+assert.equal(rows()[0].state,'done','stale delete cannot remove newer request');
+assert.equal(rows().length,1);
+document.documentElement.lang='ar';
+$('language').listeners.change();
+state.set(raceKey,JSON.stringify([raceDraft]));
+window.handlers.storage({key:raceKey,storageArea:localStorage});
+const arabicOld=$('demoList').children[0].children[2].children[0];
+state.set(raceKey,JSON.stringify([raceReview]));
+arabicOld.click();
+assert.match($('demoMessage').textContent,/نافذة أخرى/,'conflict feedback is translated into Arabic');
+
+// Edits to a different row in another tab must be kept when advancing or
+// removing the displayed record, rather than replaced with an old snapshot.
+document.documentElement.lang='en';
+$('language').listeners.change();
+state.set(raceKey,JSON.stringify([raceDraft]));
+window.handlers.storage({key:raceKey,storageArea:localStorage});
+const currentAdvance=$('demoList').children[0].children[2].children[0];
+const other={id:'DEMO-OTHER1',service:2,state:'done'};
+state.set(raceKey,JSON.stringify([raceDraft,other]));
+currentAdvance.click();
+assert.equal(rows().length,2,'action must preserve a new row added by another tab');
+assert.equal(rows()[0].state,'review');
+assert.equal(rows()[1].id,other.id);
+const currentDelete=$('demoList').children[0].children[2].children[1];
+currentDelete.click();
+assert.deepEqual(rows(),[other],'fresh delete removes only the targeted fictional row');
+
+// Invalid or oversized browser registers must not be overwritten by a stale click.
+state.set(raceKey,JSON.stringify([raceDraft]));
+window.handlers.storage({key:raceKey,storageArea:localStorage});
+const corruptAction=$('demoList').children[0].children[2].children[0];
+state.set(raceKey,'{invalid');
+corruptAction.click();
+assert.equal(state.get(raceKey),'{invalid','malformed stored data remains untouched');
+assert.match($('demoMessage').textContent,/another tab/);
+
