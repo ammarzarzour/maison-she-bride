@@ -311,6 +311,19 @@ async function run() {
 
 
 
+  // Positive decimal text below the representable range must not become a free item.
+  for (const [price, reject] of [['0.'+'0'.repeat(400)+'1',true],['0.000',false],['0.01',false]]) {
+    const w={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+    vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+      window:w,AbortController,setTimeout,clearTimeout,
+      fetch:async()=>({ok:true,json:async()=>[{id:'underflow-test',title_ar:'فستان',title_en:'Dress',price_usd:price,stock:1}]})
+    });
+    const result=await w.MSB_CATALOG.products();
+    assert.equal(Boolean(result.error),reject);
+    assert.equal(result.rows.length,reject?0:1);
+  }
+  console.log('PASS catalog rejects positive prices that underflow to zero');
+
   console.log('PASS catalog rejects invalid live prices and stock');
 
   // A legacy Supabase JWT may be used in the browser only if its role is anon.
