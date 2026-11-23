@@ -26,6 +26,8 @@ const maxPages=10; // Safety bound: do not issue unbounded requests.
 // coercions (hex, exponent notation, signed/whitespace-only values) from text.
 const decimalPrice=value=>typeof value==='number'?Number.isFinite(value):typeof value==='string'&&/^\d+(?:\.\d+)?$/.test(value);
 const decimalStock=value=>typeof value==='number'?Number.isSafeInteger(value):typeof value==='string'&&/^\d+$/.test(value);
+// A positive decimal price must not silently underflow to zero in the browser.
+const priceUnderflows=value=>typeof value==='string'&&Number(value)===0&&/[1-9]/.test(value);
 // Image positions use the same canonical non-negative integer representation as stock.
 // Avoid causing visitors' browsers to fetch product images from loopback, LAN,
 // link-local or other non-public endpoints. URL.hostname normalizes numeric IPv4.
@@ -122,7 +124,7 @@ async function pagedProducts(){
    if(typeof row.title_ar!=='string'||!row.title_ar.trim()||/[\u0000-\u001f\u007f]/.test(row.title_ar)||typeof row.title_en!=='string'||!row.title_en.trim()||/[\u0000-\u001f\u007f]/.test(row.title_en))return {configured:true,rows:[],error:'Invalid bilingual product title in catalog'};
    // Reject malformed prices/stock and potential stock-wide totals that overflow
    // the illustrative SYP conversion, even when each unit price is finite.
-   if((!decimalPrice(row.price_usd)||!Number.isFinite(Number(row.price_usd)))||Number(row.price_usd)<0||!Number.isFinite(Number(row.price_usd)*120)||(!decimalStock(row.stock)||!Number.isSafeInteger(Number(row.stock)))||Number(row.stock)<0||!Number.isFinite(Number(row.price_usd)*Number(row.stock)*120))return {configured:true,rows:[],error:'Invalid price or stock in catalog'};
+   if((!decimalPrice(row.price_usd)||priceUnderflows(row.price_usd)||!Number.isFinite(Number(row.price_usd)))||Number(row.price_usd)<0||!Number.isFinite(Number(row.price_usd)*120)||(!decimalStock(row.stock)||!Number.isSafeInteger(Number(row.stock)))||Number(row.stock)<0||!Number.isFinite(Number(row.price_usd)*Number(row.stock)*120))return {configured:true,rows:[],error:'Invalid price or stock in catalog'};
    // Images must be HTTPS URLs. Reject unexpected schemes and malformed image metadata.
    if(row.product_images!==null&&row.product_images!==undefined){
     if(!Array.isArray(row.product_images)||row.product_images.length>30)return {configured:true,rows:[],error:'Invalid product images'};
