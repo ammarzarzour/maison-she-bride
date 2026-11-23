@@ -97,3 +97,19 @@ $('language').listeners.change({target:{value:'en'}});
 assert.match($('message').textContent,/Stage changed locally/,'visible feedback follows selected language');
 $('language').listeners.change({target:{value:'ar'}});
 assert.match($('message').textContent,/محلياً/,'feedback switches back without losing result');
+
+// Prevent browser-only fictional registers from overloading storage parsing.
+
+$('statusFilter').value='all';
+$('searchRequests').value='';
+const largeRegister = JSON.stringify([{id:'DEMO-TOOBIG',service:0,state:'draft',padding:'x'.repeat(17000)}]);
+memory.set('sanad_preview_requests_v1',largeRegister);
+handlers.storage({key:'sanad_preview_requests_v1',storageArea:localStorage});
+assert.equal($('totalCount').textContent,0,'dashboard must not load oversized browser-only registers');
+assert.equal(memory.get('sanad_preview_requests_v1'),largeRegister,'reading oversized records must not overwrite storage');
+const acceptedRegister = [{id:'DEMO-ATLIMIT',service:1,state:'review',padding:''}];
+acceptedRegister[0].padding='a'.repeat(16384-JSON.stringify(acceptedRegister).length);
+memory.set('sanad_preview_requests_v1',JSON.stringify(acceptedRegister));
+handlers.storage({key:'sanad_preview_requests_v1',storageArea:localStorage});
+assert.equal($('totalCount').textContent,1,'dashboard accepts a register exactly at the storage limit');
+assert.equal($('reviewCount').textContent,1);

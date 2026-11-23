@@ -3,6 +3,7 @@
   'use strict';
   const STORAGE_KEY = 'sanad_preview_requests_v1';
   const MAX = 25;
+  const MAX_STORAGE_CHARS = 16384; // Treat browser storage as untrusted, bounded demo input.
   const services = [
     ['الهوية والحساب', 'Identity & accounts'],
     ['الوكالات والتفويض', 'Authorizations'],
@@ -71,7 +72,9 @@
   };
   function load() {
     try {
-      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      const raw = localStorage.getItem(STORAGE_KEY) || '[]';
+      if (typeof raw !== 'string' || raw.length > MAX_STORAGE_CHARS) return [];
+      const parsed = JSON.parse(raw);
       if (!Array.isArray(parsed)) return [];
       const seen = new Set();
       return parsed.filter(r => r && typeof r.id === 'string' && /^DEMO-[A-Z0-9]{6,16}$/.test(r.id) &&
