@@ -24,6 +24,7 @@
       empty:'لا توجد طلبات وهمية مطابقة.',count:n=>'عدد النتائج: '+n,
       advanced:'تم تحديث المرحلة محلياً فقط؛ لم يُرسل الطلب إلى أي جهة.',
       removed:'حُذف الطلب الوهمي من هذا المتصفح.',storage:'تعذر حفظ التغيير على هذا المتصفح.',
+      conflict:'تغيّر الطلب الوهمي أو حُذف في نافذة أخرى. راجع السجل المحدث قبل إعادة المحاولة.',
       footer:'سند سوريا — نموذج أولي مستقل، بدون مصادقة أو معاملات حقيقية'
     },
     en: {
@@ -38,6 +39,7 @@
       empty:'No matching fictional requests.',count:n=>'Results: '+n,
       advanced:'Stage changed locally only; nothing was submitted anywhere.',
       removed:'The fictional request was removed from this browser.',storage:'Could not save this browser change.',
+      conflict:'This fictional request changed or was deleted in another tab. Review the refreshed list before retrying.',
       footer:'Sanad Syria — independent prototype without authentication or real transactions'
     }
   };
@@ -74,12 +76,19 @@
   function button(label,fn,style){
     const b=document.createElement('button');b.type='button';b.textContent=label;b.className=style;b.addEventListener('click',fn);return b;
   }
-  function update(id,action){
-    const rows=read(),index=rows.findIndex(r=>r.id===id);
-    if(index<0)return;
-    const t=copy();
+  function sameRequest(actual,expected){
+    return !!actual&&!!expected&&actual.id===expected.id&&
+      actual.service===expected.service&&actual.state===expected.state;
+  }
+  function update(id,action,expected){
+    let rows=read(),index=rows.findIndex(r=>r.id===id);
+    if(!sameRequest(rows[index],expected)){showMessage('conflict');render();return;}
     if(action==='remove'){
-      if(!window.confirm(t.removeConfirm))return;
+      if(!window.confirm(copy().removeConfirm))return;
+      // Recheck after confirmation: another tab may have updated the request
+      // while this browser's confirmation dialog was open.
+      rows=read();index=rows.findIndex(r=>r.id===id);
+      if(!sameRequest(rows[index],expected)){showMessage('conflict');render();return;}
       rows.splice(index,1);
     }else{
       const stage=STATES.indexOf(rows[index].state);
@@ -125,8 +134,8 @@
       cell(row,SERVICES[r.service][l]);
       const statusCell=cell(row,'');const chip=document.createElement('span');chip.className='state';chip.textContent=t.statuses[STATES.indexOf(r.state)];statusCell.append(chip);
       const actions=cell(row,'');const wrap=document.createElement('div');wrap.className='actions';
-      if(r.state!=='done')wrap.append(button(t.advance,()=>update(r.id,'advance'),'advance'));
-      wrap.append(button(t.remove,()=>update(r.id,'remove'),'remove'));
+      if(r.state!=='done')wrap.append(button(t.advance,()=>update(r.id,'advance',{...r}),'advance'));
+      wrap.append(button(t.remove,()=>update(r.id,'remove',{...r}),'remove'));
       actions.append(wrap);tbody.append(row);
     }
   }
