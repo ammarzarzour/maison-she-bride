@@ -113,3 +113,48 @@ memory.set('sanad_preview_requests_v1',JSON.stringify(acceptedRegister));
 handlers.storage({key:'sanad_preview_requests_v1',storageArea:localStorage});
 assert.equal($('totalCount').textContent,1,'dashboard accepts a register exactly at the storage limit');
 assert.equal($('reviewCount').textContent,1);
+
+
+// The browser-only dashboard must not apply stale buttons to newer fictional
+// request snapshots. The originating window may not have received a storage event.
+$('statusFilter').value='all';$('searchRequests').value='';
+const raceKey='sanad_preview_requests_v1';
+const draft={id:'DEMO-RACEST',service:1,state:'draft'};
+memory.set(raceKey,JSON.stringify([draft]));
+handlers.storage({key:raceKey,storageArea:localStorage});
+const staleAdvance=$('requestRows').children[0].children[3].children[0].children[0];
+const newerReview={...draft,state:'review'};
+memory.set(raceKey,JSON.stringify([newerReview]));
+staleAdvance.click();
+assert.equal(rows()[0].state,'review','stale next-stage button must not overwrite newer state');
+assert.match($('message').textContent,/نافذة أخرى/,'conflict message is localised');
+assert.equal($('reviewCount').textContent,1,'conflict refreshes visible status');
+const staleDelete=$('requestRows').children[0].children[3].children[0].children[1];
+const newerDone={...draft,state:'done'};
+memory.set(raceKey,JSON.stringify([newerDone]));
+staleDelete.click();
+assert.equal(rows()[0].state,'done','stale deletion must not remove an updated row');
+assert.equal(rows().length,1);
+assert.equal($('doneCount').textContent,1);
+$('language').listeners.change({target:{value:'en'}});
+assert.match($('message').textContent,/another tab/,'conflict follows language switching');
+
+// Recheck the snapshot after confirmation, because the underlying state may
+// change while a browser confirmation dialog is open.
+memory.set(raceKey,JSON.stringify([draft]));
+handlers.storage({key:raceKey,storageArea:localStorage});
+let confirmationCount=0;
+window.confirm=()=>{
+ confirmationCount++;
+ memory.set(raceKey,JSON.stringify([newerReview]));
+ return true;
+};
+$('requestRows').children[0].children[3].children[0].children[1].click();
+assert.equal(confirmationCount,1);
+assert.equal(rows().length,1,'confirmation races must preserve newer records');
+assert.equal(rows()[0].state,'review');
+assert.match($('message').textContent,/another tab/);
+window.confirm=()=>true;
+$('requestRows').children[0].children[3].children[0].children[1].click();
+assert.equal(rows().length,0,'fresh confirmed deletion still works');
+assert.equal($('totalCount').textContent,0);
