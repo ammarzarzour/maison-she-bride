@@ -49,7 +49,9 @@ for (const name of files) {
   const path = join(source, name);
   if (!existsSync(path)) throw new Error('Missing Sanad asset: ' + name);
   const stat = lstatSync(path);
-  if (stat.isSymbolicLink() || !stat.isFile()) {
+  // A hard-linked source file can be modified by another repository path after validation.
+  // Match the standalone Soft builder's single-link source requirement.
+  if (stat.isSymbolicLink() || !stat.isFile() || stat.nlink !== 1) {
     throw new Error('Sanad asset must be a regular file: ' + name);
   }
   const text = readFileSync(path, 'utf8');
