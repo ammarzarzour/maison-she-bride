@@ -4,16 +4,14 @@ on:
     paths:
       - 'sanad/**'
       - 'scripts/build-sanad-standalone.mjs'
-      - 'tests/sanad-standalone.test.mjs'
-      - 'tests/sanad-language-contract.test.mjs'
+      - 'tests/sanad-*.test.mjs'
       - 'scripts/sanad-offline-boundary.test.mjs'
       - '.github/workflows/sanad-standalone.yml'
   pull_request:
     paths:
       - 'sanad/**'
       - 'scripts/build-sanad-standalone.mjs'
-      - 'tests/sanad-standalone.test.mjs'
-      - 'tests/sanad-language-contract.test.mjs'
+      - 'tests/sanad-*.test.mjs'
       - 'scripts/sanad-offline-boundary.test.mjs'
       - '.github/workflows/sanad-standalone.yml'
   workflow_dispatch:
@@ -28,10 +26,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Run Sanad standalone regression tests
-        run: node --test tests/sanad-standalone.test.mjs
-      - name: Test bilingual RTL/LTR and independent preview contract
-        run: node --test tests/sanad-language-contract.test.mjs
+      - name: Run all Sanad regression tests (including newly added suites)
+        run: node --test tests/sanad-*.test.mjs
       - name: Regression-test inline network, forms and resource boundaries
         run: node scripts/sanad-offline-boundary.test.mjs
       - name: Syntax-check standalone browser JavaScript
