@@ -185,17 +185,17 @@ assert.equal($('demoList').children[0].className,'empty-demo','malformed storage
 
 // Prevent browser-only fictional registers from overloading storage parsing.
 
-const oversizedDemo = [{id:'DEMO-SIZED',service:0,state:'draft',padding:'x'.repeat(17000)}];
+const oversizedDemo = [{id:'DEMO-SIZED1',service:0,state:'draft',padding:'x'.repeat(17000)}];
 const oversizedRaw = JSON.stringify(oversizedDemo);
 state.set('sanad_preview_requests_v1',oversizedRaw);
 window.handlers.storage({key:'sanad_preview_requests_v1',storageArea:localStorage});
 assert.equal($('demoList').children[0].className,'empty-demo','oversized local register must not display fictional requests');
 assert.equal(state.get('sanad_preview_requests_v1'),oversizedRaw,'reading oversized storage must not mutate it');
-const limitDemo = [{id:'DEMO-LIMIT',service:0,state:'draft',padding:''}];
+const limitDemo = [{id:'DEMO-LIMIT1',service:0,state:'draft',padding:''}];
 const prefixSize = JSON.stringify(limitDemo).length;
 limitDemo[0].padding='y'.repeat(16384-prefixSize);
 assert.equal(JSON.stringify(limitDemo).length,16384,'boundary test produces a 16Ki-character register');
 state.set('sanad_preview_requests_v1',JSON.stringify(limitDemo));
 window.handlers.storage({key:'sanad_preview_requests_v1',storageArea:localStorage});
 assert.equal($('demoList').children.length,1,'bounded 16Ki-character register remains readable');
-assert.match($('demoList').children[0].children[0].textContent,/DEMO-LIMIT/);
+assert.match($('demoList').children[0].children[0].textContent,/DEMO-LIMIT1/);
