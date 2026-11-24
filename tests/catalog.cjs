@@ -351,6 +351,35 @@ async function run() {
   }
   console.log('PASS malformed publishable keys are rejected');
 
+  // Exercise actual line terminators, not just the literal backslash-n/t strings.
+  for(const suffix of ['\n','\r','\r\n','\t','\u2028','\u2029']){
+    for(const cfg of [
+      {url:'https://example.supabase.co',publishableKey:'sb_publishable_test'+suffix},
+      {url:'https://example.supabase.co'+suffix,publishableKey:'sb_publishable_test'}
+    ]){
+      const w={MSB_SUPABASE:cfg};
+      vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+        window:w,AbortController,setTimeout,clearTimeout,
+        fetch:()=>{throw Error('malformed configuration must not be sent')}
+      });
+      assert.equal(w.MSB_CATALOG.configured,false,JSON.stringify(suffix));
+      const result=await w.MSB_CATALOG.products();
+      assert.equal(result.configured,false);
+    }
+    for(const [price,stock] of [['12.50'+suffix,1],[10,'2'+suffix]]){
+      const w={MSB_SUPABASE:{url:'https://example.supabase.co',publishableKey:'sb_publishable_test'}};
+      vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{
+        window:w,AbortController,setTimeout,clearTimeout,
+        fetch:async()=>({ok:true,json:async()=>[{id:'bad-line-ending',title_ar:'فستان',title_en:'Dress',price_usd:price,stock}]})
+      });
+      const result=await w.MSB_CATALOG.products();
+      assert.equal(result.rows.length,0,JSON.stringify(suffix));
+      assert.match(result.error,/price or stock/);
+    }
+  }
+  console.log('PASS catalog rejects actual trailing line terminators in configuration and numeric fields');
+
+
 
   const bad = {MSB_SUPABASE:{url:'http://example.supabase.co',publishableKey:'service_role_secret'}};
   vm.runInNewContext(fs.readFileSync('catalog.js','utf8'),{window:bad,AbortController,setTimeout,clearTimeout,fetch:()=>{throw Error('must not fetch')}});
