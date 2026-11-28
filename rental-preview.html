@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#145b46"><title>Maison She Bride | Rental preview</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f7f8f6;color:#1e2b26;font-family:system-ui,Tahoma,sans-serif}header{background:#145b46;color:white;padding:18px}header strong{color:#f4d68a}main{max-width:680px;margin:24px auto;padding:0 16px}section{background:white;border:1px solid #e3e7e2;border-radius:16px;padding:20px;margin-top:16px}label{display:block;margin:16px 0 5px}input,select,button{font:inherit;padding:11px;border:1px solid #b8c8bf;border-radius:8px}input,select{width:100%}button{background:#145b46;color:white;cursor:pointer;margin-top:18px}a{color:#145b46}#result{font-weight:600;min-height:1.6em}#notice{color:#43544d}header button{background:white;color:#145b46;margin:0;float:inline-end}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #c5a24b;outline-offset:2px}
+</style></head><body><header><strong>Maison She Bride</strong><button type="button" id="language" aria-label="English">English</button></header><main>
+<a href="index.html" id="back">العودة إلى المتجر</a><section><h1 id="heading">تجربة تأجير الفساتين</h1><p id="notice">بيانات وهمية فقط؛ لا يتم إنشاء حجز أو دفع أو إرسال بيانات.</p>
+<form id="form" novalidate><label for="dress" id="dressLabel">الفستان التجريبي</label><select id="dress"><option value="a" id="dressA">فستان زفاف A</option><option value="b" id="dressB">فستان زفاف B</option></select>
+<label for="start" id="startLabel">تاريخ الاستلام</label><input type="date" id="start" required>
+<label for="end" id="endLabel">تاريخ الإرجاع</label><input type="date" id="end" required>
+<p id="rule">يُحسب يوم الاستلام والإرجاع ضمن فترة التأجير.</p><p id="sample"></p><button type="submit" id="check">فحص التوفر التجريبي</button></form><p id="result" role="status" aria-live="polite"></p></section></main>
+<script>
+function rentalAvailability(start,end,bookings){
+  function validDate(s){
+    if(typeof s!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;
+    const d=new Date(s+"T00:00:00Z");
+    return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===s;
+  }
+  if(!validDate(start)||!validDate(end)||start>end)return "invalid";
+  if(!Array.isArray(bookings)||bookings.some(b=>!b||!validDate(b.start)||!validDate(b.end)||b.start>b.end))return "invalid";
+  return bookings.some(b=>start<=b.end&&end>=b.start)?"unavailable":"available";
+}
+const $=id=>document.getElementById(id);
+const copy={
+ ar:{back:"العودة إلى المتجر",heading:"تجربة تأجير الفساتين",notice:"بيانات وهمية فقط؛ لا يتم إنشاء حجز أو دفع أو إرسال بيانات.",dressLabel:"الفستان التجريبي",dressA:"فستان زفاف A",dressB:"فستان زفاف B",startLabel:"تاريخ الاستلام",endLabel:"تاريخ الإرجاع",rule:"يُحسب يوم الاستلام والإرجاع ضمن فترة التأجير.",check:"فحص التوفر التجريبي",available:"متاح وفق البيانات الوهمية فقط، وليس حجزاً مؤكداً.",unavailable:"غير متاح: تتداخل الفترة مع حجز وهمي.",invalid:"أدخل تاريخين صالحين بترتيب صحيح.",past:"اختر تاريخ استلام من اليوم أو بعده.",sample:"الفترة المحجوزة وهمياً: "},
+ en:{back:"Back to store",heading:"Dress rental preview",notice:"Synthetic examples only. No booking, payment, or data submission.",dressLabel:"Sample dress",dressA:"Wedding dress A",dressB:"Wedding dress B",startLabel:"Pickup date",endLabel:"Return date",rule:"Pickup and return dates are both included in the rental period.",check:"Check demo availability",available:"Available in the sample data only; not a confirmed reservation.",unavailable:"Unavailable: dates overlap a sample reservation.",invalid:"Enter valid dates in the correct order.",past:"Choose a pickup date from today onward.",sample:"Sample reserved period: "}
+};
+function day(offset){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+offset);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");}
+const bookings={a:[{start:day(7),end:day(10)}],b:[{start:day(14),end:day(17)}]};
+let lang=(navigator.language||"ar").toLowerCase().startsWith("ar")?"ar":"en";
+let status="";
+function render(){const c=copy[lang];document.documentElement.lang=lang;document.documentElement.dir=lang==="ar"?"rtl":"ltr";for(const id of ["back","heading","notice","dressLabel","dressA","dressB","startLabel","endLabel","rule","check"])$(id).textContent=c[id];$("language").textContent=lang==="ar"?"English":"العربية";$("language").setAttribute("aria-label",$("language").textContent);const b=bookings[$("dress").value][0];$("sample").textContent=c.sample+b.start+" — "+b.end;$("result").textContent=status?c[status]:"";}
+$("start").min=day(0);$("end").min=day(0);
+$("language").addEventListener("click",()=>{lang=lang==="ar"?"en":"ar";render();});
+for(const id of ["dress","start","end"])$(id).addEventListener("input",()=>{status="";render();});
+$("form").addEventListener("submit",event=>{event.preventDefault();const s=$("start").value,e=$("end").value;status=rentalAvailability(s,e,bookings[$("dress").value]);if(status!=="invalid"&&s<day(0))status="past";render();});
+render();
+</script></body></html>
