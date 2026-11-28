@@ -93,3 +93,11 @@ for(const [start,end,bookings,expected] of [
  ['2026-12-01','2026-12-04',[{start:'bad',end:'2026-12-08'}],'invalid']
 ])assert.equal(available(start,end,bookings),expected);
 console.log('PASS rental preview availability and inclusive date boundaries');
+
+const languageSource=rentalScript.match(/function rentalLanguage\(setting, browserLanguage\)\{[\s\S]*?\n\}/);
+assert.ok(languageSource,'Rental language resolver must exist');
+const rentalLanguage=vm.runInNewContext(languageSource[0]+'\nrentalLanguage');
+for(const [setting,browser,expected] of [['ar','en-US','ar'],['en','ar-SY','en'],['auto','ar-SY','ar'],['auto','en-US','en'],['invalid','ar','ar'],['auto',undefined,'ar']])assert.equal(rentalLanguage(setting,browser),expected);
+assert.match(rentalScript,/localStorage\.getItem\("msb_lang"\)/);
+assert.match(rentalScript,/localStorage\.setItem\("msb_lang",lang\)/);
+console.log('PASS rental shared language preference');
