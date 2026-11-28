@@ -26,11 +26,17 @@ const copy={
 };
 function day(offset){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+offset);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");}
 const bookings={a:[{start:day(7),end:day(10)}],b:[{start:day(14),end:day(17)}]};
-let lang=(navigator.language||"ar").toLowerCase().startsWith("ar")?"ar":"en";
+function rentalLanguage(setting, browserLanguage){
+  if(setting==="ar"||setting==="en")return setting;
+  return String(browserLanguage||"ar").toLowerCase().startsWith("ar")?"ar":"en";
+}
+let setting="auto";
+try{setting=localStorage.getItem("msb_lang")||"auto";}catch{}
+let lang=rentalLanguage(setting,navigator.language);
 let status="";
 function render(){const c=copy[lang];document.documentElement.lang=lang;document.documentElement.dir=lang==="ar"?"rtl":"ltr";for(const id of ["back","heading","notice","dressLabel","dressA","dressB","startLabel","endLabel","rule","check"])$(id).textContent=c[id];$("language").textContent=lang==="ar"?"English":"العربية";$("language").setAttribute("aria-label",$("language").textContent);const b=bookings[$("dress").value][0];$("sample").textContent=c.sample+b.start+" — "+b.end;$("result").textContent=status?c[status]:"";}
 $("start").min=day(0);$("end").min=day(0);
-$("language").addEventListener("click",()=>{lang=lang==="ar"?"en":"ar";render();});
+$("language").addEventListener("click",()=>{lang=lang==="ar"?"en":"ar";try{localStorage.setItem("msb_lang",lang);}catch{}render();});
 for(const id of ["dress","start","end"])$(id).addEventListener("input",()=>{status="";render();});
 $("form").addEventListener("submit",event=>{event.preventDefault();const s=$("start").value,e=$("end").value;status=rentalAvailability(s,e,bookings[$("dress").value]);if(status!=="invalid"&&s<day(0))status="past";render();});
 render();
