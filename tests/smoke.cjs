@@ -9,7 +9,7 @@ for (const file of ['catalog.js', 'sanad-demo.js', 'sanad-admin-demo.js']) {
   console.log('PASS standalone browser script syntax', file);
 }
 
-const pages = ['index.html', 'seller.html', 'admin.html', 'sanad-preview.html', 'sanad-admin-preview.html'];
+const pages = ['index.html', 'seller.html', 'admin.html', 'sanad-preview.html', 'sanad-admin-preview.html', 'rental-preview.html'];
 for (const file of pages) {
   const html = fs.readFileSync(file, 'utf8');
   assert.match(html, /<meta\s+name="viewport"/i, file + ': missing mobile viewport');
@@ -71,3 +71,25 @@ for(const file of ['sanad/index.html','sanad/admin.html']){
  for(const [,src]of html.matchAll(/src="([^"?]+)(?:\?[^"]*)?"/g))assert.ok(fs.existsSync(require('node:path').join('sanad',src)),'Missing independent script '+src);
 }
 console.log('PASS standalone Sanad routes');
+
+const rentalHtml=fs.readFileSync('rental-preview.html','utf8');
+assert.match(storefront,/href="rental-preview\.html"/,'Storefront must link to the rental preview');
+const rentalScript=[...rentalHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)][0][1];
+const boundary=rentalScript.indexOf('\nconst $=id=>document.getElementById(id);');
+assert.ok(boundary>0,'Rental availability logic must precede DOM setup');
+const available=vm.runInNewContext(rentalScript.slice(0,boundary)+'\nrentalAvailability');
+const sample=[{start:'2026-12-05',end:'2026-12-08'}];
+for(const [start,end,bookings,expected] of [
+ ['2026-12-01','2026-12-04',sample,'available'],
+ ['2026-12-04','2026-12-05',sample,'unavailable'],
+ ['2026-12-08','2026-12-09',sample,'unavailable'],
+ ['2026-12-09','2026-12-10',sample,'available'],
+ ['2026-12-06','2026-12-06',sample,'unavailable'],
+ ['2026-12-01','2026-12-10',sample,'unavailable'],
+ ['2026-12-10','2026-12-09',sample,'invalid'],
+ ['2026-02-30','2026-03-02',sample,'invalid'],
+ ['2028-02-29','2028-02-29',[],'available'],
+ ['','','','invalid'],
+ ['2026-12-01','2026-12-04',[{start:'bad',end:'2026-12-08'}],'invalid']
+])assert.equal(available(start,end,bookings),expected);
+console.log('PASS rental preview availability and inclusive date boundaries');
