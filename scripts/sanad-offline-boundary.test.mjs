@@ -24,6 +24,10 @@ try {
     '<style>@import "https://example.com/a.css";</style>',
     '<form action="/submit"></form>',
     '<img srcset="https://example.com/picture.jpg 2x">',
+    "<img attributionsrc=\"https://example.com/collect\" src=\"index.html\">",
+    "<a attributionsrc href=\"./admin.html\">Open</a>",
+    "<table background=\"https://example.com/background.png\"></table>",
+    "<html manifest=\"https://example.com/cache.appcache\">",
     '<button formaction="https://example.com/submit">Send</button>',
     '<video poster="https://example.com/poster.jpg"></video>',
     '<meta http-equiv="refresh" content="0;url=https://example.com">',
@@ -52,7 +56,7 @@ try {
   }
   writeFileSync(html, original);
   assert.equal(check().status, 0, 'Restored preview must validate');
-  console.log('Sanad offline boundary: 25 assertions passed');
+  console.log('Sanad offline boundary: boundary assertions passed');
 } finally {
   rmSync(sandbox, { recursive: true, force: true });
 }
